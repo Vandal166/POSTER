@@ -1,6 +1,31 @@
-@Web_HostAddress = http://localhost:5291
+@Web_HostAddress = https://localhost:7157
 
-GET {{Web_HostAddress}}/weatherforecast/
-Accept: application/json
+@baseUrl = https://localhost:7157
+@contentType = application/json
+
+### Registering a new user
+POST {{baseUrl}}/api/v1/auth/register
+Content-Type: {{contentType}}
+
+{
+  "username": "johndoe",
+  "email": "johndoe@example.com",
+  "password": "P@ssw0rd123"
+}
+
+### 🔐 Login with the same user
+# Save the returned token manually or use an environment variable in tooling
+POST {{baseUrl}}/api/v1/auth/login
+Content-Type: {{contentType}}
+
+{
+  "username": "johndoe",
+  "password": "P@ssw0rd123"
+}
+
+### ✅ Accessing a protected endpoint (copy token from previous login response)
+GET {{baseUrl}}/
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3Nzc1MDg1NS0zMDM3LTRjZDQtOTc1Yy0yZDU4YjM1M2ViMTkiLCJ1bmlxdWVfbmFtZSI6ImpvaG5kb2UiLCJleHAiOjE3NTIxNzA2NDQsImlzcyI6IlBvc3RlckFwaSIsImF1ZCI6IlBvc3RlckNsaWVudCJ9.i8okQn2HhL9VlmBMJ7tyiDvdNKY-BCKR1rE88nhrJbE
+Accept: {{contentType}}
 
 ###

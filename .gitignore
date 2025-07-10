@@ -41,6 +41,8 @@ ScaffoldingReadMe.txt
 *~
 CodeCoverage/
 .idea/
+.NOTE
+POSTER.sln.DotSettings.user
 
 # MSBuild Binary and Structured Log
 *.binlog
