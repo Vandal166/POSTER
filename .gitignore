@@ -43,6 +43,7 @@ CodeCoverage/
 .idea/
 .NOTE
 POSTER.sln.DotSettings.user
+.containers
 
 # MSBuild Binary and Structured Log
 *.binlog

@@ -1,0 +1,25 @@
+﻿services:
+  web:
+    image: web
+    container_name: web
+    build:
+      context: .
+      dockerfile: src/Web/Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+        - web.database
+    environment:
+      - ConnectionStrings__Poster_DB=Host=web.database;Port=5432;Database=Poster_DB;Username=postgres;Password=postgres
+    
+  web.database:
+    image: postgres:latest
+    container_name: web.database
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: Poster_DB
+    volumes:
+      - ./.containers/poster_db:/var/lib/postgresql/data
+    ports:
+        - "5432:5432"

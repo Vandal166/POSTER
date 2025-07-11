@@ -7,7 +7,9 @@ using Infrastructure.Data;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
+using JwtRegisteredClaimNames = System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames;
 
 namespace Web.Endpoints;
 
@@ -74,14 +76,19 @@ public static class AuthEndpoints
         
         var creds  = new SigningCredentials(new SymmetricSecurityKey(secret),
             SecurityAlgorithms.HmacSha256);
-        var token  = new JwtSecurityToken(
-            issuer:             issuer,
-            audience:           audience,
-            claims:             claims,
-            expires:            DateTime.UtcNow.AddMinutes(int.Parse(expiresInMinutes)),
-            signingCredentials: creds
-        );
-        var jwtToken = new JwtSecurityTokenHandler().WriteToken(token);
+
+        //TODO abstract token generation behind an interface in the Application layer (e.g., ITokenGenerator) and inject it into Web
+        var tokenHandler = new JsonWebTokenHandler();
+        var tokenDescriptor = new SecurityTokenDescriptor
+        {
+            Subject = new ClaimsIdentity(claims),
+            Expires = DateTime.UtcNow.AddMinutes(int.Parse(expiresInMinutes)),
+            Issuer = issuer,
+            Audience = audience,
+            SigningCredentials = creds
+        };
+        
+        var jwtToken = tokenHandler.CreateToken(tokenDescriptor);
 
         return Results.Ok(new { token = jwtToken });
     }
