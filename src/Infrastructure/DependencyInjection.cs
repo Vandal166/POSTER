@@ -1,4 +1,8 @@
-﻿using Infrastructure.Data;
+﻿using Application.Contracts;
+using Infrastructure.Auth;
+using Infrastructure.Data;
+using Infrastructure.Persistence;
+using Infrastructure.Security;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,6 +17,12 @@ public static class DependencyInjection
         {
             options.UseNpgsql(configuration.GetConnectionString("Poster_DB"));
         });
+        
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddSingleton<IPasswordHasher, BcryptHasher>();
+        services.AddScoped<ITokenGenerator, JwtTokenGeneratorService>();
+        
         return services;
     }
 }

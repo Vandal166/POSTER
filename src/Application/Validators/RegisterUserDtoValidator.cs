@@ -8,7 +8,7 @@ public class RegisterUserDtoValidator : AbstractValidator<RegisterUserDto>
     public RegisterUserDtoValidator()
     {
         RuleFor(x => x.Username)
-            .NotEmpty().Length(3, 50);
+            .NotEmpty();
         RuleFor(x => x.Email)
             .NotEmpty().EmailAddress();
         RuleFor(x => x.Password)

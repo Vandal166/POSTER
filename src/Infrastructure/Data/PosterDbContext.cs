@@ -1,4 +1,5 @@
 ﻿using Domain.Entities;
+using Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Data;
@@ -9,22 +10,39 @@ public class PosterDbContext : DbContext
     { }
 
     public DbSet<User> Users => Set<User>();
-    public DbSet<Post> Posts => Set<Post>();
+    //public DbSet<Post> Posts => Set<Post>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-
         modelBuilder.Entity<User>(user =>
         {
             user.HasKey(u => u.ID);
-            user.HasIndex(u => u.Username).IsUnique();
-            user.Property(u => u.Username).IsRequired().HasMaxLength(50);
-            user.HasIndex(u => u.Email).IsUnique();
-            user.Property(u => u.Email).IsRequired().HasMaxLength(100);
+
+            user.OwnsOne(u => u.Username, username =>
+            {
+                username.Property(un => un.Value)
+                    .HasColumnName("Username")
+                    .IsRequired();
+            });
+
+            user.OwnsOne(u => u.Email, email =>
+            {
+                email.Property(e => e.Value)
+                    .HasColumnName("Email")
+                    .IsRequired();
+            });
+
+            user.Property(u => u.PasswordHash)
+                .HasMaxLength(256);
+
+            /*user.HasMany(u => u.Posts)
+                .WithOne(p => p.User)
+                .HasForeignKey(p => p.UserID)
+                .OnDelete(DeleteBehavior.Cascade);*/
         });
 
-        modelBuilder.Entity<Post>(post =>
+        /*modelBuilder.Entity<Post>(post =>
         {
             post.HasKey(p => p.ID);
             post.Property(p => p.Content).IsRequired().HasMaxLength(280);
@@ -33,6 +51,6 @@ public class PosterDbContext : DbContext
                 .WithMany(u => u.Posts)
                 .HasForeignKey(p => p.UserID)
                 .OnDelete(DeleteBehavior.Cascade);
-        });
+        });*/
     }
 }

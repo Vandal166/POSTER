@@ -1,13 +1,13 @@
-﻿using System;
+﻿using Domain.ValueObjects;
 
 namespace Domain.Entities;
 
 public class User
 {
     public Guid ID { get; set; }
-    public string? Username { get; set; } = null;
-    public string? Email { get; set; } = null;
+    public UserName Username { get; set; } = null!;
+    public Email Email { get; set; } = null!;
     public string? PasswordHash { get; set; } = null;
     
-    public List<Post> Posts { get; set; } = new List<Post>();
+    //public List<Post> Posts { get; set; } = new List<Post>();
 }

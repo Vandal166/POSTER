@@ -1,5 +1,6 @@
 ﻿namespace Domain.Entities;
 
+/*
 public class Post
 {
     public Guid ID { get; set; }
@@ -8,4 +9,4 @@ public class Post
 
     public Guid UserID { get; set; }
     public User User { get; set; } = null!;
-}
+}*/

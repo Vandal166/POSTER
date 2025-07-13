@@ -1,0 +1,40 @@
+﻿using Application.Contracts;
+using Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
+
+namespace Infrastructure.Persistence;
+
+public class UnitOfWork : IUnitOfWork
+{
+    private readonly PosterDbContext _db;
+    public UnitOfWork(PosterDbContext db) => _db = db;
+
+    public Task SaveChangesAsync()
+    {
+        return  _db.SaveChangesAsync();
+    }
+    
+    public Task BeginTransactionAsync()
+    {
+        if (_db.Database.CurrentTransaction == null)
+            return _db.Database.BeginTransactionAsync();
+        
+        return Task.CompletedTask;
+    }
+    
+    public Task CommitTransactionAsync()
+    {
+        if (_db.Database.CurrentTransaction != null)
+            return _db.Database.CommitTransactionAsync();
+        
+        throw new InvalidOperationException("No transaction to commit.");
+    }
+
+    public Task RollbackTransactionAsync()
+    {
+        if (_db.Database.CurrentTransaction != null)
+            return _db.Database.RollbackTransactionAsync();
+            
+        throw new InvalidOperationException("No transaction to rollback.");
+    }
+}

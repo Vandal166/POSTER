@@ -3,6 +3,7 @@ using System;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Data.Migrations
 {
     [DbContext(typeof(PosterDbContext))]
-    partial class PosterDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250713133516_test8")]
+    partial class test8
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -59,7 +62,7 @@ namespace Infrastructure.Data.Migrations
 
                     b.OwnsOne("Domain.ValueObjects.UserName", "Username", b1 =>
                         {
-                            b1.Property<Guid>("UserID")
+                            b1.Property<Guid>("UserId")
                                 .HasColumnType("uuid");
 
                             b1.Property<string>("Value")
@@ -67,12 +70,12 @@ namespace Infrastructure.Data.Migrations
                                 .HasColumnType("text")
                                 .HasColumnName("Username");
 
-                            b1.HasKey("UserID");
+                            b1.HasKey("UserId");
 
                             b1.ToTable("Users");
 
                             b1.WithOwner()
-                                .HasForeignKey("UserID");
+                                .HasForeignKey("UserId");
                         });
 
                     b.Navigation("Email")

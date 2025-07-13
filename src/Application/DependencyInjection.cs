@@ -1,4 +1,6 @@
-﻿using FluentValidation;
+﻿using Application.Contracts;
+using Application.Services;
+using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Application;
@@ -10,6 +12,9 @@ public static class DependencyInjection
         var assembly = typeof(DependencyInjection).Assembly;
         
         services.AddValidatorsFromAssembly(assembly);
+        
+        services.AddScoped<IAuthService, AuthService>();
+        
         
         return services;
     }

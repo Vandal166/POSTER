@@ -1,15 +1,13 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using System.Text;
+using Application.Contracts;
 using Application.DTOs;
+using Domain.Entities;
 using FluentValidation;
 using Infrastructure.Data;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
-using JwtRegisteredClaimNames = System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames;
 
 namespace Web.Endpoints;
 
@@ -24,35 +22,60 @@ public static class AuthEndpoints
         return app;
     }
     
-    public static async Task<IResult> RegisterUser([FromBody] RegisterUserDto dto, [FromServices] PosterDbContext db, [FromServices] IValidator<RegisterUserDto> validator)
+    public static async Task<IResult> RegisterUser([FromBody] RegisterUserDto dto, [FromServices] IAuthService auth)
     {
-        // 1. Validate
+        var result = await auth.RegisterAsync(dto);
+        if (result.IsFailed)
+            return Results.ValidationProblem(result.Errors.ToDictionary(e => e.Message, e => new[] { e.Message }));
+
+        return Results.Created($"/users/{result.Value}", new { result.Value });
+        /*// dto validation
         var validation = await validator.ValidateAsync(dto);
         if (!validation.IsValid)
             return Results.ValidationProblem(validation.ToDictionary());
-
-        // 2. Check uniqueness
-        if (await db.Users.AnyAsync(u => u.Username == dto.Username))
+       
+        var userNameResult = UserName.Create(dto.Username);
+        // var emailResult = Email.Create(dto.Email);
+        
+        var errors = new Dictionary<string, string[]>();
+        if (userNameResult.IsFailed)
+            errors["Username"] = userNameResult.Errors.Select(e => e.Message).ToArray();
+        // if (emailResult.IsFailed)
+        //     errors["Email"] = emailResult.Errors.Select(e => e.Message).ToArray();
+        
+        if (errors.Any())
+            return Results.ValidationProblem(errors);
+        
+        // using the value object value now
+        var userName = userNameResult.Value;
+        // var email = emailResult.Value;
+        
+        // uniqueness check
+        if (await db.Users.AnyAsync(u => u.Username == userName))
             return Results.Conflict(new { message = "Username already taken" });
-
+        
         // 3. Create & save
         var user = new Domain.Entities.User
         {
             ID           = Guid.NewGuid(),
-            Username     = dto.Username,
+            Username     = userName,
             Email        = dto.Email,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password)
         };
         db.Users.Add(user);
         await db.SaveChangesAsync();
-
-        return Results.Created($"/{user.ID}", new { user.ID });
+//TODO transaction?
+        return Results.Created($"/{user.ID}", new { user.ID });*/
     }
     
-    public static async Task<IResult> LoginUser([FromBody] LoginUserDto dto, [FromServices] PosterDbContext db, [FromServices] IValidator<LoginUserDto> validator, 
-        [FromServices] IConfiguration jwtConfig)
+    public static async Task<IResult> LoginUser([FromBody] LoginUserDto dto, [FromServices] IAuthService auth)
     {
-        var validation = await validator.ValidateAsync(dto);
+        var result = await auth.LoginAsync(dto);
+        if (result.IsFailed)
+            return Results.ValidationProblem(result.Errors.ToDictionary(e => e.Message, e => new[] { e.Message }));
+        
+        return Results.Ok(new { token = result.Value });
+        /*var validation = await validator.ValidateAsync(dto);
         if (!validation.IsValid)
             return Results.ValidationProblem(validation.ToDictionary());
 
@@ -90,6 +113,6 @@ public static class AuthEndpoints
         
         var jwtToken = tokenHandler.CreateToken(tokenDescriptor);
 
-        return Results.Ok(new { token = jwtToken });
+        return Results.Ok(new { token = jwtToken });*/
     }
 }
