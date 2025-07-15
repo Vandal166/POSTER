@@ -3,6 +3,7 @@ using System;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Data.Migrations
 {
     [DbContext(typeof(PosterDbContext))]
-    partial class PosterDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250715123424_New entities test")]
+    partial class Newentitiestest
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -43,7 +46,7 @@ namespace Infrastructure.Data.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid?>("ParentCommentID")
+                    b.Property<Guid?>("ParentCommentId")
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("PostID")
@@ -56,7 +59,7 @@ namespace Infrastructure.Data.Migrations
 
                     b.HasIndex("AuthorID");
 
-                    b.HasIndex("ParentCommentID");
+                    b.HasIndex("ParentCommentId");
 
                     b.HasIndex("PostID");
 
@@ -227,7 +230,7 @@ namespace Infrastructure.Data.Migrations
 
                     b.HasOne("Domain.Entities.Comment", "ParentComment")
                         .WithMany("Replies")
-                        .HasForeignKey("ParentCommentID")
+                        .HasForeignKey("ParentCommentId")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Domain.Entities.Post", "Post")

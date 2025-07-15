@@ -9,9 +9,9 @@ public class UnitOfWork : IUnitOfWork
     private readonly PosterDbContext _db;
     public UnitOfWork(PosterDbContext db) => _db = db;
 
-    public Task SaveChangesAsync()
+    public Task SaveChangesAsync(CancellationToken cancellationToken)
     {
-        return  _db.SaveChangesAsync();
+        return  _db.SaveChangesAsync(cancellationToken);
     }
     
     public Task BeginTransactionAsync()

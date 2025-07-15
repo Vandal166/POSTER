@@ -1,5 +1,6 @@
 ﻿using Application.Contracts;
 using Application.DTOs;
+using Domain.Entities;
 using Domain.ValueObjects;
 using FluentResults;
 using FluentValidation;
@@ -7,13 +8,54 @@ using Microsoft.Extensions.Configuration;
 
 namespace Application.Services;
 
+public interface IPostService
+{
+    Task<Result<Guid>> CreatePostAsync(CreatePostDto dto, Guid userID, CancellationToken cancellationToken);
+}
+
+public class PostService : IPostService
+{
+    private readonly IPostRepository _posts;
+    private readonly IUserRepository _users;
+    private readonly IValidator<CreatePostDto> _createPostValidator;
+    private readonly IUnitOfWork _uow;
+
+    public PostService(IPostRepository posts, IUserRepository users ,IValidator<CreatePostDto> createPostValidator, IUnitOfWork uow)
+    {
+        _posts = posts;
+        _users = users;
+        _createPostValidator = createPostValidator;
+        _uow = uow;
+    }
+
+    public async Task<Result<Guid>> CreatePostAsync(CreatePostDto dto, Guid userID, CancellationToken cancellationToken)
+    {
+        var validation = await _createPostValidator.ValidateAsync(dto, cancellationToken);
+        if (!validation.IsValid)
+            return Result.Fail<Guid>(validation.Errors.Select(e => e.ErrorMessage));
+
+        var user = await _users.GetUserAsync(userID, cancellationToken);
+        if (user == null)
+            return Result.Fail<Guid>("User does not exist");
+        
+        var post = Domain.Entities.Post.Create(user, dto.Content);
+        if (post.IsFailed)
+            return Result.Fail<Guid>(post.Errors.Select(e => e.Message));
+
+        await _posts.AddAsync(post.Value, cancellationToken);
+        await _uow.SaveChangesAsync(cancellationToken);
+
+        return Result.Ok(post.Value.ID);
+    }
+}
+
 public class AuthService : IAuthService
 {
     private readonly IValidator<RegisterUserDto> _registerValidator;
     private readonly IValidator<LoginUserDto> _loginValidator;
-    private readonly IUserRepository           _users;
-    private readonly IPasswordHasher          _hasher;
-    private readonly IUnitOfWork              _uow;
+    private readonly IUserRepository _users;
+    private readonly IPasswordHasher _hasher;
+    private readonly IUnitOfWork _uow;
     private readonly ITokenGenerator _jwtTokenGenerator;
     private readonly IConfiguration _jwtConfiguration;
     
@@ -21,18 +63,18 @@ public class AuthService : IAuthService
         IPasswordHasher hasher, IUnitOfWork uow, ITokenGenerator tokenGenerator, IConfiguration configuration)
     {
         _registerValidator = registerValidator;
-        _loginValidator    = loginValidator;
-        _users     = users;
-        _hasher    = hasher;
-        _uow       = uow;
+        _loginValidator = loginValidator;
+        _users = users;
+        _hasher = hasher;
+        _uow = uow;
         _jwtTokenGenerator = tokenGenerator;
         _jwtConfiguration = configuration;
     }
 
-    public async Task<Result<Guid>> RegisterAsync(RegisterUserDto dto)
+    public async Task<Result<Guid>> RegisterAsync(RegisterUserDto dto, CancellationToken cancellationToken)
     {
         // dto validation
-        var validation = await _registerValidator.ValidateAsync(dto);
+        var validation = await _registerValidator.ValidateAsync(dto, cancellationToken);
         if (!validation.IsValid)
             return Result.Fail<Guid>(validation.Errors.Select(e => e.ErrorMessage));
 
@@ -40,29 +82,27 @@ public class AuthService : IAuthService
         var userNameR = UserName.Create(dto.Username);
         var emailR    = Email.Create(dto.Email);
 
-        var errors = userNameR.Errors.Concat(emailR.Errors).ToList();
+        var userResult = Domain.Entities.User.Create(userNameR.Value, emailR.Value, _hasher.Hash(dto.Password));
+        
+        var errors = userNameR.Errors
+            .Concat(emailR.Errors)
+            .Concat(userResult.Errors)
+            .ToList();
+        
         if (errors.Any())
             return Result.Fail<Guid>(errors.Select(e => e.Message));
         
-        var user = new Domain.Entities.User
-        {
-            ID           = Guid.NewGuid(),
-            Username     = userNameR.Value,
-            Email        = emailR.Value,
-            PasswordHash = _hasher.Hash(dto.Password)
-        };
-
         // uniqueness check
-        var uniqueErrors = (await _users.UserExistsAsync(user)).ToList();
+        var uniqueErrors = (await _users.UserExistsAsync(userResult.Value, cancellationToken)).ToList();
         
         if (uniqueErrors.Any())
             return Result.Fail<Guid>(uniqueErrors.Select(e => e.Message));
         
-        await _users.AddAsync(user);
-        await _uow.SaveChangesAsync();
-        return Result.Ok(user.ID);
+        await _users.AddAsync(userResult.Value);
+        await _uow.SaveChangesAsync(cancellationToken);
+        return Result.Ok(userResult.Value.ID);
     }
-
+    
     public async Task<Result<string>> LoginAsync(LoginUserDto dto)
     {
         var validation = await _loginValidator.ValidateAsync(dto);
@@ -73,16 +113,13 @@ public class AuthService : IAuthService
         if (userNameR.IsFailed)
             return Result.Fail<string>(userNameR.Errors.Select(e => e.Message));
 
-        var user = await _users.GetUserByLogin(userNameR.Value);
+        var user = await _users.GetUserAsync(userNameR.Value);
         if (user == null)
             return Result.Fail<string>("User does not exist");
         
-        var passwordHash = _hasher.Hash(dto.Password);
-        if(_hasher.Verify(dto.Password, passwordHash) == false)
+        if(_hasher.Verify(dto.Password, user.PasswordHash) == false)
             return Result.Fail<string>("Invalid password");
-
-        //TODO abstract token generation behind an interface in the Application layer (e.g., ITokenGenerator) and inject it into 
-
+        
         var jwtToken = _jwtTokenGenerator.GenerateToken(user, _jwtConfiguration);
 
         return Result.Ok(jwtToken);

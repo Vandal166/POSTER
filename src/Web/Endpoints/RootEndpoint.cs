@@ -15,9 +15,21 @@ public static class RootEndpoint
                             { "Freezing","Bracing","Chilly","Cool","Mild","Warm","Balmy","Hot","Sweltering","Scorching" }
                         [rng.Next(10)]
                 });
-            })
-            .RequireAuthorization()
-            .WithName("GetWeatherForecast");
+            }).WithName("GetWeatherForecast");
+        
+        app.MapGet("/requireAuth", () =>
+        {
+            var rng = Random.Shared;
+            var summaries = new[] { "Authorized", "Nice", "Work" };
+            return Enumerable.Range(1, 5).Select(i => new
+            {
+                Date         = DateOnly.FromDateTime(DateTime.Now.AddDays(i)),
+                TemperatureC = rng.Next(-20, 55),
+                Summary      = summaries[rng.Next(summaries.Length)]
+            });
+        })
+        .RequireAuthorization()
+        .WithName("GetWeatherForecastWithAuth");
 
         return app;
     }

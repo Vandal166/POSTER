@@ -19,9 +19,13 @@ public static class DependencyInjection
         });
         
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IPostRepository, PostRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddSingleton<IPasswordHasher, BcryptHasher>();
         services.AddScoped<ITokenGenerator, JwtTokenGeneratorService>();
+
+        services.AddHttpContextAccessor();
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
         
         return services;
     }

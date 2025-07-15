@@ -14,8 +14,8 @@ public class JwtTokenGeneratorService : ITokenGenerator
     public string GenerateToken(User user, IConfiguration configuration)
     {
         var claims = new[] {
-            new Claim(JwtRegisteredClaimNames.Sub, user.ID.ToString()),
-            new Claim(JwtRegisteredClaimNames.UniqueName, user.Username.Value)
+            new Claim(ClaimTypes.NameIdentifier, user.ID.ToString()),
+            new Claim(ClaimTypes.Name, user.Username.Value)
         };
         
         var jwtSection = configuration.GetSection("JwtSettings");
