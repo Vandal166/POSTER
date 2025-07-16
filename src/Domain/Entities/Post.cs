@@ -1,8 +1,7 @@
 ﻿using FluentResults;
 
 namespace Domain.Entities;
-public record CreatePostDto(string Content);
-public record PostDto(Guid Id, string AuthorUsername, string Content, DateTime CreatedAt);
+
 /*
  *<Avatar><Username of the author> <Date of post>
  * <Content>
@@ -21,10 +20,10 @@ public sealed class Post : AuditableEntity
     
     private Post(){}
     
-    public static Result<Post> Create(User? author, string content)
+    public static Result<Post> Create(Guid authorID, string content)
     {
-        if (author is null) 
-            return Result.Fail<Post>("Author is required.");
+        if (authorID == Guid.Empty)
+            return Result.Fail<Post>("Author ID cannot be empty.");
         
         if (string.IsNullOrWhiteSpace(content) || content.Length > 280)
             return Result.Fail<Post>("Content must be between 1 and 280 characters.");
@@ -32,8 +31,7 @@ public sealed class Post : AuditableEntity
         var post = new Post
         {
             ID        = Guid.NewGuid(),
-            AuthorID  = author.ID,
-            Author    = author,
+            AuthorID  = authorID,
             Content   = content,
             CreatedAt = DateTime.UtcNow
         };

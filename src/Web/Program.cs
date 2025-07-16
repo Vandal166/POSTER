@@ -98,7 +98,9 @@ var summaries = new[]
 
 app.MapRootEndpoint();
 app.MapAuthEndpoints();
-app.MapPostEndpoints();
+app.MapPostEndpoints()
+    .MapPostLikeEndpoints()
+    .MapPostCommentsEndpoints();
 
 
 app.Run();

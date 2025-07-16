@@ -1,7 +1,6 @@
 ﻿using Application.Contracts;
-using Application.Services;
+using Application.DTOs;
 using Domain.Entities;
-using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Web.Endpoints;
@@ -19,17 +18,16 @@ public static class PostEndpoints
             .ProducesValidationProblem()
             .RequireAuthorization();
 
-        group.MapGet("/{id:guid}", GetPostById)
+        group.MapGet("/{postID:guid}", GetPostById)
             .WithName("GetPostById")
             .Produces<PostDto>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound);
 
-        group.MapGet("/", GetFeed)
+        group.MapGet("/", GetAllPosts)
             .WithName("GetFeed")
             .Produces<List<PostDto>>(StatusCodes.Status200OK);
 
-        // you can add update and delete:
-        group.MapDelete("/{id:guid}", DeletePost)
+        group.MapDelete("/{postID:guid}", DeletePost)
             .WithName("DeletePost")
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound)
@@ -48,22 +46,43 @@ public static class PostEndpoints
         return Results.Created($"/api/v1/posts/{result.Value}", new { Id = result.Value });
     }
 
-    private static async Task<IResult> GetPostById(
-        Guid id,
-        [FromServices] IPostRepository posts,
-        CancellationToken ct)
-    {throw new NotImplementedException(); }
+    private static async Task<IResult> GetPostById(Guid postID, [FromServices] IPostService posts, CancellationToken ct)
+    {
+        var post = await posts.GetPostAsync(postID, ct);
+        if (post == null)
+            return Results.NotFound();
 
-    private static async Task<IResult> GetFeed(
-        [FromServices] IPostRepository posts,
-        [FromServices] IUserRepository currentUser,
-        CancellationToken ct)
-    { throw new NotImplementedException();}
-    
-    private static async Task<IResult> DeletePost(
-        Guid id,
-        [FromServices] IPostRepository posts,
-        [FromServices] IUserRepository currentUser,
-        CancellationToken ct)
-    {throw new NotImplementedException();}
+        var postDto = new PostDto(post.ID, post.Author.Username.Value, post.Content, post.CreatedAt);
+        return Results.Ok(postDto);
+    }
+
+    private static async Task<IResult> GetAllPosts([FromServices] IPostService posts, CancellationToken ct)
+    {
+        var allPosts = new List<Post>();
+        await foreach (var post in posts.GetAllAsync(ct))
+        {
+            allPosts.Add(post);
+        }
+        
+        var postDtos = new List<PostDto>();
+        foreach (var post in allPosts)
+        {
+            postDtos.Add(new PostDto(post.ID, post.Author.Username.Value, post.Content, post.CreatedAt));
+        }
+        return Results.Ok(postDtos);
+    }
+
+    private static async Task<IResult> DeletePost(Guid postID, [FromServices] IPostService posts, [FromServices] ICurrentUserService currentUser, CancellationToken ct)
+    {
+        var post = await posts.GetPostAsync(postID, ct);
+        if (post == null)
+            return Results.NotFound();
+
+        if (post.AuthorID != currentUser.UserID)
+            return Results.Forbid();
+
+        await posts.DeletePostAsync(post.ID, ct);
+        
+        return Results.NoContent();
+    }
 }

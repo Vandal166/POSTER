@@ -20,6 +20,8 @@ public static class DependencyInjection
         
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IPostRepository, PostRepository>();
+        services.AddScoped<IPostLikeRepository, PostLikeRepository>();
+        
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddSingleton<IPasswordHasher, BcryptHasher>();
         services.AddScoped<ITokenGenerator, JwtTokenGeneratorService>();

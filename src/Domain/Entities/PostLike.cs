@@ -11,20 +11,18 @@ public class PostLike : AuditableEntity
     
     private PostLike() { }
     
-    public static Result<PostLike> Create(Post? post, User? user)
+    public static Result<PostLike> Create(Guid postID, Guid userID)
     {
-        if (post is null) 
+        if (postID == Guid.Empty)
             return Result.Fail<PostLike>("Post is required.");
-        if (user is null)
+        if (userID == Guid.Empty)
             return Result.Fail<PostLike>("User is required.");
         
         var like = new PostLike
         {
             ID      = Guid.NewGuid(),
-            PostID  = post.ID,
-            Post    = post,
-            UserID  = user.ID,
-            User    = user,
+            PostID  = postID,
+            UserID  = userID,
             CreatedAt = DateTime.UtcNow
         };
         return Result.Ok(like);

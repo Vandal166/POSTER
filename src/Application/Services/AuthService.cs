@@ -8,47 +8,6 @@ using Microsoft.Extensions.Configuration;
 
 namespace Application.Services;
 
-public interface IPostService
-{
-    Task<Result<Guid>> CreatePostAsync(CreatePostDto dto, Guid userID, CancellationToken cancellationToken);
-}
-
-public class PostService : IPostService
-{
-    private readonly IPostRepository _posts;
-    private readonly IUserRepository _users;
-    private readonly IValidator<CreatePostDto> _createPostValidator;
-    private readonly IUnitOfWork _uow;
-
-    public PostService(IPostRepository posts, IUserRepository users ,IValidator<CreatePostDto> createPostValidator, IUnitOfWork uow)
-    {
-        _posts = posts;
-        _users = users;
-        _createPostValidator = createPostValidator;
-        _uow = uow;
-    }
-
-    public async Task<Result<Guid>> CreatePostAsync(CreatePostDto dto, Guid userID, CancellationToken cancellationToken)
-    {
-        var validation = await _createPostValidator.ValidateAsync(dto, cancellationToken);
-        if (!validation.IsValid)
-            return Result.Fail<Guid>(validation.Errors.Select(e => e.ErrorMessage));
-
-        var user = await _users.GetUserAsync(userID, cancellationToken);
-        if (user == null)
-            return Result.Fail<Guid>("User does not exist");
-        
-        var post = Domain.Entities.Post.Create(user, dto.Content);
-        if (post.IsFailed)
-            return Result.Fail<Guid>(post.Errors.Select(e => e.Message));
-
-        await _posts.AddAsync(post.Value, cancellationToken);
-        await _uow.SaveChangesAsync(cancellationToken);
-
-        return Result.Ok(post.Value.ID);
-    }
-}
-
 public class AuthService : IAuthService
 {
     private readonly IValidator<RegisterUserDto> _registerValidator;

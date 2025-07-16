@@ -1,4 +1,4 @@
-﻿using Domain.Entities;
+﻿using Application.DTOs;
 using FluentValidation;
 
 namespace Application.Validators;
