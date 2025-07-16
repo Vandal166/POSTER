@@ -9,14 +9,12 @@ namespace Application.Services;
 public class PostService : IPostService
 {
     private readonly IPostRepository _posts;
-    private readonly IPostLikeRepository _postLike;
     private readonly IValidator<CreatePostDto> _createPostValidator;
     private readonly IUnitOfWork _uow;
 
-    public PostService(IPostRepository posts, IPostLikeRepository postLike, IValidator<CreatePostDto> createPostValidator, IUnitOfWork uow)
+    public PostService(IPostRepository posts, IValidator<CreatePostDto> createPostValidator, IUnitOfWork uow)
     {
         _posts = posts;
-        _postLike = postLike;
         _createPostValidator = createPostValidator;
         _uow = uow;
     }
@@ -50,44 +48,13 @@ public class PostService : IPostService
     public async Task<Post?> DeletePostAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var post = await _posts.GetPostAsync(id, cancellationToken);
-        if (post == null)
+        if (post is null)
             return null;
-
+        
+        //TODO delete comments and likes before via injecting their repos
         await _posts.DeleteAsync(post, cancellationToken);
         await _uow.SaveChangesAsync(cancellationToken);
         
         return post;
-    }
-
-    public async Task<Result> LikePostAsync(Guid postID, Guid userID, CancellationToken cancellationToken = default)
-    {
-        var post = await _posts.GetPostAsync(postID, cancellationToken);
-        if (post == null)
-            return Result.Fail("Post not found");
-
-        var alreadyLiked = await _postLike.IsPostLikedByUserAsync(postID, userID, cancellationToken);
-        if(alreadyLiked)
-            return Result.Ok();
-        
-        var likeResult = Domain.Entities.PostLike.Create(postID, userID);
-        if (likeResult.IsFailed)
-            return Result.Fail(likeResult.Errors.Select(e => e.Message));
-        
-        await _postLike.AddLikeAsync(likeResult.Value, cancellationToken);
-        await _uow.SaveChangesAsync(cancellationToken);
-        
-        return Result.Ok();
-    }
-    
-    public async Task<Result> UnlikePostAsync(Guid postID, Guid userID, CancellationToken ct = default)
-    {
-        var like = await _postLike.GetLikeAsync(postID, userID, ct);
-        if(like is null)
-            return Result.Fail("Like not found");
-        
-        await _postLike.RemoveLikeAsync(like, ct);
-        await _uow.SaveChangesAsync(ct);
-        
-        return Result.Ok();
     }
 }

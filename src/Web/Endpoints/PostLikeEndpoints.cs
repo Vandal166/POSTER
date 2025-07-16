@@ -28,7 +28,7 @@ public static class PostLikeEndpoints
     }
     
     
-    private static async Task<IResult> LikePost(Guid postID, [FromServices] IPostService posts, [FromServices] ICurrentUserService currentUser,
+    private static async Task<IResult> LikePost(Guid postID, [FromServices] IPostLikeService posts, [FromServices] ICurrentUserService currentUser,
         CancellationToken ct)
     {
         var result = await posts.LikePostAsync(postID, currentUser.UserID, ct);
@@ -38,7 +38,7 @@ public static class PostLikeEndpoints
         return Results.Ok();
     }
     
-    private static async Task<IResult> UnlikePost(Guid postID, [FromServices] IPostService posts, [FromServices] ICurrentUserService currentUser,
+    private static async Task<IResult> UnlikePost(Guid postID, [FromServices] IPostLikeService posts, [FromServices] ICurrentUserService currentUser,
         CancellationToken ct)
     {
         var result = await posts.UnlikePostAsync(postID, currentUser.UserID, ct);

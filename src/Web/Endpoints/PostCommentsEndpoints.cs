@@ -1,4 +1,9 @@
-﻿namespace Web.Endpoints;
+﻿using Application.Contracts;
+using Application.DTOs;
+using Application.Services;
+using Microsoft.AspNetCore.Mvc;
+
+namespace Web.Endpoints;
 
 public static class PostCommentsEndpoints
 {
@@ -26,6 +31,36 @@ public static class PostCommentsEndpoints
             .RequireAuthorization();
         
         return app;
+    }
+    
+    private static async Task<IResult> CreateComment(Guid postID, [FromBody] CreateCommentDto dto, [FromServices] IPostCommentService posts, [FromServices] ICurrentUserService currentUser,
+        CancellationToken ct)
+    {
+        var result = await posts.CreateCommentAsync(postID, currentUser.UserID, dto, ct);
+        if (result.IsFailed)
+            return Results.ValidationProblem(result.Errors.ToDictionary(e => e.Message, e => new[] { e.Message }));
+        
+        return Results.Created($"/api/v1/posts/{postID}/comments/{result}", new { Id = result });
+    }
+    
+    private static async Task<IResult> GetComments(Guid postID, [FromServices] IPostCommentService posts, CancellationToken ct)
+    {
+        var comments = await posts.GetAllCommentsAsync(postID, ct);
+        if (comments.Count == 0)
+            return Results.NotFound();
+
+        var commentDtos = comments.Select(c => new CommentDto(c.ID, c.Author.Username.Value, c.Content, c.CreatedAt)).ToList();
+        return Results.Ok(commentDtos);
+    }
+    
+    private static async Task<IResult> DeleteComment(Guid commentID, [FromServices] IPostCommentService posts, [FromServices] ICurrentUserService currentUser,
+        CancellationToken ct)
+    {
+        var result = await posts.DeleteCommentAsync(commentID, currentUser.UserID, ct);
+        if (result.IsFailed)
+            return Results.ValidationProblem(result.Errors.ToDictionary(e => e.Message, e => new[] { e.Message }));
+
+        return Results.NoContent();
     }
     
 }

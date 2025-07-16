@@ -21,8 +21,15 @@ public class PostRepository : IPostRepository
             .Include(p => p.Author)
             .Include(p => p.Comments)
             .ThenInclude(c => c.Author));
-    
-    
+
+
+    public Task<bool> ExistsAsync(Guid postId, CancellationToken cancellationToken = default)
+    {
+        return _db.Posts
+            .AsNoTracking()
+            .AnyAsync(p => p.ID == postId && p.DeletedAt == null, cancellationToken);
+    }
+
     public async Task<Post?> GetPostAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _db.Posts
@@ -45,6 +52,7 @@ public class PostRepository : IPostRepository
             .ToListAsync(cancellationToken);
     }
 //TODO pagination
+//TODO change to List<Post> with pagination
     public async IAsyncEnumerable<Post> GetAllAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         await foreach (var post in _getPostsQuery(_db).WithCancellation(cancellationToken))

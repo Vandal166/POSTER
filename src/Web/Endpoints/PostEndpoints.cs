@@ -49,7 +49,7 @@ public static class PostEndpoints
     private static async Task<IResult> GetPostById(Guid postID, [FromServices] IPostService posts, CancellationToken ct)
     {
         var post = await posts.GetPostAsync(postID, ct);
-        if (post == null)
+        if (post is null)
             return Results.NotFound();
 
         var postDto = new PostDto(post.ID, post.Author.Username.Value, post.Content, post.CreatedAt);
@@ -75,7 +75,7 @@ public static class PostEndpoints
     private static async Task<IResult> DeletePost(Guid postID, [FromServices] IPostService posts, [FromServices] ICurrentUserService currentUser, CancellationToken ct)
     {
         var post = await posts.GetPostAsync(postID, ct);
-        if (post == null)
+        if (post is null)
             return Results.NotFound();
 
         if (post.AuthorID != currentUser.UserID)
