@@ -1,6 +1,8 @@
 ﻿using System.Runtime.CompilerServices;
 using Application.Contracts;
+using Application.DTOs;
 using Domain.Entities;
+using Infrastructure.Common;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,7 +19,6 @@ public class PostRepository : IPostRepository
     private static readonly Func<PosterDbContext, IAsyncEnumerable<Post>> _getPostsQuery = EF.CompileAsyncQuery(
         (PosterDbContext db) => db.Posts
             .AsNoTracking()
-            .Where(p => p.DeletedAt == null)
             .Include(p => p.Author)
             .Include(p => p.Comments)
             .ThenInclude(c => c.Author));
@@ -27,14 +28,12 @@ public class PostRepository : IPostRepository
     {
         return _db.Posts
             .AsNoTracking()
-            .AnyAsync(p => p.ID == postId && p.DeletedAt == null, cancellationToken);
+            .AnyAsync(p => p.ID == postId, cancellationToken);
     }
 
     public async Task<Post?> GetPostAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _db.Posts
-            .AsNoTracking()
-            .Where(p => p.DeletedAt == null)
             .Include(p => p.Author)
             .Include(p => p.Comments)
             .ThenInclude(c => c.Author)
@@ -45,20 +44,27 @@ public class PostRepository : IPostRepository
     {
         return await _db.Posts
             .AsNoTracking()
-            .Where(p => p.DeletedAt == null && p.AuthorID == userId)
+            .Where(p => p.AuthorID == userId)
             .Include(p => p.Author)
             .Include(p => p.Comments)
             .ThenInclude(c => c.Author)
             .ToListAsync(cancellationToken);
     }
-//TODO pagination
-//TODO change to List<Post> with pagination
-    public async IAsyncEnumerable<Post> GetAllAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+
+    public async Task<IPagedList<PostDto>> GetAllAsync(int page, int pageSize, CancellationToken cancellationToken = default)
     {
-        await foreach (var post in _getPostsQuery(_db).WithCancellation(cancellationToken))
-        {
-            yield return post;
-        }
+        var postsResponse = _db.Posts
+            .AsNoTracking()
+            .OrderByDescending(p => p.CreatedAt)
+            .Select(p => new PostDto(
+                p.ID,
+                p.Author.Username.Value,
+                p.Content,
+                p.CreatedAt
+            ));
+        
+        var posts = await PagedList<PostDto>.CreateAsync(postsResponse, page, pageSize, cancellationToken);
+        return posts; 
     }
 
     public Task AddAsync(Post post, CancellationToken cancellationToken = default)
@@ -75,8 +81,7 @@ public class PostRepository : IPostRepository
 
     public Task DeleteAsync(Post post, CancellationToken cancellationToken = default)
     {
-        post.MarkDeleted();
-        _db.Posts.Update(post);
+        _db.Posts.Remove(post);
         return Task.CompletedTask;
     }
 }

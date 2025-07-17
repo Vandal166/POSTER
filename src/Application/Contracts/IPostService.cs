@@ -7,7 +7,9 @@ namespace Application.Contracts;
 public interface IPostService
 {
     Task<Result<Guid>> CreatePostAsync(CreatePostDto dto, Guid userID, CancellationToken cancellationToken);
-    IAsyncEnumerable<Post> GetAllAsync(CancellationToken cancellationToken = default);
+
+    Task<IPagedList<PostDto>> GetAllAsync(int page, int pageSize, CancellationToken cancellationToken = default);
+    
     Task<Post?> GetPostAsync(Guid id, CancellationToken cancellationToken = default);
     Task<Post?> DeletePostAsync(Guid id, CancellationToken cancellationToken = default);
 }

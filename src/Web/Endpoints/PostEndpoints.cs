@@ -25,7 +25,7 @@ public static class PostEndpoints
 
         group.MapGet("/", GetAllPosts)
             .WithName("GetFeed")
-            .Produces<List<PostDto>>(StatusCodes.Status200OK);
+            .Produces<PaginatedResponse<PostDto>>(StatusCodes.Status200OK);
 
         group.MapDelete("/{postID:guid}", DeletePost)
             .WithName("DeletePost")
@@ -56,20 +56,19 @@ public static class PostEndpoints
         return Results.Ok(postDto);
     }
 
-    private static async Task<IResult> GetAllPosts([FromServices] IPostService posts, CancellationToken ct)
+    private static async Task<IResult> GetAllPosts([FromQuery] int page, [FromQuery] int pageSize, [FromServices] IPostService posts, CancellationToken ct)
     {
-        var allPosts = new List<Post>();
-        await foreach (var post in posts.GetAllAsync(ct))
-        {
-            allPosts.Add(post);
-        }
-        
-        var postDtos = new List<PostDto>();
-        foreach (var post in allPosts)
-        {
-            postDtos.Add(new PostDto(post.ID, post.Author.Username.Value, post.Content, post.CreatedAt));
-        }
-        return Results.Ok(postDtos);
+        var paged = await posts.GetAllAsync(page, pageSize, ct);
+        return Results.Ok
+        (
+            new PaginatedResponse<PostDto>
+            (
+                Items: paged.Items,
+                Page: paged.Page,
+                PageSize: paged.PageSize,
+                TotalCount: paged.TotalCount
+            )
+        );
     }
 
     private static async Task<IResult> DeletePost(Guid postID, [FromServices] IPostService posts, [FromServices] ICurrentUserService currentUser, CancellationToken ct)

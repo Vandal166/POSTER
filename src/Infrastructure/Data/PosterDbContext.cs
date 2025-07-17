@@ -19,6 +19,12 @@ public class PosterDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+        /*
+         *  Entity 'User' has a global query filter defined and is the required end of a relationship with the entity 'Post'. This may lead to unexpected results when the required entity is filtered out. Either configure the na
+vigation as optional, or define matching query filters for both entities in the navigation.
+etc
+         */
+        
         // ------ User ------
         modelBuilder.Entity<User>(b =>
         {
@@ -27,6 +33,8 @@ public class PosterDbContext : DbContext
             b.OwnsOne(u => u.Email,    x => x.Property(p => p.Value).HasColumnName("Email").IsRequired());
             b.Property(u => u.PasswordHash).HasMaxLength(256).IsRequired();
             b.Property(p => p.CreatedAt).HasDefaultValueSql("now()");
+            
+            b.HasQueryFilter(u => u.DeletedAt == null); // soft delete filter
         });
 
         // ------ Post ------
@@ -48,7 +56,8 @@ public class PosterDbContext : DbContext
             b.Property(c => c.Content).IsRequired();
             b.HasOne(c => c.Post)
                 .WithMany(p => p.Comments)
-                .HasForeignKey(c => c.PostID);
+                .HasForeignKey(c => c.PostID)
+                .OnDelete(DeleteBehavior.Cascade); // removing a post will remove its comments
             b.HasOne(c => c.Author)
                 .WithMany()
                 .HasForeignKey(c => c.AuthorID)
@@ -56,7 +65,7 @@ public class PosterDbContext : DbContext
             b.HasOne(c => c.ParentComment)
                 .WithMany(c => c.Replies)
                 .HasForeignKey(c => c.ParentCommentID)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade); // removing a parent comment will remove its replies
             b.Property(p => p.CreatedAt).HasDefaultValueSql("now()");
         });
        
@@ -66,7 +75,8 @@ public class PosterDbContext : DbContext
             b.HasKey(pl => pl.ID);
             b.HasOne(pl => pl.Post)
                 .WithMany()
-                .HasForeignKey(pl => pl.PostID);
+                .HasForeignKey(pl => pl.PostID)
+                .OnDelete(DeleteBehavior.Cascade); // removing a post will remove its likes
             b.HasOne(pl => pl.User)
                 .WithMany()
                 .HasForeignKey(pl => pl.UserID);
@@ -79,7 +89,8 @@ public class PosterDbContext : DbContext
             b.HasKey(cl => cl.ID);
             b.HasOne(cl => cl.Comment)
                 .WithMany()
-                .HasForeignKey(cl => cl.CommentID);
+                .HasForeignKey(cl => cl.CommentID)
+                .OnDelete(DeleteBehavior.Cascade); // removing a comment will remove its likes
             b.HasOne(cl => cl.User)
                 .WithMany()
                 .HasForeignKey(cl => cl.UserID);
@@ -92,7 +103,8 @@ public class PosterDbContext : DbContext
             b.HasKey(v => v.ID);
             b.HasOne(v => v.Post)
                 .WithMany()
-                .HasForeignKey(v => v.PostID);
+                .HasForeignKey(v => v.PostID)
+                .OnDelete(DeleteBehavior.Cascade); // removing a post will remove its views
             b.HasOne(v => v.User)
                 .WithMany()
                 .HasForeignKey(v => v.UserID);

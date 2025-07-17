@@ -2,7 +2,7 @@
 
 public abstract class AuditableEntity
 {
-    public Guid ID { get; protected set; }
+    public Guid ID { get; protected set; } // TODO an Snowflake ID would be better
     public DateTime CreatedAt { get; protected set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; protected set; }
     public DateTime? DeletedAt { get; protected set; }

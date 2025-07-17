@@ -13,19 +13,17 @@ public class PostCommentRepository : IPostCommentRepository
         _db = db;
     }
 
-    public async Task<Comment?> GetCommentAsync(Guid postID, CancellationToken cancellationToken = default)
+    public async Task<Comment?> GetCommentAsync(Guid commentID, CancellationToken cancellationToken = default)
     {
         return await _db.Comments
-            .AsNoTracking()
-            .Where(c => c.DeletedAt == null)
-            .FirstOrDefaultAsync(c => c.PostID == postID, cancellationToken);
+            .FirstOrDefaultAsync(c => c.ID == commentID, cancellationToken);
     }
 
     public async Task<List<Comment>> GetCommentsByPostAsync(Guid postID, CancellationToken cancellationToken = default)
     {
         return await _db.Comments
             .AsNoTracking()
-            .Where(c => c.PostID == postID && c.DeletedAt == null)
+            .Where(c => c.PostID == postID)
             .Include(c => c.Author)
             .ToListAsync(cancellationToken);
     }
@@ -43,8 +41,7 @@ public class PostCommentRepository : IPostCommentRepository
 
     public Task DeleteAsync(Comment comment, CancellationToken cancellationToken = default)
     {
-        comment.MarkDeleted();
-        _db.Comments.Update(comment);
+        _db.Comments.Remove(comment);
         return Task.CompletedTask;
     }
 }

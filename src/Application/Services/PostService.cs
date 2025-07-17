@@ -40,9 +40,9 @@ public class PostService : IPostService
         return await _posts.GetPostAsync(id, cancellationToken);
     }
     
-    public IAsyncEnumerable<Post> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<IPagedList<PostDto>> GetAllAsync(int page, int pageSize, CancellationToken cancellationToken = default)
     {
-        return _posts.GetAllAsync(cancellationToken);
+        return await _posts.GetAllAsync(page, pageSize, cancellationToken);
     }
     
     public async Task<Post?> DeletePostAsync(Guid id, CancellationToken cancellationToken = default)

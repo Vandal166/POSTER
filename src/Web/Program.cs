@@ -1,6 +1,8 @@
 using System.Text;
 using Application;
+using Application.Contracts;
 using Infrastructure;
+using Infrastructure.Seeding;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -43,6 +45,9 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services
     .AddApplication()
     .AddInfrastructure(builder.Configuration);
+
+builder.Services
+    .AddScoped<IDataSeeder, DataSeeder>();
 
 builder.Host.UseSerilog((context, configuration) =>
 {
@@ -102,6 +107,16 @@ app.MapPostEndpoints()
     .MapPostLikeEndpoints()
     .MapPostCommentsEndpoints();
 
+/*
+using (var scope = app.Services.CreateScope())
+{
+    var seeder = scope.ServiceProvider.GetRequiredService<IDataSeeder>();
+    await seeder.SeedAsync(
+        userCount:        50,
+        postsPerUser:     20,
+        commentsPerPost:  10, CancellationToken.None
+    );
+}*/
 
 app.Run();
 

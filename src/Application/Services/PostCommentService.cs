@@ -41,6 +41,11 @@ public class PostCommentService : IPostCommentService
 
         return Result.Ok();
     }
+    
+    public async Task<Comment?> GetCommentAsync(Guid commentID, CancellationToken cancellationToken = default)
+    {
+        return await _postComments.GetCommentAsync(commentID, cancellationToken);
+    }
 
     public async Task<List<Comment>> GetAllCommentsAsync(Guid postID, CancellationToken cancellationToken = default)
     {
@@ -54,11 +59,15 @@ public class PostCommentService : IPostCommentService
         return comments;
     }
 
-    public async Task<Result> DeleteCommentAsync(Guid commentID, Guid userID, CancellationToken cancellationToken = default)
+    public async Task<Result> DeleteCommentAsync(Guid postID, Comment comment, CancellationToken cancellationToken = default)
     {
-        var comment = await _postComments.GetCommentAsync(commentID, cancellationToken);
-        if (comment is null)
-            return Result.Fail("Comment not found");
+        var post = await _posts.GetPostAsync(postID, cancellationToken);
+        
+        if (post is null)
+            return Result.Fail("Post not found");
+        
+        if(post.ID != comment.PostID)
+            return Result.Fail("Comment does not belong to this post");
 
         await _postComments.DeleteAsync(comment, cancellationToken);
         await _uow.SaveChangesAsync(cancellationToken);

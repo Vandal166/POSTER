@@ -53,10 +53,17 @@ public static class PostCommentsEndpoints
         return Results.Ok(commentDtos);
     }
     
-    private static async Task<IResult> DeleteComment(Guid commentID, [FromServices] IPostCommentService posts, [FromServices] ICurrentUserService currentUser,
+    private static async Task<IResult> DeleteComment(Guid postID, Guid commentID, [FromServices] IPostCommentService postComments, [FromServices] ICurrentUserService currentUser,
         CancellationToken ct)
     {
-        var result = await posts.DeleteCommentAsync(commentID, currentUser.UserID, ct);
+        var comment = await postComments.GetCommentAsync(commentID, ct);
+        if(comment is null)
+            return Results.NotFound();
+        
+        if (comment.AuthorID != currentUser.UserID)
+            return Results.Forbid();
+        
+        var result = await postComments.DeleteCommentAsync(postID, comment, ct);
         if (result.IsFailed)
             return Results.ValidationProblem(result.Errors.ToDictionary(e => e.Message, e => new[] { e.Message }));
 
