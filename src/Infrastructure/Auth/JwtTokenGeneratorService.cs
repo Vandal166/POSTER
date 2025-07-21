@@ -9,6 +9,7 @@ using JwtRegisteredClaimNames = System.IdentityModel.Tokens.Jwt.JwtRegisteredCla
 
 namespace Infrastructure.Auth;
 
+/*
 public class JwtTokenGeneratorService : ITokenGenerator
 {
     public string GenerateToken(User user, IConfiguration configuration)
@@ -39,4 +40,4 @@ public class JwtTokenGeneratorService : ITokenGenerator
         
         return tokenHandler.CreateToken(tokenDescriptor);
     }
-}
+}*/

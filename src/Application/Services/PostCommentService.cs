@@ -47,16 +47,12 @@ public class PostCommentService : IPostCommentService
         return await _postComments.GetCommentAsync(commentID, cancellationToken);
     }
 
-    public async Task<List<Comment>> GetAllCommentsAsync(Guid postID, CancellationToken cancellationToken = default)
+    public async Task<IPagedList<CommentDto>> GetAllCommentsAsync(Guid postID, int page, int pageSize, CancellationToken cancellationToken = default)
     {
         if (await _posts.ExistsAsync(postID, cancellationToken) == false)
-            return new List<Comment>();
-        
-        var comments = await _postComments.GetCommentsByPostAsync(postID, cancellationToken);
-        if (comments.Count == 0)
-            return new List<Comment>();
+            throw new KeyNotFoundException("Post not found");
 
-        return comments;
+        return await _postComments.GetCommentsByPostAsync(postID, page, pageSize, cancellationToken);
     }
 
     public async Task<Result> DeleteCommentAsync(Guid postID, Comment comment, CancellationToken cancellationToken = default)

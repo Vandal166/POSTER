@@ -16,7 +16,7 @@ public static class PostEndpoints
             .WithName("CreatePost")
             .Produces<Guid>(StatusCodes.Status201Created)
             .ProducesValidationProblem()
-            .RequireAuthorization();
+            .RequireAuthorization("CanCreatePost");
 
         group.MapGet("/{postID:guid}", GetPostById)
             .WithName("GetPostById")
@@ -35,7 +35,7 @@ public static class PostEndpoints
         
         return app;
     }
-
+    
     private static async Task<IResult> CreatePost([FromBody] CreatePostDto dto, [FromServices] IPostService posts, [FromServices] ICurrentUserService currentUser,
         CancellationToken ct)
     {

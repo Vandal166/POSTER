@@ -15,14 +15,6 @@ public class PostRepository : IPostRepository
     {
         _db = db;
     }
-    
-    private static readonly Func<PosterDbContext, IAsyncEnumerable<Post>> _getPostsQuery = EF.CompileAsyncQuery(
-        (PosterDbContext db) => db.Posts
-            .AsNoTracking()
-            .Include(p => p.Author)
-            .Include(p => p.Comments)
-            .ThenInclude(c => c.Author));
-
 
     public Task<bool> ExistsAsync(Guid postId, CancellationToken cancellationToken = default)
     {
@@ -63,8 +55,7 @@ public class PostRepository : IPostRepository
                 p.CreatedAt
             ));
         
-        var posts = await PagedList<PostDto>.CreateAsync(postsResponse, page, pageSize, cancellationToken);
-        return posts; 
+       return await PagedList<PostDto>.CreateAsync(postsResponse, page, pageSize, cancellationToken);
     }
 
     public Task AddAsync(Post post, CancellationToken cancellationToken = default)

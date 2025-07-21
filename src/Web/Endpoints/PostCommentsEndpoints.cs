@@ -21,8 +21,7 @@ public static class PostCommentsEndpoints
 
         group.MapGet("/", GetComments)
             .WithName("GetComments")
-            .Produces<List<CommentDto>>(StatusCodes.Status200OK)
-            .Produces(StatusCodes.Status404NotFound);
+            .Produces<PaginatedResponse<CommentDto>>(StatusCodes.Status200OK);
 
         group.MapDelete("/{commentID:guid}", DeleteComment)
             .WithName("DeleteComment")
@@ -43,14 +42,28 @@ public static class PostCommentsEndpoints
         return Results.Created($"/api/v1/posts/{postID}/comments/{result}", new { Id = result });
     }
     
-    private static async Task<IResult> GetComments(Guid postID, [FromServices] IPostCommentService posts, CancellationToken ct)
+    private static async Task<IResult> GetComments(Guid postID, [FromQuery] int page, [FromQuery] int pageSize, [FromServices] IPostCommentService posts, CancellationToken ct)
     {
-        var comments = await posts.GetAllCommentsAsync(postID, ct);
-        if (comments.Count == 0)
-            return Results.NotFound();
+        try
+        {
+            var paged = await posts.GetAllCommentsAsync(postID, page, pageSize, ct);
+           
+            return Results.Ok
+            (
+                new PaginatedResponse<CommentDto>
+                (
+                    Items: paged.Items,
+                    Page: paged.Page,
+                    PageSize: paged.PageSize,
+                    TotalCount: paged.TotalCount
+                )
+            );
 
-        var commentDtos = comments.Select(c => new CommentDto(c.ID, c.Author.Username.Value, c.Content, c.CreatedAt)).ToList();
-        return Results.Ok(commentDtos);
+        }
+        catch (KeyNotFoundException)
+        {
+            return Results.NotFound();
+        }
     }
     
     private static async Task<IResult> DeleteComment(Guid postID, Guid commentID, [FromServices] IPostCommentService postComments, [FromServices] ICurrentUserService currentUser,

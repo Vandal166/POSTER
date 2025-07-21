@@ -1,0 +1,19 @@
+﻿@page
+@model Web.Pages.Register
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Register</title>
+</head>
+<body>
+    <h1>Register</h1>
+    <form method="post">
+        @*<label>Username: <input asp-for="Dto.Username" type="text" /></label><br/>*@
+        <label>Email: <input asp-for="Dto.Email" type="email" /></label><br/>
+        <label>Password: <input asp-for="Dto.Password" type="password" /></label><br/>
+        <button type="submit">Register</button>
+    </form>
+    <div asp-validation-summary="ModelOnly"></div>
+</body>
+</html>

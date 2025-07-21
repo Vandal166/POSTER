@@ -17,6 +17,7 @@ public static class DependencyInjection
         {
             options.UseNpgsql(configuration.GetConnectionString("Poster_DB"));
         });
+        services.AddScoped<IAuthService, AuthService>();
         
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IPostRepository, PostRepository>();
@@ -25,7 +26,8 @@ public static class DependencyInjection
         
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddSingleton<IPasswordHasher, BcryptHasher>();
-        services.AddScoped<ITokenGenerator, JwtTokenGeneratorService>();
+        services.AddScoped<ITokenGenerator<HttpResponseMessage>, ROPTokenGeneratorService>();
+        //services.AddScoped<ITokenGenerator, JwtTokenGeneratorService>();
 
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUserService, CurrentUserService>();

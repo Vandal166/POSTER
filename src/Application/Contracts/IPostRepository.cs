@@ -15,11 +15,3 @@ public interface IPostRepository
     Task UpdateAsync(Post post, CancellationToken cancellationToken = default);
     Task DeleteAsync(Post post, CancellationToken cancellationToken = default);
 }
-
-public interface IPagedList<T>
-{
-    List<T> Items { get; }
-    int TotalCount { get; }
-    int Page { get; }
-    int PageSize { get; }
-}

@@ -1,5 +1,7 @@
 ﻿using Application.Contracts;
+using Application.DTOs;
 using Domain.Entities;
+using Infrastructure.Common;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,13 +21,20 @@ public class PostCommentRepository : IPostCommentRepository
             .FirstOrDefaultAsync(c => c.ID == commentID, cancellationToken);
     }
 
-    public async Task<List<Comment>> GetCommentsByPostAsync(Guid postID, CancellationToken cancellationToken = default)
+    public async Task<IPagedList<CommentDto>> GetCommentsByPostAsync(Guid postID, int page, int pageSize, CancellationToken cancellationToken = default)
     {
-        return await _db.Comments
+        var commentsResponse =  _db.Comments
             .AsNoTracking()
+            .OrderByDescending(p => p.CreatedAt)
             .Where(c => c.PostID == postID)
-            .Include(c => c.Author)
-            .ToListAsync(cancellationToken);
+            .Select(c => new CommentDto(
+                c.ID,
+                c.Author.Username.Value,
+                c.Content,
+                c.CreatedAt
+            ));
+        
+        return await PagedList<CommentDto>.CreateAsync(commentsResponse, page, pageSize, cancellationToken);
     }
 
     public Task AddAsync(Comment comment, CancellationToken cancellationToken = default)

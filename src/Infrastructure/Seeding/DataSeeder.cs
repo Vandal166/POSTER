@@ -1,10 +1,15 @@
 ﻿using Bogus;
 using Domain.Entities;
 using Application.Contracts;
+using Application.DTOs;
 using Domain.ValueObjects;
 
 namespace Infrastructure.Seeding;
 
+
+/// <summary>
+/// Used for seeding fake data into the database.
+/// </summary>
 public class DataSeeder : IDataSeeder
 {
     private readonly IUserRepository _users;

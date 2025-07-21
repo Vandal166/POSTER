@@ -22,7 +22,9 @@ public class CurrentUserService : ICurrentUserService
                        ?? throw new InvalidOperationException("No http context");
 
             // subject contain NameIdentifier Name which are user ID and UserName
-            var subject = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            var subject = user.FindFirstValue(ClaimTypes.NameIdentifier)
+                              ?? user.FindFirstValue(JwtRegisteredClaimNames.Sub)
+                              ?? throw new InvalidOperationException("No user ID claim found.");
 
             if (Guid.TryParse(subject, out var id))
                 return id;

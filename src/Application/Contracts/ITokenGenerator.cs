@@ -1,9 +1,8 @@
-﻿using Domain.Entities;
-using Microsoft.Extensions.Configuration;
+﻿namespace Application.Contracts;
 
-namespace Application.Contracts;
-
-public interface ITokenGenerator
+public interface ITokenGenerator<TType> where TType : class
 {
-    string GenerateToken(User user, IConfiguration configuration);
+    Task<TType> GenerateTokenAsync(HttpClient client, FormUrlEncodedContent formUrlEncodedContent, CancellationToken cancellationToken = default);
+    
+    Task<TType> SendRequestAsync(HttpClient client, HttpRequestMessage request, CancellationToken cancellationToken = default);
 }
