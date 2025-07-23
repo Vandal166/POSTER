@@ -34,7 +34,7 @@ public class Register : PageModel
                 ModelState.AddModelError(string.Empty, e.Message);
             return Page();
         }
-
+        
         // redirect to home or protected area
         return RedirectToPage("/Login");
     }

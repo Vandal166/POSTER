@@ -41,7 +41,7 @@ public class CompleteProfile : PageModel
         }
         
         //if successful, redirect to home or protected area
-        
+        //TODO its not redirecting
         return RedirectToPage("/Index");
     }
 }

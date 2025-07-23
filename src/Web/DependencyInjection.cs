@@ -99,22 +99,15 @@ public static class DependencyInjection
                 });
 
 
-        services.AddAuthorization(options =>
-        {
-            // Default policy applied to everything that has [Authorize]
-            options.DefaultPolicy = new AuthorizationPolicyBuilder()
+        services.AddAuthorizationBuilder()
+            .SetDefaultPolicy(new AuthorizationPolicyBuilder()
                 .RequireAuthenticatedUser()
                 .RequireClaim("profileCompleted", "true")
-                .Build();
-            
-            // policy for users who have completed their profile
-            options.AddPolicy("ProfileCompleted", policy =>
-                policy.RequireClaim("profileCompleted", "true"));
-            
-            // policy for users who have not completed their profile
-            options.AddPolicy("ProfileNotCompleted", policy =>
+                .Build())
+            .AddPolicy("ProfileCompleted", policy =>
+                policy.RequireClaim("profileCompleted", "true"))
+            .AddPolicy("ProfileNotCompleted", policy =>
                 policy.RequireClaim("profileCompleted", "false"));
-        });
 
         
         // named HttpClient for talking to Keycloak’s Token & Admin APIs

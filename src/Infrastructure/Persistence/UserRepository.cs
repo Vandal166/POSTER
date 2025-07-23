@@ -21,6 +21,12 @@ public class UserRepository : IUserRepository
         return Task.CompletedTask;
     }
     
+    public Task UpdateAsync(User user)
+    {
+        _db.Users.Update(user);
+        return Task.CompletedTask;
+    }
+    
     public async Task<IEnumerable<IError>> UserExistsAsync(User user, CancellationToken cancellationToken)
     {
         /*var errors = new List<IError>();

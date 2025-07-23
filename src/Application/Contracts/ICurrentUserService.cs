@@ -1,4 +1,5 @@
-﻿using Domain.ValueObjects;
+﻿using System.Security.Claims;
+using Domain.ValueObjects;
 
 namespace Application.Contracts;
 
@@ -11,6 +12,8 @@ public interface ICurrentUserService
     //email etc
     Dictionary<string, string[]> Attributes { get; }
     List<string> RealmRoles { get;}
+
+    Task RefreshClaims(ClaimsPrincipal newPrincipal);
     /*Guid UserID { get; }
     UserName UserName { get; }*/
 }

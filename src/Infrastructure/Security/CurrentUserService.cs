@@ -2,6 +2,9 @@
 using Application.Contracts;
 using System.Security.Claims;
 using Domain.ValueObjects;
+using Infrastructure.Auth;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 
 namespace Infrastructure.Security;
@@ -40,4 +43,23 @@ public class CurrentUserService : ICurrentUserService
             .Select(c => c.Value)
             .ToList();
     
+    
+    public async Task RefreshClaims(ClaimsPrincipal newPrincipal)
+    {
+        if (_http.HttpContext == null)
+            throw new InvalidOperationException("HTTP context is not available.");
+        
+        var existingAuthResult = await _http.HttpContext.AuthenticateAsync();
+        if (!existingAuthResult.Succeeded)
+            throw new InvalidOperationException("No authenticated user to refresh claims for.");
+        
+        // re‑issuing the cookie
+        var newProps = existingAuthResult.Properties ?? new AuthenticationProperties
+        {
+            IsPersistent = true
+        };
+        newProps.IssuedUtc = DateTimeOffset.UtcNow; // updating the issued time
+        
+        await _http.HttpContext!.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, newPrincipal, newProps);
+    }
 }

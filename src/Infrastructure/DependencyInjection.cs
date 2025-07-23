@@ -18,6 +18,10 @@ public static class DependencyInjection
         {
             options.UseNpgsql(configuration.GetConnectionString("Poster_DB"));
         });
+        services.AddScoped<IAdminTokenProvider, AdminTokenProvider>();
+        services.AddScoped<IPasswordTokenProvider, PasswordTokenProvider>();
+        services.AddScoped<IKeycloakUserCreator, KeycloakUserCreator>();
+        services.AddScoped<IUserSynchronizer, UserSynchronizer>();
         services.AddScoped<IAuthService, AuthService>();
         
         services.AddScoped<IUserRepository, UserRepository>();
