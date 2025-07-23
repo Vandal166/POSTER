@@ -41,7 +41,7 @@ public static class DependencyInjection
                         {
                             // we call Keycloak admin API to get the latest user state
                             var updatedUser = await context.HttpContext.RequestServices
-                                .GetRequiredService<IKeycloakService>()
+                                .GetRequiredService<IKeycloakUserService>()
                                 .GetUserAsync(userId);
 
                             if (updatedUser == null || updatedUser.Enabled == false) // if the user is not found/disable then a change occurred on Keycloak side

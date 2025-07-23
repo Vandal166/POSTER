@@ -20,7 +20,7 @@ public static class DependencyInjection
         });
         services.AddScoped<IAdminTokenProvider, AdminTokenProvider>();
         services.AddScoped<IPasswordTokenProvider, PasswordTokenProvider>();
-        services.AddScoped<IKeycloakUserCreator, KeycloakUserCreator>();
+        services.AddScoped<IKeycloakUserService, KeycloakUserService>();
         services.AddScoped<IUserSynchronizer, UserSynchronizer>();
         services.AddScoped<IAuthService, AuthService>();
         
@@ -37,7 +37,7 @@ public static class DependencyInjection
 
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
-        services.AddScoped<IKeycloakService, KeycloakService>();
+        services.AddScoped<IKeycloakUserService, KeycloakUserService>();
         
         return services;
     }
