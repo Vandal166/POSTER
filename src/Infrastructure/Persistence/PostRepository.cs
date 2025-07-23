@@ -50,7 +50,7 @@ public class PostRepository : IPostRepository
             .OrderByDescending(p => p.CreatedAt)
             .Select(p => new PostDto(
                 p.ID,
-                p.Author.Username.Value,
+                p.Author.Username,
                 p.Content,
                 p.CreatedAt
             ));

@@ -39,21 +39,22 @@ public static class PostEndpoints
     private static async Task<IResult> CreatePost([FromBody] CreatePostDto dto, [FromServices] IPostService posts, [FromServices] ICurrentUserService currentUser,
         CancellationToken ct)
     {
-        var result = await posts.CreatePostAsync(dto, currentUser.UserID, ct);
+        /*var result = await posts.CreatePostAsync(dto, currentUser.UserID, ct);
         if(result.IsFailed)
             return Results.ValidationProblem(result.Errors.ToDictionary(e => e.Message, e => new[] { e.Message }));
         
-        return Results.Created($"/api/v1/posts/{result.Value}", new { Id = result.Value });
+        return Results.Created($"/api/v1/posts/{result.Value}", new { Id = result.Value });*/
+        return null;
     }
 
     private static async Task<IResult> GetPostById(Guid postID, [FromServices] IPostService posts, CancellationToken ct)
     {
-        var post = await posts.GetPostAsync(postID, ct);
+        /*var post = await posts.GetPostAsync(postID, ct);
         if (post is null)
             return Results.NotFound();
 
         var postDto = new PostDto(post.ID, post.Author.Username.Value, post.Content, post.CreatedAt);
-        return Results.Ok(postDto);
+        return Results.Ok(postDto);*/ return null;
     }
 
     private static async Task<IResult> GetAllPosts([FromQuery] int page, [FromQuery] int pageSize, [FromServices] IPostService posts, CancellationToken ct)
@@ -73,14 +74,14 @@ public static class PostEndpoints
 
     private static async Task<IResult> DeletePost(Guid postID, [FromServices] IPostService posts, [FromServices] ICurrentUserService currentUser, CancellationToken ct)
     {
-        var post = await posts.GetPostAsync(postID, ct);
+        /*var post = await posts.GetPostAsync(postID, ct);
         if (post is null)
             return Results.NotFound();
 
         if (post.AuthorID != currentUser.UserID)
             return Results.Forbid();
 
-        await posts.DeletePostAsync(post.ID, ct);
+        await posts.DeletePostAsync(post.ID, ct);*/
         
         return Results.NoContent();
     }

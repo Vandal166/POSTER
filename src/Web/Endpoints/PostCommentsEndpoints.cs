@@ -35,11 +35,12 @@ public static class PostCommentsEndpoints
     private static async Task<IResult> CreateComment(Guid postID, [FromBody] CreateCommentDto dto, [FromServices] IPostCommentService posts, [FromServices] ICurrentUserService currentUser,
         CancellationToken ct)
     {
-        var result = await posts.CreateCommentAsync(postID, currentUser.UserID, dto, ct);
+        /*var result = await posts.CreateCommentAsync(postID, currentUser.UserID, dto, ct);
         if (result.IsFailed)
             return Results.ValidationProblem(result.Errors.ToDictionary(e => e.Message, e => new[] { e.Message }));
         
-        return Results.Created($"/api/v1/posts/{postID}/comments/{result}", new { Id = result });
+        return Results.Created($"/api/v1/posts/{postID}/comments/{result}", new { Id = result });*/
+        return null;
     }
     
     private static async Task<IResult> GetComments(Guid postID, [FromQuery] int page, [FromQuery] int pageSize, [FromServices] IPostCommentService posts, CancellationToken ct)
@@ -69,7 +70,7 @@ public static class PostCommentsEndpoints
     private static async Task<IResult> DeleteComment(Guid postID, Guid commentID, [FromServices] IPostCommentService postComments, [FromServices] ICurrentUserService currentUser,
         CancellationToken ct)
     {
-        var comment = await postComments.GetCommentAsync(commentID, ct);
+        /*var comment = await postComments.GetCommentAsync(commentID, ct);
         if(comment is null)
             return Results.NotFound();
         
@@ -78,7 +79,7 @@ public static class PostCommentsEndpoints
         
         var result = await postComments.DeleteCommentAsync(postID, comment, ct);
         if (result.IsFailed)
-            return Results.ValidationProblem(result.Errors.ToDictionary(e => e.Message, e => new[] { e.Message }));
+            return Results.ValidationProblem(result.Errors.ToDictionary(e => e.Message, e => new[] { e.Message }));*/
 
         return Results.NoContent();
     }

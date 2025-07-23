@@ -23,7 +23,7 @@ public class UserRepository : IUserRepository
     
     public async Task<IEnumerable<IError>> UserExistsAsync(User user, CancellationToken cancellationToken)
     {
-        var errors = new List<IError>();
+        /*var errors = new List<IError>();
         if (await _db.Users.AnyAsync(u => u.Username.Value == user.Username.Value, cancellationToken: cancellationToken))
         {
             errors.Add(new Error($"Username '{user.Username.Value}' already exists."));
@@ -33,7 +33,7 @@ public class UserRepository : IUserRepository
         {
             errors.Add(new Error($"Email '{user.Email.Value}' already exists."));
         }
-        return errors;
+        return errors;*/ return null;
     }
     
     public async Task<User?> GetUserAsync(Guid userID, CancellationToken cancellationToken = default)
@@ -45,14 +45,14 @@ public class UserRepository : IUserRepository
 
     public async Task<User?> GetUserAsync(UserName username, CancellationToken cancellationToken = default)
     {
-        return await _db.Users
+        /*return await _db.Users
             .AsNoTracking()
-            .FirstOrDefaultAsync(u => u.Username.Value == username.Value, cancellationToken: cancellationToken);
+            .FirstOrDefaultAsync(u => u.Username.Value == username.Value, cancellationToken: cancellationToken);*/ return null;
     }
     public async Task<User?> GetUserAsync(Email userEmail, CancellationToken cancellationToken = default)
     {
-        return await _db.Users
+        /*return await _db.Users
             .AsNoTracking()
-            .FirstOrDefaultAsync(u => u.Email.Value == userEmail.Value, cancellationToken: cancellationToken);
+            .FirstOrDefaultAsync(u => u.Email.Value == userEmail.Value, cancellationToken: cancellationToken);*/ return null;
     }
 }

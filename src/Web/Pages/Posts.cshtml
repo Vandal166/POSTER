@@ -1,0 +1,28 @@
+﻿@page
+@model Posts
+        
+@{
+    Layout = "_Layout";
+}
+
+<h2>Posts</h2>
+
+<table class="table">
+    <thead>
+    <tr>
+        <th>Author</th>
+        <th>Content</th>
+        <th>Created At</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var post in Model.AllPosts)
+    {
+        <tr>
+            <td>@post.AuthorUsername</td>
+            <td>@post.Content</td>
+            <td>@post.CreatedAt.ToString("g")</td>
+        </tr>
+    }
+    </tbody>
+</table>

@@ -23,7 +23,7 @@ public class PostCommentRepository : IPostCommentRepository
 
     public async Task<IPagedList<CommentDto>> GetCommentsByPostAsync(Guid postID, int page, int pageSize, CancellationToken cancellationToken = default)
     {
-        var commentsResponse =  _db.Comments
+        /*var commentsResponse =  _db.Comments
             .AsNoTracking()
             .OrderByDescending(p => p.CreatedAt)
             .Where(c => c.PostID == postID)
@@ -34,7 +34,7 @@ public class PostCommentRepository : IPostCommentRepository
                 c.CreatedAt
             ));
         
-        return await PagedList<CommentDto>.CreateAsync(commentsResponse, page, pageSize, cancellationToken);
+        return await PagedList<CommentDto>.CreateAsync(commentsResponse, page, pageSize, cancellationToken);*/ return null;
     }
 
     public Task AddAsync(Comment comment, CancellationToken cancellationToken = default)

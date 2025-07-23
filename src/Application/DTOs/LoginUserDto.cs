@@ -1,3 +1,3 @@
 ﻿namespace Application.DTOs;
 
-public record LoginUserDto(string Username, string Password);
+public record LoginUserDto(string Login, string Password);

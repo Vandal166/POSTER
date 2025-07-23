@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Net;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
@@ -8,7 +9,6 @@ using Application.DTOs;
 using FluentResults;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 
 namespace Infrastructure.Auth;
@@ -17,57 +17,53 @@ public class AuthService : IAuthService
 {
     private readonly IHttpClientFactory _http;
     private readonly ITokenGenerator<HttpResponseMessage> _ropTokenGenerator;
+    private readonly IKeycloakService _keycloakService;
     private readonly IValidator<RegisterUserDto> _registerValidator;
     private readonly IValidator<LoginUserDto> _loginValidator;
+    private readonly IValidator<CompleteProfileDto> _completeProfileValidator;
     private readonly IConfiguration _config;
     
-    public AuthService(IHttpClientFactory http, ITokenGenerator<HttpResponseMessage> ropTokenGenerator, IValidator<RegisterUserDto> registerValidator, IValidator<LoginUserDto> loginValidator,
-        IConfiguration configuration)
+    public AuthService(IHttpClientFactory http, ITokenGenerator<HttpResponseMessage> ropTokenGenerator, IKeycloakService keycloakService, IValidator<RegisterUserDto> registerValidator, IValidator<LoginUserDto> loginValidator,
+        IValidator<CompleteProfileDto> completeProfileValidator, IConfiguration configuration)
     {
         _http = http;
         _ropTokenGenerator = ropTokenGenerator;
+        _keycloakService = keycloakService;
         _registerValidator = registerValidator;
         _loginValidator = loginValidator;
+        _completeProfileValidator = completeProfileValidator;
         _config = configuration;
     }
 
-    public async Task<Result> RegisterAsync(RegisterUserDto dto, CancellationToken cancellationToken = default)
+    public async Task<Result> RegisterAsync(RegisterUserDto dto, CancellationToken ct = default)
     {
         // dto validation
-        var validation = await _registerValidator.ValidateAsync(dto, cancellationToken);
+        var validation = await _registerValidator.ValidateAsync(dto, ct);
         if (!validation.IsValid)
             return Result.Fail(validation.Errors.Select(e => e.ErrorMessage));
 
         // getting an admin token via client_credentials
         var keyc = _config.GetSection("Keycloak");
         var client = _http.CreateClient("Keycloak");
-
-        /*var tokenRes = await client.PostAsync(
-            "protocol/openid-connect/token",
-            new FormUrlEncodedContent(new Dictionary<string, string> {
-                ["grant_type"]    = "client_credentials",
-                ["client_id"]     = keyc["AdminClientId"],
-                ["client_secret"] = keyc["AdminClientSecret"]
-            }),
-            cancellationToken
-        );*/
+        
         var formUrlContent = ROPTokenGeneratorService.CreateFormContent(new Dictionary<string, string>
         {
             ["grant_type"]    = "client_credentials",
             ["client_id"]     = keyc["AdminClientId"],
             ["client_secret"] = keyc["AdminClientSecret"]
         });
-        var tokenRes = await _ropTokenGenerator.GenerateTokenAsync(client, formUrlContent, cancellationToken);
+        var tokenRes = await _ropTokenGenerator.GenerateTokenAsync(client, formUrlContent, ct);
         if (!tokenRes.IsSuccessStatusCode)
         {
-            Console.WriteLine($"Token {tokenRes.Headers} body {await tokenRes.Content.ReadAsStringAsync()}");
-            return Result.Fail("Cannot acquire admin token.");
+            var body = await tokenRes.Content.ReadAsStringAsync(ct);
+            Console.WriteLine($"Token {tokenRes.Headers} body {body}");
+            return Result.Fail(GetFriendlyMessage(body));
         }
 
-        var adminToken = JsonDocument.Parse(await tokenRes.Content.ReadAsStringAsync(cancellationToken))
+        var adminToken = JsonDocument.Parse(await tokenRes.Content.ReadAsStringAsync(ct))
             .RootElement.GetProperty("access_token").GetString();
         
-        var user = KeycloakClientService.CreateClient(dto);
+        var user = KeycloakClientFactory.CreateKeycloakUser(dto);
         
         var req = new HttpRequestMessage(HttpMethod.Post, 
             $"/admin/realms/{keyc["Realm"]}/users")
@@ -78,138 +74,108 @@ public class AuthService : IAuthService
         req.Headers.Authorization = 
             new AuthenticationHeaderValue("Bearer", adminToken);
 
-        /*var createRes = await client.SendAsync(req, cancellationToken);*/
-        var createRes = await _ropTokenGenerator.SendRequestAsync(client, req, cancellationToken);
+        var createRes = await _ropTokenGenerator.SendRequestAsync(client, req, ct);
         return createRes.StatusCode switch
         {
             HttpStatusCode.Created => Result.Ok(),
             HttpStatusCode.Conflict => Result.Fail("User already exists."),
-            _ => Result.Fail($"Keycloak error: {createRes.StatusCode}")
+            _ => Result.Fail($"Error: {createRes.StatusCode}")
         };
     }
     
-    public async Task<Result<(ClaimsPrincipal Principal, AuthenticationProperties Props)>> LoginAsync(LoginUserDto dto, HttpContext httpContext)
+    public async Task<Result<(ClaimsPrincipal Principal, AuthenticationProperties Props)>> LoginAsync(LoginUserDto dto, CancellationToken ct = default)
     {
-        var validation = await _loginValidator.ValidateAsync(dto);
+        var validation = await _loginValidator.ValidateAsync(dto, ct);
         if (!validation.IsValid)
             return Result.Fail(validation.Errors.Select(e => e.ErrorMessage));
 
         var keyc = _config.GetSection("Keycloak");
+        var client = _http.CreateClient("Keycloak");
         var formUrlContent = ROPTokenGeneratorService.CreateFormContent(new Dictionary<string, string>
         {
             ["grant_type"]    = "password",
             ["client_id"]     = keyc["ClientId"],
             ["client_secret"] = keyc["ClientSecret"],
-            ["username"]      = dto.Username,
+            ["username"]      = dto.Login,
             ["password"]      = dto.Password
         });
-        var tokenRes = await _ropTokenGenerator.GenerateTokenAsync(_http.CreateClient("Keycloak"), formUrlContent);
+        var tokenRes = await _ropTokenGenerator.GenerateTokenAsync(client, formUrlContent, ct);
         if (!tokenRes.IsSuccessStatusCode)
         {
-            Console.WriteLine($"Token {tokenRes.Headers} body {await tokenRes.Content.ReadAsStringAsync()}");
-            return Result.Fail("Invalid username or password.");
+            var body = await tokenRes.Content.ReadAsStringAsync(ct);
+            return Result.Fail(GetFriendlyMessage(body));
         }
-        Console.WriteLine($"Token {tokenRes.Headers} body {await tokenRes.Content.ReadAsStringAsync()}");
-        /*var json = JsonDocument.Parse(await tokenRes.Content.ReadAsStringAsync()).RootElement;
-        var idToken      = json.GetProperty("id_token").GetString();
-        var accessToken  = json.GetProperty("access_token").GetString();
-        var refreshToken = json.GetProperty("refresh_token").GetString();*/
-        var (idToken, accessToken, refreshToken) = await ROPTokenGeneratorService.ParseTokenResponeAsync(tokenRes);
+        Console.WriteLine($"Token {tokenRes.Headers} body {await tokenRes.Content.ReadAsStringAsync(ct)}");
         
-        // building a ClaimsPrincipal from the ID token
-        /*var handler = new JwtSecurityTokenHandler();
-        var jwt = handler.ReadJwtToken(idToken);
-        var identity = new ClaimsIdentity(jwt.Claims, CookieAuthenticationDefaults.AuthenticationScheme);
-        var userPrincipal = new ClaimsPrincipal(identity);*/
-        var userPrincipal = KeycloakClientService.BuildClaims(idToken ?? accessToken);
+        var (idToken, accessToken, refreshToken) = await ROPTokenGeneratorService.ParseTokenResponseAsync(tokenRes);
+
+        var handler = new JwtSecurityTokenHandler();
+        var jwt = handler.ReadJwtToken(accessToken);
+        var userID = jwt.Claims.FirstOrDefault(c => c.Type == "sub")?.Value;
+        var user = await _keycloakService.GetUserAsync(userID, ct);
+        if (user == null)
+            return Result.Fail("Unable to load user profile.");
+
+        // building a ClaimsPrincipal from the user object
+        var userPrincipal = ClaimsPrincipalFactory.BuildClaims(user);
         
-        // signing in with cookie, persisting the tokens
-        /*var props = new AuthenticationProperties(new Dictionary<string, string> {
-                [".Token.access_token"]  = accessToken,
-                [".Token.refresh_token"] = refreshToken,
-                [".Token.id_token"]      = idToken
-            })
-            { IsPersistent = true };*/
-
-        var props = KeycloakClientService.BuildCookie(accessToken, refreshToken, idToken);
-        //await httpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, userPrincipal, props);
-
+        // buildign the cookie, persisting the tokens
+        var props = CookiePropertiesFactory.BuildCookie(accessToken, refreshToken, idToken);
+        
         return Result.Ok((userPrincipal, props));
     }
 
-    public async Task<Result> CompleteProfileAsync(string userID, string userName)
+    public async Task<Result> CompleteProfileAsync(string userID, CompleteProfileDto dto, CancellationToken ct = default)
     {
-        // 1) Get an admin token via client_credentials
+        var validation = await _completeProfileValidator.ValidateAsync(dto, ct);
+        if (!validation.IsValid)
+            return Result.Fail(validation.Errors.Select(e => e.ErrorMessage));
+        
+        // gettin an admin token via client_credentials
         var keyc = _config.GetSection("Keycloak");
         var client = _http.CreateClient("Keycloak");
 
-        /*var tokenRes = await client.PostAsync(
-            "protocol/openid-connect/token",
-            new FormUrlEncodedContent(new Dictionary<string, string> {
-                ["grant_type"]    = "client_credentials",
-                ["client_id"]     = keyc["AdminClientId"],
+        var formUrlContent = ROPTokenGeneratorService.CreateFormContent
+        (
+            new Dictionary<string, string>
+            {
+                ["grant_type"] = "client_credentials",
+                ["client_id"] = keyc["AdminClientId"],
                 ["client_secret"] = keyc["AdminClientSecret"]
-            }));
-            */
-
-        var formUrlContent = ROPTokenGeneratorService.CreateFormContent(new Dictionary<string, string>
-        {
-            ["grant_type"]    = "client_credentials",
-            ["client_id"]     = keyc["AdminClientId"],
-            ["client_secret"] = keyc["AdminClientSecret"]
-        });
-        var tokenRes = await _ropTokenGenerator.GenerateTokenAsync(client, formUrlContent);
+            }
+        );
+        var tokenRes = await _ropTokenGenerator.GenerateTokenAsync(client, formUrlContent, ct);
         if (!tokenRes.IsSuccessStatusCode)
         {
-            Console.WriteLine($"Token {tokenRes.Headers} body {await tokenRes.Content.ReadAsStringAsync()}");
-            return Result.Fail("Cannot acquire admin token.");
+            var body = await tokenRes.Content.ReadAsStringAsync(ct);
+            Console.WriteLine($"Token {tokenRes.Headers} body {body}");
+            return Result.Fail(GetFriendlyMessage(body));
         }
 
-        var adminToken = JsonDocument.Parse(await tokenRes.Content.ReadAsStringAsync())
+        var adminToken = JsonDocument.Parse(await tokenRes.Content.ReadAsStringAsync(ct))
             .RootElement.GetProperty("access_token").GetString();
 
-        // 2) GET the existing user
-        var getReq = new HttpRequestMessage(
-            HttpMethod.Get,
-            $"/admin/realms/{keyc["Realm"]}/users/{userID}"
-        );
-        getReq.Headers.Authorization = new AuthenticationHeaderValue("Bearer", adminToken);
+        var getRes = await KeycloakClientFactory.GetKeycloakUser(userID, client, _ropTokenGenerator, adminToken, keyc, ct);
 
-        var getRes = await _ropTokenGenerator.SendRequestAsync(client, getReq);
-        //var getRes = await client.SendAsync(getReq);
-        if (!getRes.IsSuccessStatusCode)
-            return Result.Fail($"Cannot fetch user: {getRes.StatusCode}");
+        if (getRes is null || !getRes.IsSuccessStatusCode)
+            return Result.Fail($"Cannot fetch user: {getRes?.StatusCode}");
 
-        var userJson = await getRes.Content.ReadAsStringAsync();
+        var userJson = await getRes.Content.ReadAsStringAsync(ct);
 
-        // 3) Build a mutable dictionary from the JSON
-        var dict = JsonSerializer.Deserialize<Dictionary<string,object>>(userJson)!;
-
-        // 4) Apply your updates
-        dict["username"]   = userName;
-        dict["attributes"] = new Dictionary<string,string[]>
-        {
-            ["profileCompleted"] = new[] { "true" }
-        };
-
-        // 5) PUT the full object back
-        var putReq = new HttpRequestMessage(
-            HttpMethod.Put,
-            $"/admin/realms/{keyc["Realm"]}/users/{userID}"
-        )
-        {
-            Content = new StringContent(
-                JsonSerializer.Serialize(dict),
-                Encoding.UTF8,
-                "application/json"
-            )
-        };
-        putReq.Headers.Authorization = new AuthenticationHeaderValue("Bearer", adminToken);
-
-        var putRes = await _ropTokenGenerator.SendRequestAsync(client, putReq);//.SendAsync(putReq);
+        var putRes = await KeycloakClientFactory.SetKeycloakUsername(userID, dto.Username, userJson, client, _ropTokenGenerator, adminToken, keyc, ct);
         if (putRes.IsSuccessStatusCode)
             return Result.Ok();
-        
-        return Result.Fail($"Keycloak error: {putRes.StatusCode}");
+
+        return putRes.StatusCode switch
+        {
+            HttpStatusCode.Conflict => Result.Fail("Username is taken."),
+            _ => Result.Fail($"Error: {putRes.StatusCode}")
+        };
+    }
+
+
+    private static string GetFriendlyMessage(string body)
+    {
+        return JsonDocument.Parse(body).RootElement.GetProperty("error_description").GetString() ?? "An error occurred.";
     }
 }

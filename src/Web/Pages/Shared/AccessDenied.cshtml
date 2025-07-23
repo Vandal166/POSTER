@@ -1,0 +1,31 @@
+﻿@page
+@model Web.Pages.AccessDenied
+
+@{
+    Layout = "_Layout";
+}
+
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <title>Access Denied</title>
+</head>
+<body>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card text-center">
+                <div class="card-header bg-danger text-white">
+                    <h4>Access Denied</h4>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">You do not have permission to view this page.</p>
+                    <a asp-page="/Index" class="btn btn-primary">Return to Home Page</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

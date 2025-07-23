@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@inject Application.Contracts.ICurrentUserService CurrentUser
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8"/>
@@ -28,6 +29,8 @@
                     </li>
                 </ul>
             </div>
+            
+            <p>USER: @CurrentUser.ID | @CurrentUser.Username | @CurrentUser.Email</p>
         </div>
     </nav>
 </header>

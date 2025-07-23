@@ -31,9 +31,9 @@ public static class PostLikeEndpoints
     private static async Task<IResult> LikePost(Guid postID, [FromServices] IPostLikeService posts, [FromServices] ICurrentUserService currentUser,
         CancellationToken ct)
     {
-        var result = await posts.LikePostAsync(postID, currentUser.UserID, ct);
+        /*var result = await posts.LikePostAsync(postID, currentUser.ID, ct);
         if (result.IsFailed)
-            return Results.ValidationProblem(result.Errors.ToDictionary(e => e.Message, e => new[] { e.Message }));
+            return Results.ValidationProblem(result.Errors.ToDictionary(e => e.Message, e => new[] { e.Message }));*/
 
         return Results.Ok();
     }
@@ -41,9 +41,9 @@ public static class PostLikeEndpoints
     private static async Task<IResult> UnlikePost(Guid postID, [FromServices] IPostLikeService posts, [FromServices] ICurrentUserService currentUser,
         CancellationToken ct)
     {
-        var result = await posts.UnlikePostAsync(postID, currentUser.UserID, ct);
+        /*var result = await posts.UnlikePostAsync(postID, currentUser.UserID, ct);
         if (result.IsFailed)
-            return Results.ValidationProblem(result.Errors.ToDictionary(e => e.Message, e => new[] { e.Message }));
+            return Results.ValidationProblem(result.Errors.ToDictionary(e => e.Message, e => new[] { e.Message }));*/
 
         return Results.NoContent();
     }

@@ -14,38 +14,30 @@ public class CurrentUserService : ICurrentUserService
     public CurrentUserService(IHttpContextAccessor http)
         => _http = http;
 
-    public Guid UserID
-    {
-        get
-        {
-            var user = _http.HttpContext?.User
-                       ?? throw new InvalidOperationException("No http context");
+    private ClaimsPrincipal User => _http.HttpContext?.User ?? new ClaimsPrincipal();
+    
+    //--- USER PROPERTIES ---//
+    public string ID => User.FindFirst(ClaimTypes.NameIdentifier)?.Value ??
+                        User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value ?? string.Empty;
+    public bool Enabled =>
+        bool.TryParse(User.FindFirst("enabled")?.Value, out var enabled) && enabled;
 
-            // subject contain NameIdentifier Name which are user ID and UserName
-            var subject = user.FindFirstValue(ClaimTypes.NameIdentifier)
-                              ?? user.FindFirstValue(JwtRegisteredClaimNames.Sub)
-                              ?? throw new InvalidOperationException("No user ID claim found.");
+    public string Username =>
+        User.Identity?.Name ?? User.FindFirst(ClaimTypes.Name)?.Value ?? string.Empty;
+    
+    public string Email =>
+        User.FindFirst(ClaimTypes.Email)?.Value ?? string.Empty;
 
-            if (Guid.TryParse(subject, out var id))
-                return id;
+    public Dictionary<string, string[]> Attributes =>
+        User.Claims
+            .Where(c => c.Type.StartsWith("attr:")) // Convention: store as attr:key
+            .GroupBy(c => c.Type.Substring(5))
+            .ToDictionary(g => g.Key, g => g.Select(x => x.Value).ToArray());
 
-            throw new InvalidOperationException("User ID claim is not a GUID.");
-        }
-    }
-
-    public UserName UserName
-    {
-        get
-        {
-            var user = _http.HttpContext?.User
-                       ?? throw new InvalidOperationException("No http context");
-            
-            var subject = user.FindFirstValue(ClaimTypes.Name);
-
-            if (!string.IsNullOrEmpty(subject))
-                return UserName.Create(subject).Value;
-
-            throw new InvalidOperationException("Username claim is not a str.");
-        }
-    }
+    public List<string> RealmRoles =>
+        User.Claims
+            .Where(c => c.Type == ClaimTypes.Role)
+            .Select(c => c.Value)
+            .ToList();
+    
 }

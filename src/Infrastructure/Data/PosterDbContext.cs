@@ -29,9 +29,11 @@ etc
         modelBuilder.Entity<User>(b =>
         {
             b.HasKey(u => u.ID);
-            b.OwnsOne(u => u.Username, x => x.Property(p => p.Value).HasColumnName("Username").IsRequired());
-            b.OwnsOne(u => u.Email,    x => x.Property(p => p.Value).HasColumnName("Email").IsRequired());
-            b.Property(u => u.PasswordHash).HasMaxLength(256).IsRequired();
+            b.Property(u => u.Username).IsRequired();
+            b.Property(u => u.Email).IsRequired();
+           // b.OwnsOne(u => u.Username, x => x.Property(p => p.Value).HasColumnName("Username").IsRequired());
+           // b.OwnsOne(u => u.Email,    x => x.Property(p => p.Value).HasColumnName("Email").IsRequired());
+           // b.Property(u => u.PasswordHash).HasMaxLength(256).IsRequired();
             b.Property(p => p.CreatedAt).HasDefaultValueSql("now()");
             
             b.HasQueryFilter(u => u.DeletedAt == null); // soft delete filter

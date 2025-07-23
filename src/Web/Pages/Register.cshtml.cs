@@ -1,10 +1,13 @@
 ﻿using Application.DTOs;
 using Infrastructure.Auth;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Web.Common;
 
 namespace Web.Pages;
 
+[RedirectAuthenticated] // allow only unauthenticated users to access this page
 public class Register : PageModel
 {
     private readonly IAuthService _auth;
@@ -19,13 +22,12 @@ public class Register : PageModel
         // just render the form
     }
 
-    public async Task<IActionResult> OnPostAsync()
+    public async Task<IActionResult> OnPostAsync(CancellationToken ct)
     {
         if (!ModelState.IsValid)
             return Page();
 
-        var ct = new CancellationTokenSource();
-        var result = await _auth.RegisterAsync(Dto, ct.Token);
+        var result = await _auth.RegisterAsync(Dto, ct);
         if (result.IsFailed)
         {
             foreach (var e in result.Errors)

@@ -10,7 +10,7 @@ namespace Domain.Entities;
  */
 public sealed class Post : AuditableEntity
 {
-    public Guid AuthorID { get; private set; }
+    public Guid AuthorID { get; private set; } // Keycloak ID of the author
     public User Author { get; private set; } = null!;
     public string Content { get; private set; } = null!;
     

@@ -31,7 +31,7 @@ public class DataSeeder : IDataSeeder
 
     public async Task SeedAsync(int userCount, int postsPerUser, int commentsPerPost, CancellationToken ct = default)
     {
-        // Faker for Users
+        /*// Faker for Users
         var userFaker = new Faker<User>()
             .CustomInstantiator(f =>
                 User.Create(
@@ -72,6 +72,6 @@ public class DataSeeder : IDataSeeder
         {
             await _comments.AddAsync(comment, ct);
         }
-        await _uow.SaveChangesAsync(ct);
+        await _uow.SaveChangesAsync(ct);*/
     }
 }
