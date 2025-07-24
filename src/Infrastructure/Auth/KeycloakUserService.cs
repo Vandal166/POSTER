@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using Application.Contracts;
+using Application.Contracts.Auth;
 using Application.DTOs;
 using Domain.Constants;
 using FluentResults;

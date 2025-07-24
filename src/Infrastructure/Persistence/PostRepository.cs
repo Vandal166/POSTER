@@ -1,5 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using Application.Contracts;
+using Application.Contracts.Persistence;
 using Application.DTOs;
 using Domain.Entities;
 using Infrastructure.Common;

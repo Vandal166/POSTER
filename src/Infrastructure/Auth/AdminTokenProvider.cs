@@ -1,5 +1,5 @@
 ﻿using System.Text.Json;
-using Application.Contracts;
+using Application.Contracts.Auth;
 using Microsoft.Extensions.Configuration;
 
 namespace Infrastructure.Auth;

@@ -1,6 +1,7 @@
 ﻿using Bogus;
 using Domain.Entities;
 using Application.Contracts;
+using Application.Contracts.Persistence;
 using Application.DTOs;
 using Domain.ValueObjects;
 

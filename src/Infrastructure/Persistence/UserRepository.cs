@@ -1,4 +1,5 @@
 ﻿using Application.Contracts;
+using Application.Contracts.Persistence;
 using Domain.Entities;
 using Domain.ValueObjects;
 using FluentResults;

@@ -1,4 +1,6 @@
 ﻿using System.Security.Claims;
+using Application.Contracts;
+using Application.Contracts.Auth;
 using Infrastructure.Auth;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -6,6 +8,7 @@ using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Web.Services;
 
 namespace Web;
 
@@ -13,22 +16,27 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddWebServices(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddHttpContextAccessor();
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
+        
         IConfigurationSection keycloakSettings = configuration.GetSection("Keycloak");
         services.AddAuthorizationBuilder();
         services
             .AddAuthentication(options =>
             {
                 options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                //options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme; // Redirects to Keycloak login panel when unauthorized
             })
             .AddCookie(options => 
             {
-                options.LoginPath = "/Login";      // redirect here if unauthenticated
-                options.LogoutPath = "/Logout";
+                options.LoginPath = "/Account/Login";      // redirect here if unauthenticated
+                options.LogoutPath = "/Account/Logout";
                 
                 options.AccessDeniedPath = "/Shared/AccessDenied"; // redirect here if authenticated but not authorized
                 options.Events.OnValidatePrincipal = async context =>
                 {
+                    if (context.Principal?.Identity?.IsAuthenticated != true)
+                        return;
+                    
                     var lastValidated = context.Properties.IssuedUtc;
 
                     // every 5 seconds we check if the user is still valid
@@ -36,6 +44,8 @@ public static class DependencyInjection
                     {
                         var userId = context.Principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value ??
                                      context.Principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+                        context.Properties.Items.TryGetValue(".Token.refresh_token", out var token);
                         
                         if (!string.IsNullOrEmpty(userId)) // if the userid is not empty meaning Authenticated
                         {
@@ -44,14 +54,26 @@ public static class DependencyInjection
                                 .GetRequiredService<IKeycloakUserService>()
                                 .GetUserAsync(userId);
 
-                            if (updatedUser == null || updatedUser.Enabled == false) // if the user is not found/disable then a change occurred on Keycloak side
+                            if (updatedUser == null || updatedUser.Enabled == false) // if the user is not found/disabled then a change occurred on Keycloak side
                             {
                                 // signing them out immediately
                                 context.RejectPrincipal();
                                 await context.HttpContext.SignOutAsync(); //TODO with message
                                 return;
                             }
+                            if (!string.IsNullOrEmpty(token))
+                            {
+                                var sessionValid = await context.HttpContext.RequestServices
+                                    .GetRequiredService<ISessionValidator>()
+                                    .IsTokenActiveAsync(token);
 
+                                if (!sessionValid) // if the token or session is not valid we sign them out
+                                {
+                                    context.RejectPrincipal();
+                                    await context.HttpContext.SignOutAsync();
+                                    return;
+                                }
+                            }
                             // if the user is found and enabled, we instead update the claims principal cuz they might have changed on Keycloak side
                             var newPrincipal = ClaimsPrincipalFactory.BuildClaims(updatedUser);
 
@@ -69,11 +91,11 @@ public static class DependencyInjection
                             c.Type == "profileCompleted" &&
                             c.Value.Equals("true", StringComparison.OrdinalIgnoreCase)))
                     {
-                        context.Response.Redirect("/CompleteProfile");
+                        context.Response.Redirect("/Account/CompleteProfile");
                     }
                     else
                     {
-                        // Default behavior (redirect to AccessDeniedPath)
+                        // def behavior (redirect to AccessDeniedPath)
                         context.Response.Redirect(context.Options.AccessDeniedPath);
                     }
 

@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 
-namespace Infrastructure.Security;
+namespace Web.Services;
 
 // Used to get the current user ID from the HTTP context(currently logged in user).
 public class CurrentUserService : ICurrentUserService

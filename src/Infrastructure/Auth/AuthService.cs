@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using Application.Contracts;
+using Application.Contracts.Auth;
 using Application.DTOs;
 using FluentResults;
 using FluentValidation;

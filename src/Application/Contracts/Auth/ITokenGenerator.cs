@@ -1,4 +1,4 @@
-﻿namespace Application.Contracts;
+﻿namespace Application.Contracts.Auth;
 
 public interface ITokenGenerator<TType> where TType : class
 {

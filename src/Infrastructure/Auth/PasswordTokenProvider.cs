@@ -1,6 +1,7 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Text.Json;
 using Application.Contracts;
+using Application.Contracts.Auth;
 using Application.DTOs;
 using FluentResults;
 using Microsoft.Extensions.Configuration;

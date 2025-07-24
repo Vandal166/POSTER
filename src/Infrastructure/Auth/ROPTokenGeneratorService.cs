@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using Application.Contracts;
+using Application.Contracts.Auth;
 
 namespace Infrastructure.Auth;
 

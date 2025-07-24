@@ -1,4 +1,5 @@
 ﻿using Application.Contracts;
+using Application.Contracts.Persistence;
 using Application.DTOs;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 

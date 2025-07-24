@@ -1,4 +1,5 @@
 ﻿using Application.Contracts;
+using Application.Contracts.Persistence;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Web.Endpoints;

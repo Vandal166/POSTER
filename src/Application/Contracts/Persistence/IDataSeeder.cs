@@ -1,4 +1,4 @@
-﻿namespace Application.Contracts;
+﻿namespace Application.Contracts.Persistence;
 
 public interface IDataSeeder
 {

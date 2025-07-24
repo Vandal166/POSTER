@@ -1,4 +1,5 @@
 ﻿using Application.Contracts;
+using Application.Contracts.Persistence;
 using FluentResults;
 
 namespace Application.Services;

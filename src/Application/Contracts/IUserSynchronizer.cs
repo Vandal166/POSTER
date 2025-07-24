@@ -1,4 +1,4 @@
-﻿namespace Infrastructure.Auth;
+﻿namespace Application.Contracts;
 
 public interface IUserSynchronizer
 {

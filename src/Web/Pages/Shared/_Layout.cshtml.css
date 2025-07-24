@@ -1,6 +1,37 @@
 ﻿/* Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
 for details on configuring this project to bundle and minify static web assets. */
 
+/* Center everything like Twitter desktop */
+.main-wrapper {
+  max-width: 1200px;  /* Twitter uses ~990-1200px */
+  margin: 0 auto;     /* Center horizontally */
+  zoom: 1.1;          /* Slight zoom-in effect */
+}
+
+/* Compact feel - smaller spacing */
+main {
+  padding-top: 0.5rem;
+}
+
+/* Compact left sidebar */
+aside {
+  font-size: 0.95rem;
+}
+
+/* Better main feed readability */
+main {
+  background-color: #ffffff;
+  border-left: 1px solid #e6e6e6;
+  border-right: 1px solid #e6e6e6;
+  min-height: 100vh;
+}
+
+/* Tighten navbar */
+.navbar {
+  padding-top: 0.4rem;
+  padding-bottom: 0.4rem;
+}
+
 a.navbar-brand {
   white-space: normal;
   text-align: center;

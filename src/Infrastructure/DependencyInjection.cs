@@ -1,4 +1,6 @@
 ﻿using Application.Contracts;
+using Application.Contracts.Auth;
+using Application.Contracts.Persistence;
 using Infrastructure.Auth;
 using Infrastructure.Data;
 using Infrastructure.Persistence;
@@ -22,6 +24,7 @@ public static class DependencyInjection
         services.AddScoped<IPasswordTokenProvider, PasswordTokenProvider>();
         services.AddScoped<IKeycloakUserService, KeycloakUserService>();
         services.AddScoped<IUserSynchronizer, UserSynchronizer>();
+        services.AddScoped<ISessionValidator, SessionValidator>();
         services.AddScoped<IAuthService, AuthService>();
         
         services.AddScoped<IUserRepository, UserRepository>();
@@ -35,8 +38,6 @@ public static class DependencyInjection
         
         services.AddScoped<IDataSeeder, DataSeeder>();
 
-        services.AddHttpContextAccessor();
-        services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddScoped<IKeycloakUserService, KeycloakUserService>();
         
         return services;

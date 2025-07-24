@@ -36,6 +36,6 @@ public class Register : PageModel
         }
         
         // redirect to home or protected area
-        return RedirectToPage("/Login");
+        return RedirectToPage("/Account/Login");
     }
 }

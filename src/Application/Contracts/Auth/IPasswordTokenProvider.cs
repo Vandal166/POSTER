@@ -1,7 +1,7 @@
 ﻿using Application.DTOs;
 using FluentResults;
 
-namespace Application.Contracts;
+namespace Application.Contracts.Auth;
 
 public interface IPasswordTokenProvider
 {

@@ -1,4 +1,5 @@
 ﻿using Application.Contracts;
+using Application.Contracts.Persistence;
 using Application.Services;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
