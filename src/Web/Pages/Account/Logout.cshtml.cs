@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Web.Pages;
 
-[Authorize]
 public class Logout : PageModel
 {
     public IActionResult OnGet()

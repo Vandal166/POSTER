@@ -12,7 +12,7 @@ public interface ICurrentUserService
     //email etc
     Dictionary<string, string[]> Attributes { get; }
     List<string> RealmRoles { get;}
-
+    bool HasClaim(string type, string value);
     Task RefreshClaims(ClaimsPrincipal newPrincipal);
     /*Guid UserID { get; }
     UserName UserName { get; }*/

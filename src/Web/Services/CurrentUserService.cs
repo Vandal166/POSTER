@@ -44,6 +44,13 @@ public class CurrentUserService : ICurrentUserService
             .ToList();
     
     
+   public bool HasClaim(string type, string value)
+   {
+       return User.HasClaim(c => 
+           string.Equals(c.Type, type, StringComparison.OrdinalIgnoreCase) &&
+           string.Equals(c.Value, value, StringComparison.OrdinalIgnoreCase));
+   }
+    
     public async Task RefreshClaims(ClaimsPrincipal newPrincipal)
     {
         if (_http.HttpContext == null)

@@ -30,6 +30,7 @@ etc
         {
             b.HasKey(u => u.ID);
             b.Property(u => u.Username).IsRequired();
+            b.Property(u => u.AvatarPath).HasMaxLength(256).IsRequired();
             //b.Property(u => u.Email).IsRequired();
            // b.OwnsOne(u => u.Username, x => x.Property(p => p.Value).HasColumnName("Username").IsRequired());
            // b.OwnsOne(u => u.Email,    x => x.Property(p => p.Value).HasColumnName("Email").IsRequired());

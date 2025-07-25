@@ -20,7 +20,7 @@ public class CompleteProfile : PageModel
     }
 
     [BindProperty]
-    public CompleteProfileDto Dto { get; set; }
+    public UsernameDto Dto { get; set; }
     
     public void OnGet()
     {
@@ -32,7 +32,7 @@ public class CompleteProfile : PageModel
         if (!ModelState.IsValid)
             return Page();
 
-        var result = await _auth.CompleteProfileAsync(_currentUser.ID, Dto);
+        var result = await _auth.UpdateKeycloakProfileAsync(_currentUser.ID, Dto);
         if (result.IsFailed)
         {
             foreach (var e in result.Errors)

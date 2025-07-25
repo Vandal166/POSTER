@@ -39,4 +39,8 @@
       <AdditionalFiles Include="Pages\Shared\_ValidationScriptsPartial.cshtml" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="wwwroot\uploads\avatars\" />
+    </ItemGroup>
+
 </Project>

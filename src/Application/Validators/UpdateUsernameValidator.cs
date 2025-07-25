@@ -3,9 +3,9 @@ using FluentValidation;
 
 namespace Application.Validators;
 
-public class CompleteProfileValidator : AbstractValidator<CompleteProfileDto>
+public class UpdateUsernameValidator : AbstractValidator<UsernameDto>
 {
-    public CompleteProfileValidator()
+    public UpdateUsernameValidator()
     {
         RuleFor(x => x.Username)
             .NotEmpty()

@@ -15,18 +15,16 @@ public class AuthService : IAuthService
     private readonly IPasswordTokenProvider _passwordProvider;
     private readonly IValidator<RegisterUserDto> _registerValidator;
     private readonly IValidator<LoginUserDto> _loginValidator;
-    private readonly IValidator<CompleteProfileDto> _completeProfileValidator;
     private readonly IUserSynchronizer _userSync;
     
     public AuthService(IAdminTokenProvider tokenProv, IKeycloakUserService kcUserService, IPasswordTokenProvider passwordProvider, 
-        IValidator<RegisterUserDto> registerValidator, IValidator<LoginUserDto> loginValidator, IValidator<CompleteProfileDto> completeProfileValidator, IUserSynchronizer userSynchronizer)
+        IValidator<RegisterUserDto> registerValidator, IValidator<LoginUserDto> loginValidator, IUserSynchronizer userSynchronizer)
     {
         _tokenProv = tokenProv;
         _kcUserService = kcUserService;
         _passwordProvider = passwordProvider;
         _registerValidator = registerValidator;
         _loginValidator = loginValidator;
-        _completeProfileValidator = completeProfileValidator;
         _userSync = userSynchronizer;
     }
 
@@ -81,12 +79,8 @@ public class AuthService : IAuthService
         return Result.Ok((userPrincipal, props));
     }
 
-    public async Task<Result> CompleteProfileAsync(string userID, CompleteProfileDto dto, CancellationToken ct = default)
+    public async Task<Result> UpdateKeycloakProfileAsync(string userID, UsernameDto dto, CancellationToken ct = default)
     {
-        var validation = await _completeProfileValidator.ValidateAsync(dto, ct);
-        if (!validation.IsValid)
-            return Result.Fail(validation.Errors.Select(e => e.ErrorMessage));
-        
         // gettin an admin token via client_credentials
         var adminToken = await _tokenProv.GetTokenAsync(ct);
         

@@ -11,5 +11,5 @@ public interface IAuthService
     
     Task<Result<(ClaimsPrincipal Principal, AuthenticationProperties Props)>> LoginAsync(LoginUserDto dto, CancellationToken ct = default);
 
-    Task<Result> CompleteProfileAsync(string userID, CompleteProfileDto dto, CancellationToken ct = default);
+    Task<Result> UpdateKeycloakProfileAsync(string userID, UsernameDto dto, CancellationToken ct = default);
 }

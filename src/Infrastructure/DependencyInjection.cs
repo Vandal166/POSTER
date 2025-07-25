@@ -27,6 +27,8 @@ public static class DependencyInjection
         services.AddScoped<ISessionValidator, SessionValidator>();
         services.AddScoped<IAuthService, AuthService>();
         
+        services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IAvatarService, AvatarService>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IPostRepository, PostRepository>();
         services.AddScoped<IPostLikeRepository, PostLikeRepository>();
