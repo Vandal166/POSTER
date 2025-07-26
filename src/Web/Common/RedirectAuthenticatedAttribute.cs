@@ -3,21 +3,16 @@ using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace Web.Common;
 
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false)]
 public class RedirectAuthenticatedAttribute : Attribute, IPageFilter
 {
-    private string _redirectPage = "/Index";
-
-    public string Page
-    {
-        get => _redirectPage;
-        set => _redirectPage = value;
-    }
+    public string Page { get; set; } = "/Index";
 
     public RedirectAuthenticatedAttribute() { }
 
     public RedirectAuthenticatedAttribute(string redirectPage)
     {
-        _redirectPage = redirectPage;
+        Page = redirectPage;
     }
 
     public void OnPageHandlerExecuting(PageHandlerExecutingContext context)
@@ -25,7 +20,7 @@ public class RedirectAuthenticatedAttribute : Attribute, IPageFilter
         var user = context.HttpContext.User;
         if (user?.Identity?.IsAuthenticated == true)
         {
-            context.Result = new RedirectToPageResult(_redirectPage);
+            context.Result = new RedirectToPageResult(Page);
         }
     }
 

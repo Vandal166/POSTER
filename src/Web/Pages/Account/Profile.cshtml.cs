@@ -12,44 +12,38 @@ public class Profile : PageModel
 {
     private readonly IUserService _userService;
     private readonly ICurrentUserService _currentUser;
+    
+    public string AvatarPath { get; set; }
+    
     public Profile(IUserService userService, ICurrentUserService currentUser)
     {
         _userService = userService;
         _currentUser = currentUser;
     }
     
-    [BindProperty]
-    public UsernameDto UsernameDto { get; set; }
-    
-    [BindProperty]
-    public AvatarDto AvatarDto { get; set; }
-    
-    [BindProperty]
-    public IFormFile AvatarFile { get; set; }
-    public string AvatarPath { get; set; }
-    
-    public async Task<IActionResult> OnGet()
+    public PageResult OnGet()
     {
-        AvatarPath = await _userService.GetAvatarPathAsync(_currentUser.ID);
-        
+        AvatarPath = _currentUser.AvatarPath;
         return Page();
     }
     
     public async Task<IActionResult> OnPostAvatarAsync(IFormFile? avatar, CancellationToken ct)
     {
         if (avatar == null || avatar.Length == 0)
-            return BadRequest("No file uploaded.");
+        {
+            ModelState.AddModelError(string.Empty, "Please select a valid avatar file.");
+            return Page();
+        }
     
-        var dto = new AvatarDto(
-            avatar.FileName,
-            avatar.OpenReadStream()
-        );
+        var dto = new AvatarDto(avatar.FileName, avatar.OpenReadStream());
     
         var result = await _userService.UpdateAvatarAsync(_currentUser.ID, dto, ct);
     
         if (result.IsFailed)
-            return BadRequest(result.Errors);
-    
+        {
+            ModelState.AddModelError(string.Empty, string.Join(", ", result.Errors.Select(e => e.Message)));
+            return Page();
+        }
         return RedirectToPage("/Account/Profile");
     }
 }

@@ -1,7 +1,6 @@
 ﻿using Application.Contracts.Persistence;
 using Application.DTOs;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 
 namespace Infrastructure.Persistence;
 
@@ -18,23 +17,38 @@ public class AvatarService : IAvatarService
 
     public async Task<string> UpdateAvatarAsync(string userID, AvatarDto file, CancellationToken ct = default)
     {
-        // Ensure avatars folder exists
         var uploadsPath = Path.Combine(_env.WebRootPath, "uploads", "avatars");
         if (!Directory.Exists(uploadsPath))
             Directory.CreateDirectory(uploadsPath);
 
-        // Generate unique file name
+        // generating unique file name based on userID
         var extension = Path.GetExtension(file.FileName);
         var fileName = $"{userID}{extension}";
         var filePath = Path.Combine(uploadsPath, fileName);
 
-        // Save file
+        // deleting existing avatar file if it exists
+        if (Directory.GetFiles(uploadsPath, $"{userID}.*").Length > 0)
+        {
+            var existingFile = Directory.GetFiles(uploadsPath, $"{userID}.*").FirstOrDefault();
+            if (existingFile != null)
+            {
+                try
+                {
+                    File.Delete(existingFile); // deleting the old one
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error deleting existing avatar file {ex.Message}");
+                }
+            }
+        }
+        // saving the file
         await using (var stream = new FileStream(filePath, FileMode.Create))
         {
             await file.Content.CopyToAsync(stream, ct);
         }
 
-        // Return relative path (used for database)
+        // returning relative path (used for database)
         return Path.Combine("uploads", "avatars", fileName).Replace("\\", "/");
     }
 }

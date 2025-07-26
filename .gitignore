@@ -44,6 +44,8 @@ CodeCoverage/
 .NOTE
 POSTER.sln.DotSettings.user
 .containers
+src/Web/wwwroot/uploads/avatars*
+!src/Web/wwwroot/uploads/avatars/default.png
 
 # MSBuild Binary and Structured Log
 *.binlog

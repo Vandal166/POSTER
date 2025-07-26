@@ -8,6 +8,9 @@ using Microsoft.AspNetCore.Authentication;
 
 namespace Infrastructure.Auth;
 
+/// <summary>
+/// This service will sync the Keycloak user to the local database at the end of each operation.
+/// </summary>
 public class AuthService : IAuthService
 {
     private readonly IAdminTokenProvider _tokenProv;
@@ -76,17 +79,34 @@ public class AuthService : IAuthService
         // buildign the cookie, persisting the tokens
         var props = CookiePropertiesFactory.BuildCookie(tokens.AccessToken, tokens.RefreshToken, tokens.IdToken);
         
+        await _userSync.SyncAsync(kcUser.ID, ct); // syncing to local db since changes might have been made in Keycloak
         return Result.Ok((userPrincipal, props));
     }
 
-    public async Task<Result> UpdateKeycloakProfileAsync(string userID, UsernameDto dto, CancellationToken ct = default)
+    public async Task<Result> UpdateKeycloakUsernameAsync(string userID, UsernameDto dto, CancellationToken ct = default)
     {
         // gettin an admin token via client_credentials
         var adminToken = await _tokenProv.GetTokenAsync(ct);
         
         var userJson = await _kcUserService.GetAsync(userID, adminToken, ct);
         
-        var updateRes = await _kcUserService.UpdateAsync(userID, dto.Username, userJson.Value, adminToken, ct);
+        var updateRes = await _kcUserService.UpdateUsernameAsync(userID, dto.Username, userJson.Value, adminToken, ct);
+        
+        if (updateRes.IsFailed)
+            return Result.Fail(updateRes.Errors.Select(e => e.Message));
+        
+        // syncing to local db
+        await _userSync.SyncAsync(userID, ct);
+        return Result.Ok();
+    }   
+    public async Task<Result> UpdateKeycloakAvatarAsync(string userID, string avatarPath, CancellationToken ct = default)
+    {
+        // gettin an admin token via client_credentials
+        var adminToken = await _tokenProv.GetTokenAsync(ct);
+        
+        var userJson = await _kcUserService.GetAsync(userID, adminToken, ct);
+        
+        var updateRes = await _kcUserService.UpdateAvatarAsync(userID, avatarPath, userJson.Value, adminToken, ct);
         
         if (updateRes.IsFailed)
             return Result.Fail(updateRes.Errors.Select(e => e.Message));

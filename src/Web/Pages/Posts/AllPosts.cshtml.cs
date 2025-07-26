@@ -1,17 +1,16 @@
-﻿using Application.Contracts;
-using Application.Contracts.Persistence;
+﻿using Application.Contracts.Persistence;
 using Application.DTOs;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace Web.Pages;
+namespace Web.Pages.Posts;
 
-public class Posts : PageModel
+public class AllPosts : PageModel
 {
     private readonly IPostRepository _postRepository;
 
-    public IEnumerable<PostDto> AllPosts { get; private set; } = Enumerable.Empty<PostDto>();
+    public IEnumerable<PostDto> Posts { get; private set; } = Enumerable.Empty<PostDto>();
 
-    public Posts(IPostRepository postRepository)
+    public AllPosts(IPostRepository postRepository)
     {
         _postRepository = postRepository;
     }
@@ -20,6 +19,6 @@ public class Posts : PageModel
     {
         // Example: page 1, pageSize 20
         var pagedPosts = await _postRepository.GetAllAsync(1, 20);
-        AllPosts = pagedPosts.Items;
+        Posts = pagedPosts.Items;
     }
 }

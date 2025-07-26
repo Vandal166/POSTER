@@ -138,7 +138,7 @@ public static class DependencyInjection
             .ConfigurePrimaryHttpMessageHandler(() =>
                 new HttpClientHandler
                 {
-                    ServerCertificateCustomValidationCallback = (_,__,___,____) => true
+                    ServerCertificateCustomValidationCallback = (_,_,_,_) => true
                 });
         
         return services;

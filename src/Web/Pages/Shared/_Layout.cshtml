@@ -32,10 +32,10 @@
             <div class="ms-auto d-flex align-items-center">
                 <auth-only>
                     <div asp-authenticated="true" class="d-flex align-items-center me-3">
-                        <img src="~/images/default-avatar.png" alt="Avatar" class="rounded-circle" width="32" height="32"/>
+                        <img src="@Url.Content("~/" + CurrentUser.AvatarPath)" alt="Avatar" class="rounded-circle" width="32" height="32" />
                         <span class="ms-2 fw-semibold">@CurrentUser.Username</span>
                         <form method="post" asp-page="/Account/Logout" class="mb-0">
-                            <button type="submit" class="btn btn-outline-danger btn-sm">Logout</button>
+                            <button type="submit" class="btn btn-outline-danger btn-sm ms-2">Logout</button>
                         </form>
                     </div>
                 </auth-only>
@@ -53,7 +53,7 @@
             <!-- Left Sidebar -->
             <aside class="col-2 col-md-3 col-lg-2 bg-white">
                 <div class="d-flex flex-column">
-                    <a asp-page="/Posts/New" class="btn btn-primary text-start mb-3 fw-bold">
+                    <a asp-page="/Posts/CreatePost" class="btn btn-primary text-start mb-3 fw-bold">
                         <i class="bi bi-send-fill me-2"></i> New Post
                     </a>
                     

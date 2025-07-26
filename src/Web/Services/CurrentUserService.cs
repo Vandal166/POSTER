@@ -1,16 +1,13 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using Application.Contracts;
 using System.Security.Claims;
-using Domain.ValueObjects;
-using Infrastructure.Auth;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Http;
 
 namespace Web.Services;
 
 // Used to get the current user ID from the HTTP context(currently logged in user).
-public class CurrentUserService : ICurrentUserService
+public sealed class CurrentUserService : ICurrentUserService
 {
     private readonly IHttpContextAccessor _http;
 
@@ -31,17 +28,8 @@ public class CurrentUserService : ICurrentUserService
     public string Email =>
         User.FindFirst(ClaimTypes.Email)?.Value ?? string.Empty;
 
-    public Dictionary<string, string[]> Attributes =>
-        User.Claims
-            .Where(c => c.Type.StartsWith("attr:")) // Convention: store as attr:key
-            .GroupBy(c => c.Type.Substring(5))
-            .ToDictionary(g => g.Key, g => g.Select(x => x.Value).ToArray());
-
-    public List<string> RealmRoles =>
-        User.Claims
-            .Where(c => c.Type == ClaimTypes.Role)
-            .Select(c => c.Value)
-            .ToList();
+    public string AvatarPath =>
+        User.FindFirst("avatarPath")?.Value!;
     
     
    public bool HasClaim(string type, string value)

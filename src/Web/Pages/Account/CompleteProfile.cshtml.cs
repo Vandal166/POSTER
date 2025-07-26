@@ -1,6 +1,6 @@
 ﻿using Application.Contracts;
+using Application.Contracts.Persistence;
 using Application.DTOs;
-using Infrastructure.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -11,28 +11,24 @@ namespace Web.Pages;
 public class CompleteProfile : PageModel
 {
     private readonly ICurrentUserService _currentUser;
-    private readonly IAuthService _auth;
+    private readonly IUserService _userService;
 
-    public CompleteProfile(ICurrentUserService currentUser, IAuthService auth)
+    public CompleteProfile(ICurrentUserService currentUser, IUserService userService)
     {
         _currentUser = currentUser;
-        _auth = auth;
+        _userService = userService;
     }
 
     [BindProperty]
     public UsernameDto Dto { get; set; }
     
-    public void OnGet()
-    {
-        
-    }
     
-    public async Task<IActionResult> OnPostAsync()
+    public async Task<IActionResult> OnPostAsync(CancellationToken ct)
     {
         if (!ModelState.IsValid)
             return Page();
 
-        var result = await _auth.UpdateKeycloakProfileAsync(_currentUser.ID, Dto);
+        var result = await _userService.UpdateUsernameAsync(_currentUser.ID, Dto, ct);
         if (result.IsFailed)
         {
             foreach (var e in result.Errors)
@@ -40,8 +36,6 @@ public class CompleteProfile : PageModel
             return Page();
         }
         
-        //if successful, redirect to home or protected area
-        //TODO its not redirecting
         return RedirectToPage("/Index");
     }
 }

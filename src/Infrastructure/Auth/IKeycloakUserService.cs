@@ -14,5 +14,7 @@ public interface IKeycloakUserService
     // returns an KeycloakUser obj instead of just the ID
     Task<KeycloakUser?> GetUserAsync(string userID, CancellationToken ct = default);
     
-    Task<IResult<string>> UpdateAsync(string userID, string userName, string userJson, string adminToken, CancellationToken ct = default);
+    Task<IResult<string>> UpdateUsernameAsync(string userID, string userName, string userJson, string adminToken, CancellationToken ct = default);
+    
+    Task<IResult<string>> UpdateAvatarAsync(string userID, string avatarPath, string userJson, string adminToken, CancellationToken ct = default);
 }

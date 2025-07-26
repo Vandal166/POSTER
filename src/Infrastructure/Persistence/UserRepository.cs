@@ -1,7 +1,5 @@
-﻿using Application.Contracts;
-using Application.Contracts.Persistence;
+﻿using Application.Contracts.Persistence;
 using Domain.Entities;
-using Domain.ValueObjects;
 using FluentResults;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -46,20 +44,6 @@ public class UserRepository : IUserRepository
     public async Task<User?> GetUserAsync(Guid userID, CancellationToken cancellationToken = default)
     {
         return await _db.Users
-            .AsNoTracking()
             .FirstOrDefaultAsync(u => u.ID == userID, cancellationToken: cancellationToken);
-    }
-
-    public async Task<User?> GetUserAsync(UserName username, CancellationToken cancellationToken = default)
-    {
-        /*return await _db.Users
-            .AsNoTracking()
-            .FirstOrDefaultAsync(u => u.Username.Value == username.Value, cancellationToken: cancellationToken);*/ return null;
-    }
-    public async Task<User?> GetUserAsync(Email userEmail, CancellationToken cancellationToken = default)
-    {
-        /*return await _db.Users
-            .AsNoTracking()
-            .FirstOrDefaultAsync(u => u.Email.Value == userEmail.Value, cancellationToken: cancellationToken);*/ return null;
     }
 }

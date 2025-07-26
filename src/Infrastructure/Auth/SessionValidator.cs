@@ -33,7 +33,8 @@ public class SessionValidator : ISessionValidator
             ct
         );
 
-        if (!response.IsSuccessStatusCode) return false;
+        if (!response.IsSuccessStatusCode) 
+            return false;
 
         var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync(ct));
         return json.RootElement.GetProperty("active").GetBoolean();

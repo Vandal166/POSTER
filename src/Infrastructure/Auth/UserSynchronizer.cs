@@ -34,6 +34,7 @@ public class UserSynchronizer : IUserSynchronizer
         else // if the user exists then we update him to reflect Keycloak changes
         {
             existing.Username = kcUser.Username!;
+            existing.AvatarPath = kcUser.Attributes["avatarPath"]?.FirstOrDefault() ?? existing.AvatarPath;
             await _users.UpdateAsync(existing);
         }
 

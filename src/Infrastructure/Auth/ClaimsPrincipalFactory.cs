@@ -1,5 +1,4 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using Domain.Constants;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
@@ -14,6 +13,7 @@ public static class ClaimsPrincipalFactory
             new Claim(ClaimTypes.NameIdentifier, user.ID),
             new Claim(ClaimTypes.Name, user.Username),
             new Claim(ClaimTypes.Email, user.Email),
+            new Claim("avatarPath", user.Attributes?["avatarPath"]?.FirstOrDefault() ?? "uploads/avatars/default.png"),
             new Claim("profileCompleted", user.Attributes?["profileCompleted"]?.FirstOrDefault() ?? "false")
         };
 

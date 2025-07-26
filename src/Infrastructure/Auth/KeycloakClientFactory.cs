@@ -12,7 +12,8 @@ public static class KeycloakClientFactory
             email    = dto.Email,
             enabled  = true,
             attributes = new {
-                profileCompleted = new[] { "false" }
+                profileCompleted = new[] { "false" },
+                avatarPath = new[] { "uploads/avatars/default.png" }
             },
             credentials = new[] {
                 new { type = "password", value = dto.Password, temporary = false }

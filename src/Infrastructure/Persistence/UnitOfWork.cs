@@ -1,6 +1,5 @@
 ﻿using Application.Contracts;
 using Infrastructure.Data;
-using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Persistence;
 
