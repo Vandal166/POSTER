@@ -23,49 +23,62 @@
     {
         <div class="card shadow-sm mb-3">
             <div class="card-body">
+
                 <!-- Post Header -->
                 <div class="d-flex align-items-center mb-2">
-                    <img src="~/images/default-avatar.png" class="rounded-circle me-2" width="40" height="40" alt="Avatar" />
+                    <a asp-page="/User/Details" asp-route-id="@post.AuthorUsername">
+                        <img src="@Url.Content("~/" + post.AuthorAvatarPath)" 
+                             class="rounded-circle me-2" width="40" height="40" alt="Avatar" />
+                    </a>
                     <div>
-                        <div class="fw-semibold">@post.AuthorUsername</div>
+                        <a asp-page="/User/Details" asp-route-id="@post.AuthorUsername" 
+                           class="fw-semibold text-decoration-none text-dark">
+                            @post.AuthorUsername
+                        </a>
+                        <br />
                         <small class="text-muted">@post.CreatedAt.ToString("MMM d, yyyy 'at' h:mm tt")</small>
                     </div>
                 </div>
 
-                <!-- Post Content -->
-                <p class="mb-2">@post.Content</p>
+                <!-- Post Content (clickable only if clicked, but text selectable) -->
+                <p class="mb-2">
+                    <a asp-page="/Posts/Details" asp-route-id="@post.Id" 
+                       class="text-decoration-none text-dark" 
+                       style="white-space: pre-wrap;">@post.Content</a>
+                </p>
 
-                @*<!-- Post Stats -->
-                <div class="d-flex text-muted small">
-                    <div class="me-3">
-                        <i class="bi bi-heart me-1"></i>@post.LikesCount
-                    </div>
-                    <div class="me-3">
+                <!-- Post Stats -->
+                <div class="d-flex text-muted small fs-5">
+                    <auth-only>
+                        <div id="likes-@post.Id"
+                             hx-post="/Posts/LikePost?handler=Like"
+                             hx-include="this"
+                             hx-target="#likes-@post.Id"
+                             hx-swap="outerHTML">
+
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="postId" value="@post.Id"/>
+                            <button type="submit" class="btn btn-link p-0 me-3 text-muted text-decoration-none fs-5">
+                                <i class="bi bi-heart me-1"></i>@post.LikesCount
+                            </button>
+                        </div>
+                    </auth-only>
+                    <anon-only>
+                        <a asp-page="/Account/Login"
+                           class="btn btn-link p-0 me-3 text-muted text-decoration-none fs-5">
+                            <i class="bi bi-heart me-1"></i>@post.LikesCount
+                        </a>
+                    </anon-only>
+
+                    <a asp-page="/Posts/Details" asp-route-id="@post.Id"
+                       class="btn btn-link p-0 me-3 text-muted text-decoration-none fs-5">
                         <i class="bi bi-chat me-1"></i>@post.CommentsCount
-                    </div>
-                    <div>
+                    </a>
+                    <a asp-page="/Posts/Details" asp-route-id="@post.Id"
+                       class="btn btn-link p-0 text-muted text-decoration-none fs-5">
                         <i class="bi bi-eye me-1"></i>@post.ViewsCount
-                    </div>
-                </div>*@
-
-                @*<!-- Comments (Collapsible) -->
-                @if (post.CommentsCount > 0)
-                {
-                    <button class="btn btn-link p-0 mt-2" type="button" data-bs-toggle="collapse" data-bs-target="#comments-@post.Id">
-                        View Comments (@post.CommentsCount)
-                    </button>
-
-                    <div class="collapse mt-2" id="comments-@post.Id">
-                        @foreach (var comment in post.Comments)
-                        {
-                            <div class="border-top pt-2 mt-2">
-                                <small class="fw-semibold">@comment.AuthorUsername</small>
-                                <div>@comment.Content</div>
-                                <small class="text-muted">@comment.CreatedAt.ToString("MMM d, yyyy h:mm tt")</small>
-                            </div>
-                        }
-                    </div>
-                }*@
+                    </a>
+                </div>
             </div>
         </div>
     }

@@ -16,20 +16,40 @@ public class PostRepository : IPostRepository
         _db = db;
     }
 
-    public Task<bool> ExistsAsync(Guid postId, CancellationToken cancellationToken = default)
+    public async Task<bool> ExistsAsync(Guid postId, CancellationToken cancellationToken = default)
     {
-        return _db.Posts
+        return await _db.Posts
             .AsNoTracking()
             .AnyAsync(p => p.ID == postId, cancellationToken);
     }
 
-    public async Task<Post?> GetPostAsync(Guid id, CancellationToken cancellationToken = default)
+    /*public async Task<Post?> GetPostAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _db.Posts
             .Include(p => p.Author)
             .Include(p => p.Comments)
             .ThenInclude(c => c.Author)
             .FirstOrDefaultAsync(p => p.ID == id, cancellationToken);
+    }*/
+    
+    public async Task<PostDto?> GetPostAsync(Guid postID, CancellationToken ct = default)
+    {
+        return await _db.Posts
+            .Where(p => p.ID == postID)
+            .Select
+            (p => new PostDto
+                (
+                    p.ID,
+                    p.Author.Username,
+                    p.Author.AvatarPath,
+                    p.Content,
+                    p.CreatedAt,
+                    p.Likes.Count,
+                    p.Comments.Count,
+                    p.Views.Count
+                )
+            )
+            .FirstOrDefaultAsync(ct);
     }
 
     public async Task<List<Post>> GetUserFeedAsync(Guid userId, CancellationToken cancellationToken = default)
@@ -51,8 +71,12 @@ public class PostRepository : IPostRepository
             .Select(p => new PostDto(
                 p.ID,
                 p.Author.Username,
+                p.Author.AvatarPath,
                 p.Content,
-                p.CreatedAt
+                p.CreatedAt,
+                p.Likes.Count,
+                p.Comments.Count,
+                p.Views.Count
             ));
         
        return await PagedList<PostDto>.CreateAsync(postsResponse, page, pageSize, cancellationToken);

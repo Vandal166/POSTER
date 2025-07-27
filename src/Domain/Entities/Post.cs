@@ -18,6 +18,12 @@ public sealed class Post : AuditableEntity
     public IReadOnlyCollection<Comment> Comments => _comments; // comments on the post
     private readonly List<Comment> _comments = new();
     
+    public IReadOnlyCollection<PostLike> Likes => _likes; // likes on the post
+    private readonly List<PostLike> _likes = new();
+    
+    public IReadOnlyCollection<PostView> Views => _views; // views on the post
+    private readonly List<PostView> _views = new();
+    
     private Post(){}
     
     public static Result<Post> Create(Guid authorID, string content)

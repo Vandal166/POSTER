@@ -1,0 +1,59 @@
+﻿@page "{id:guid}"
+@model Web.Pages.Posts.Details
+@{
+    ViewData["Title"] = "Post Details";
+}
+
+<div class="container py-4" style="max-width: 600px;">
+    <div class="card shadow-sm mb-3">
+        <div class="card-body">
+            <!-- Post Header -->
+            <div class="d-flex align-items-center mb-2">
+                <img src="@Url.Content("~/" + Model.Post.AuthorAvatarPath)" class="rounded-circle me-2" width="40" height="40" alt="Avatar"/>
+                <div>
+                    <div class="fw-semibold">@Model.Post.AuthorUsername</div>
+                    <small class="text-muted">@Model.Post.CreatedAt.ToString("MMM d, yyyy 'at' h:mm tt")</small>
+                </div>
+            </div>
+
+            <!-- Post Content -->
+            <p class="mb-2">@Model.Post.Content</p>
+
+            <!-- Post Stats -->
+            <div class="d-flex text-muted small mb-3">
+                <div class="me-3">
+                    <i class="bi bi-heart me-1"></i>@Model.Post.LikesCount
+                </div>
+                <div class="me-3">
+                    <i class="bi bi-chat me-1"></i>@Model.Post.CommentsCount
+                </div>
+                <div>
+                    <i class="bi bi-eye me-1"></i>@Model.Post.ViewsCount
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h5 class="fw-bold mb-3">Comments</h5>
+    @if(Model.Comments.Count() == 0)
+    {
+        <div class="alert alert-info">No comments yet. Be the first to comment!</div>
+    }
+    else
+    {
+        @foreach (var comment in Model.Comments)
+        {
+            <div class="card shadow-sm mb-2">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-1">
+                        <strong>@comment.AuthorUsername</strong>
+                        <small class="text-muted ms-2">@comment.CreatedAt.ToString("MMM d, yyyy 'at' h:mm tt")</small>
+                    </div>
+                    <p class="mb-0">@comment.Content</p>
+                </div>
+            </div>
+        }
+    }
+    
+    @*TODO option to add an comment on this post*@
+</div>

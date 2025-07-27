@@ -2,6 +2,7 @@
 using Application.Contracts.Persistence;
 using Application.DTOs;
 using Domain.Entities;
+using Infrastructure.Common;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -23,18 +24,25 @@ public class PostCommentRepository : IPostCommentRepository
 
     public async Task<IPagedList<CommentDto>> GetCommentsByPostAsync(Guid postID, int page, int pageSize, CancellationToken cancellationToken = default)
     {
-        /*var commentsResponse =  _db.Comments
+        var commentsResponse =  _db.Comments
             .AsNoTracking()
             .OrderByDescending(p => p.CreatedAt)
             .Where(c => c.PostID == postID)
             .Select(c => new CommentDto(
                 c.ID,
-                c.Author.Username.Value,
+                c.Author.Username,
                 c.Content,
                 c.CreatedAt
             ));
         
-        return await PagedList<CommentDto>.CreateAsync(commentsResponse, page, pageSize, cancellationToken);*/ return null;
+        return await PagedList<CommentDto>.CreateAsync(commentsResponse, page, pageSize, cancellationToken);
+    }
+
+    public async Task<int> GetCommentsCountByPostAsync(Guid postID, CancellationToken ct = default)
+    {
+        return await _db.Comments
+            .AsNoTracking()
+            .CountAsync(c => c.PostID == postID, ct);
     }
 
     public Task AddAsync(Comment comment, CancellationToken cancellationToken = default)

@@ -76,7 +76,7 @@ etc
         {
             b.HasKey(pl => pl.ID);
             b.HasOne(pl => pl.Post)
-                .WithMany()
+                .WithMany(p => p.Likes)
                 .HasForeignKey(pl => pl.PostID)
                 .OnDelete(DeleteBehavior.Cascade); // removing a post will remove its likes
             b.HasOne(pl => pl.User)
@@ -104,7 +104,7 @@ etc
         {
             b.HasKey(v => v.ID);
             b.HasOne(v => v.Post)
-                .WithMany()
+                .WithMany(p => p.Views)
                 .HasForeignKey(v => v.PostID)
                 .OnDelete(DeleteBehavior.Cascade); // removing a post will remove its views
             b.HasOne(v => v.User)

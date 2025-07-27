@@ -7,6 +7,7 @@ public interface IPostCommentRepository
 {
     Task<Comment?> GetCommentAsync(Guid id, CancellationToken cancellationToken = default);
     Task<IPagedList<CommentDto>> GetCommentsByPostAsync(Guid postID, int page, int pageSize, CancellationToken cancellationToken = default);
+    Task<int> GetCommentsCountByPostAsync(Guid postID, CancellationToken ct = default);
     
     Task AddAsync(Comment comment, CancellationToken cancellationToken = default);
     Task UpdateAsync(Comment comment, CancellationToken cancellationToken = default);

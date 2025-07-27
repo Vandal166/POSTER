@@ -4,6 +4,7 @@ using Application;
 using Infrastructure;
 using Serilog;
 using Web;
+using Web.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,7 +44,7 @@ app.UseAuthorization(); // Authorization - access control based on policies/role
 app.MapStaticAssets();
 app.MapRazorPages()
     .WithStaticAssets();
-
+app.MapPostLikeEndpoints();
 
 #if USE_SEEDING
 using (var scope = app.Services.CreateScope())

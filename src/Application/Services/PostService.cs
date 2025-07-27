@@ -38,7 +38,8 @@ public class PostService : IPostService
     
     public async Task<Post?> GetPostAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return await _posts.GetPostAsync(id, cancellationToken);
+        //return await _posts.GetPostAsync(id, cancellationToken);
+        return null;
     }
     
     public async Task<IPagedList<PostDto>> GetAllAsync(int page, int pageSize, CancellationToken cancellationToken = default)
@@ -48,7 +49,7 @@ public class PostService : IPostService
     
     public async Task<Post?> DeletePostAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var post = await _posts.GetPostAsync(id, cancellationToken);
+        /*var post = await _posts.GetPostAsync(id, cancellationToken);
         if (post is null)
             return null;
         
@@ -56,6 +57,7 @@ public class PostService : IPostService
         await _posts.DeleteAsync(post, cancellationToken);
         await _uow.SaveChangesAsync(cancellationToken);
         
-        return post;
+        return post;*/
+        return null;
     }
 }

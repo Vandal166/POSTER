@@ -63,7 +63,7 @@ public class PostCommentService : IPostCommentService
         if (post is null)
             return Result.Fail("Post not found");
         
-        if(post.ID != comment.PostID)
+        if(post.Id != comment.PostID)
             return Result.Fail("Comment does not belong to this post");
 
         await _postComments.DeleteAsync(comment, cancellationToken);
