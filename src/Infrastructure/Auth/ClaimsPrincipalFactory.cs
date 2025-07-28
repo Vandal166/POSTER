@@ -10,7 +10,7 @@ public static class ClaimsPrincipalFactory
     {
         var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.NameIdentifier, user.ID),
+            new Claim(ClaimTypes.NameIdentifier, user.ID.ToString()),
             new Claim(ClaimTypes.Name, user.Username),
             new Claim(ClaimTypes.Email, user.Email),
             new Claim("avatarPath", user.Attributes?["avatarPath"]?.FirstOrDefault() ?? "uploads/avatars/default.png"),

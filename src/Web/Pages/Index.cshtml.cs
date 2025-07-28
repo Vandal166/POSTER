@@ -12,34 +12,53 @@ public class IndexModel : PageModel
 {
     private readonly ICurrentUserService _currentUser;
     private readonly IPostRepository _postRepository;
+    private readonly IPostLikeRepository _postLikeRepo;
+    private readonly IPostCommentRepository _postCommentRepo;
+    private readonly IPostViewRepository _postViewRepo;
     
+    public IEnumerable<PostAggregateDto> Posts { get; private set; } = Enumerable.Empty<PostAggregateDto>();
     
-    public IEnumerable<PostDto> Posts { get; private set; } = Enumerable.Empty<PostDto>();
-
     public int CurrentPage { get; private set; }
     public int TotalPages { get; private set; }
     
-    public IndexModel(ICurrentUserService currentUser, IPostRepository postRepository)
+    public IndexModel(ICurrentUserService currentUser, IPostRepository postRepository, IPostLikeRepository postLikeRepo, IPostCommentRepository postCommentRepo, 
+        IPostViewRepository postViewRepo)
     {
         _currentUser = currentUser;
         _postRepository = postRepository;
+        _postLikeRepo = postLikeRepo;
+        _postCommentRepo = postCommentRepo;
+        _postViewRepo = postViewRepo;
     }
     
-    public async Task<IActionResult> OnGet(int pageNumber = 1, int pageSize = 10)
+    public async Task<IActionResult> OnGet(int pageNumber = 1, int pageSize = 10, CancellationToken ct = default)
     {
         var user = HttpContext.User;
         
         if(user?.Identity?.IsAuthenticated != false && _currentUser.HasClaim("profileCompleted", "false"))
             return RedirectToPage("/Account/CompleteProfile");
         
-        var pagedPosts = await _postRepository.GetAllAsync(pageNumber, pageSize);
-        Posts = pagedPosts.Items.Select(p =>
+        var pagedPosts = await _postRepository.GetAllAsync(pageNumber, pageSize, ct);
+        var postDtos = pagedPosts.Items.Select(p =>
             p with
             {
-                Content = (p.Content?.Length > 300 ? string.Concat(p.Content.AsSpan(0, 300), "... Click expand post") : p.Content)!
+                Content = (p.IsTruncated ? string.Concat(p.Content.AsSpan(0, 300), "...") : p.Content)
+            }).ToList();
+
+        var aggregates = new List<PostAggregateDto>(postDtos.Count);
+        foreach (var post in postDtos)
+        {
+            aggregates.Add(new PostAggregateDto
+            {
+                Post = post,
+                LikeCount = await _postLikeRepo.GetLikesCountByPostAsync(post.Id, ct),
+                CommentCount = await _postCommentRepo.GetCommentsCountByPostAsync(post.Id, ct),
+                ViewCount = await _postViewRepo.GetViewsCountByPostAsync(post.Id, ct),
+                IsLiked = await _postLikeRepo.IsPostLikedByUserAsync(post.Id, _currentUser.ID, ct)
             });
+        }
         
-        //TODO add better way to handle content truncation
+        Posts = aggregates;
         CurrentPage = pagedPosts.Page;
         TotalPages = pagedPosts.TotalCount;
         

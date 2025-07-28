@@ -48,10 +48,10 @@ public class PasswordTokenProvider : IPasswordTokenProvider
         // parse the "sub" from the access token:
         var jwt   = new JwtSecurityTokenHandler().ReadJwtToken(accessToken);
         var userID   = jwt.Claims.FirstOrDefault(c=>c.Type=="sub")?.Value;
-        if (string.IsNullOrEmpty(userID))
+        if (Guid.TryParse(userID, out var guid) is false)
             return Result.Fail<TokenResponse>("Unable to load user profile.");
 
-        return Result.Ok(new TokenResponse(accessToken, idToken, refreshToken, userID));
+        return Result.Ok(new TokenResponse(accessToken, idToken, refreshToken, guid));
     }
     
     private static string GetFriendlyMessage(string body)

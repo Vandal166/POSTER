@@ -12,7 +12,7 @@ public interface IAuthService
     
     Task<Result<(ClaimsPrincipal Principal, AuthenticationProperties Props)>> LoginAsync(LoginUserDto dto, CancellationToken ct = default);
 
-    Task<Result> UpdateKeycloakUsernameAsync(string userID, UsernameDto dto, CancellationToken ct = default);
+    Task<Result> UpdateKeycloakUsernameAsync(Guid userID, UsernameDto dto, CancellationToken ct = default);
 
-    Task<Result> UpdateKeycloakAvatarAsync(string userID, string avatarPath, CancellationToken ct = default);
+    Task<Result> UpdateKeycloakAvatarAsync(Guid userID, string avatarPath, CancellationToken ct = default);
 }

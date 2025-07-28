@@ -17,8 +17,8 @@ public sealed class CurrentUserService : ICurrentUserService
     private ClaimsPrincipal User => _http.HttpContext?.User ?? new ClaimsPrincipal();
     
     //--- USER PROPERTIES ---//
-    public string ID => User.FindFirst(ClaimTypes.NameIdentifier)?.Value ??
-                        User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value ?? string.Empty;
+    public Guid ID => GetUserId();
+    
     public bool Enabled =>
         bool.TryParse(User.FindFirst("enabled")?.Value, out var enabled) && enabled;
 
@@ -29,7 +29,15 @@ public sealed class CurrentUserService : ICurrentUserService
         User.FindFirst(ClaimTypes.Email)?.Value ?? string.Empty;
 
     public string AvatarPath =>
-        User.FindFirst("avatarPath")?.Value!;
+        User.FindFirst("avatarPath")?.Value ?? "uploads/avatars/default.png";
+    
+    private Guid GetUserId()
+    {
+        var idClaim = User.FindFirst(ClaimTypes.NameIdentifier) ?? 
+                      User.FindFirst(JwtRegisteredClaimNames.Sub);
+        
+        return idClaim != null && Guid.TryParse(idClaim.Value, out var userId) ? userId : Guid.Empty;
+    }
     
     
    public bool HasClaim(string type, string value)

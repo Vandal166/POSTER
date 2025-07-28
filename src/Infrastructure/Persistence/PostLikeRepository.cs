@@ -46,4 +46,11 @@ public class PostLikeRepository : IPostLikeRepository
             .Where(pl => pl.PostID == postID)
             .ToListAsync(cancellationToken);
     }
+    
+    public async Task<int> GetLikesCountByPostAsync(Guid postID, CancellationToken cancellationToken = default)
+    {
+        return await _db.PostLikes
+            .AsNoTracking()
+            .CountAsync(pl => pl.PostID == postID, cancellationToken);
+    }
 }

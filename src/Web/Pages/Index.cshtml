@@ -26,57 +26,66 @@
 
                 <!-- Post Header -->
                 <div class="d-flex align-items-center mb-2">
-                    <a asp-page="/User/Details" asp-route-id="@post.AuthorUsername">
-                        <img src="@Url.Content("~/" + post.AuthorAvatarPath)" 
+                    <a asp-page="/User/Details" asp-route-id="@post.Post.AuthorAvatarPath">
+                        <img src="@Url.Content("~/" + post.Post.AuthorAvatarPath)" 
                              class="rounded-circle me-2" width="40" height="40" alt="Avatar" />
                     </a>
                     <div>
-                        <a asp-page="/User/Details" asp-route-id="@post.AuthorUsername" 
+                        <a asp-page="/User/Details" asp-route-id="@post.Post.AuthorUsername" 
                            class="fw-semibold text-decoration-none text-dark">
-                            @post.AuthorUsername
+                            @post.Post.AuthorUsername
                         </a>
                         <br />
-                        <small class="text-muted">@post.CreatedAt.ToString("MMM d, yyyy 'at' h:mm tt")</small>
+                        <small class="text-muted">@post.Post.CreatedAt.ToString("MMM d, yyyy 'at' h:mm tt")</small>
                     </div>
                 </div>
 
                 <!-- Post Content (clickable only if clicked, but text selectable) -->
                 <p class="mb-2">
-                    <a asp-page="/Posts/Details" asp-route-id="@post.Id" 
-                       class="text-decoration-none text-dark" 
-                       style="white-space: pre-wrap;">@post.Content</a>
+                    <a asp-page="/Posts/Details" asp-route-id="@post.Post.Id" 
+                       class="text-decoration-none text-dark post-content-link" 
+                       style="white-space: pre-wrap; user-select: text;"
+                       draggable="false">@post.Post.Content</a>
+                    
+                    @if (post.Post.IsTruncated)
+                    {
+                        <br/>
+                        <a asp-page="/Posts/Details" asp-route-id="@post.Post.Id"
+                           class="text-primary text-decoration-none fw-semibold">Show more</a>
+                    }
                 </p>
-
+                <hr/>
                 <!-- Post Stats -->
                 <div class="d-flex text-muted small fs-5">
                     <auth-only>
-                        <div id="likes-@post.Id"
-                             hx-post="/Posts/LikePost?handler=Like"
+                        <div id="likes-@post.Post.Id"
+                             hx-post="/Posts/TogglePostLike?handler=ToggleLike"
                              hx-include="this"
-                             hx-target="#likes-@post.Id"
+                             hx-target="#likes-@post.Post.Id"
                              hx-swap="outerHTML">
 
                             @Html.AntiForgeryToken()
-                            <input type="hidden" name="postId" value="@post.Id"/>
-                            <button type="submit" class="btn btn-link p-0 me-3 text-muted text-decoration-none fs-5">
-                                <i class="bi bi-heart me-1"></i>@post.LikesCount
+                            <input type="hidden" name="postId" value="@post.Post.Id"/>
+                            <button type="submit" 
+                                    class="btn btn-link p-0 me-3 text-decoration-none fs-5 like-btn @(post.IsLiked ? "text-pink" : "text-muted")">
+                                <i class="bi bi-heart me-1"></i>@post.LikeCount
                             </button>
                         </div>
                     </auth-only>
                     <anon-only>
                         <a asp-page="/Account/Login"
-                           class="btn btn-link p-0 me-3 text-muted text-decoration-none fs-5">
-                            <i class="bi bi-heart me-1"></i>@post.LikesCount
+                           class="btn btn-link p-0 me-3 text-muted text-decoration-none fs-5 like-btn">
+                            <i class="bi bi-heart me-1"></i>@post.LikeCount
                         </a>
                     </anon-only>
 
-                    <a asp-page="/Posts/Details" asp-route-id="@post.Id"
-                       class="btn btn-link p-0 me-3 text-muted text-decoration-none fs-5">
-                        <i class="bi bi-chat me-1"></i>@post.CommentsCount
+                    <a asp-page="/Posts/Details" asp-route-id="@post.Post.Id"
+                       class="btn btn-link p-0 me-3 text-muted text-decoration-none fs-5 comment-btn">
+                        <i class="bi bi-chat me-1"></i>@post.CommentCount
                     </a>
-                    <a asp-page="/Posts/Details" asp-route-id="@post.Id"
-                       class="btn btn-link p-0 text-muted text-decoration-none fs-5">
-                        <i class="bi bi-eye me-1"></i>@post.ViewsCount
+                    <a
+                       class="btn btn-link p-0 text-muted text-decoration-none fs-5 view-btn">
+                        <i class="bi bi-eye me-1"></i>@post.ViewCount
                     </a>
                 </div>
             </div>
@@ -103,5 +112,6 @@
 </div>
 
 <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/index.js"></script>
 </body>
 </html>

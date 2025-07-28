@@ -1,14 +1,15 @@
-﻿@model Application.DTOs.PostDto
+﻿@model Application.DTOs.PostLikesDto
 
-<div id="likes-@Model.Id" 
-     hx-post="/Posts/LikePost?handler=Like" 
+<div id="likes-@Model.PostID" 
+     hx-post="/Posts/TogglePostLike?handler=ToggleLike"
      hx-include="this" 
-     hx-target="#likes-@Model.Id" 
+     hx-target="#likes-@Model.PostID" 
      hx-swap="outerHTML">
 
     @Html.AntiForgeryToken()
-    <input type="hidden" name="postId" value="@Model.Id" />
-    <button type="submit" class="btn btn-link p-0 me-3 text-muted text-decoration-none fs-5">
+    <input type="hidden" name="postId" value="@Model.PostID" />
+    <button type="submit" 
+            class="btn btn-link p-0 me-3 text-decoration-none fs-5 like-btn @(Model.IsLiked ? "text-pink" : "text-muted")">
         <i class="bi bi-heart me-1"></i>@Model.LikesCount
     </button>
 </div>

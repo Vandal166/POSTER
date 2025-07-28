@@ -24,16 +24,16 @@ public sealed class UserService : IUserService
         _avatarValidator = avatarValidator;
     }
 
-    public async Task<Result<string>> GetAvatarPathAsync(string userID, CancellationToken ct = default)
+    public async Task<Result<string>> GetAvatarPathAsync(Guid userID, CancellationToken ct = default)
     {
-        var user = await _userRepository.GetUserAsync(Guid.Parse(userID), ct);
+        var user = await _userRepository.GetUserAsync(userID, ct);
         if (user is null)
             return Result.Fail("User not found.");
         
         return user.AvatarPath; // returns default avatar path if null
     }
 
-    public async Task<Result> UpdateUsernameAsync(string userID, UsernameDto dto, CancellationToken ct = default)
+    public async Task<Result> UpdateUsernameAsync(Guid userID, UsernameDto dto, CancellationToken ct = default)
     {
         var validation = await _usernameValidator.ValidateAsync(dto, ct);
         if (!validation.IsValid)
@@ -47,7 +47,7 @@ public sealed class UserService : IUserService
         };
     }
 
-    public async Task<Result> UpdateAvatarAsync(string userID, AvatarDto fileDto, CancellationToken ct = default)
+    public async Task<Result> UpdateAvatarAsync(Guid userID, AvatarDto fileDto, CancellationToken ct = default)
     {
         var validation = await _avatarValidator.ValidateAsync(fileDto, ct); //TODO (file == null || file.Length == 0)
         if (!validation.IsValid)

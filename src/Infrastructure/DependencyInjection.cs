@@ -33,6 +33,7 @@ public static class DependencyInjection
         services.AddScoped<IPostRepository, PostRepository>();
         services.AddScoped<IPostLikeRepository, PostLikeRepository>();
         services.AddScoped<IPostCommentRepository, PostCommentRepository>();
+        services.AddScoped<IPostViewRepository, PostViewRepository>();
         
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddSingleton<IPasswordHasher, BcryptHasher>();

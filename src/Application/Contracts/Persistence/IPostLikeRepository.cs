@@ -11,4 +11,5 @@ public interface IPostLikeRepository
     Task RemoveLikeAsync(PostLike like, CancellationToken cancellationToken = default);
     
     Task<List<PostLike>> GetLikesByPostAsync(Guid postID, CancellationToken cancellationToken = default);
+    Task<int> GetLikesCountByPostAsync(Guid postID, CancellationToken cancellationToken = default);
 }

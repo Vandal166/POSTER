@@ -1,40 +1,112 @@
 ﻿@page "{id:guid}"
+@using Application.Contracts
 @model Web.Pages.Posts.Details
+@inject ICurrentUserService CurrentUser
 @{
     ViewData["Title"] = "Post Details";
+    var backUrl = Request.Query["returnUrl"].ToString();
 }
 
 <div class="container py-4" style="max-width: 600px;">
     <div class="card shadow-sm mb-3">
         <div class="card-body">
-            <!-- Post Header -->
-            <div class="d-flex align-items-center mb-2">
-                <img src="@Url.Content("~/" + Model.Post.AuthorAvatarPath)" class="rounded-circle me-2" width="40" height="40" alt="Avatar"/>
-                <div>
-                    <div class="fw-semibold">@Model.Post.AuthorUsername</div>
-                    <small class="text-muted">@Model.Post.CreatedAt.ToString("MMM d, yyyy 'at' h:mm tt")</small>
-                </div>
-            </div>
+            
+           <!-- Back Button and Post Header -->
+           <div class="d-flex align-items-center mb-3 justify-content-between">
+               <a href="@(!string.IsNullOrEmpty(backUrl) ? backUrl : "/")"
+                  class="btn btn-link text-decoration-none text-dark d-flex align-items-center p-0">
+                   <i class="bi bi-arrow-left me-2 fs-5"></i>
+                   <span class="fw-bold fs-5">Post</span>
+               </a>
+               <div class="d-flex align-items-center text-end">
+                   <div>
+                       <a asp-page="/User/Details" asp-route-id="@Model.Post.Post.AuthorUsername"
+                          class="fw-semibold text-decoration-none text-dark">
+                           @Model.Post.Post.AuthorUsername
+                       </a>
+                       <br/>
+                       <small class="text-muted">@Model.Post.Post.CreatedAt.ToString("MMM d, yyyy 'at' h:mm tt")</small>
+                   </div>
+                   <a asp-page="/User/Details" asp-route-id="@Model.Post.Post.AuthorUsername">
+                       <img src="@Url.Content("~/" + Model.Post.Post.AuthorAvatarPath)"
+                            class="rounded-circle ms-2" width="40" height="40" alt="Avatar"/>
+                   </a>
+               </div>
+           </div>
+
 
             <!-- Post Content -->
-            <p class="mb-2">@Model.Post.Content</p>
-
+            <p class="mb-2">@Model.Post.Post.Content</p>
+            
+            <hr/>
+            
             <!-- Post Stats -->
-            <div class="d-flex text-muted small mb-3">
-                <div class="me-3">
-                    <i class="bi bi-heart me-1"></i>@Model.Post.LikesCount
-                </div>
-                <div class="me-3">
-                    <i class="bi bi-chat me-1"></i>@Model.Post.CommentsCount
-                </div>
-                <div>
-                    <i class="bi bi-eye me-1"></i>@Model.Post.ViewsCount
-                </div>
+            <div class="d-flex text-muted small fs-5">
+                <auth-only>
+                    <div id="likes-@Model.Post.Post.Id"
+                         hx-post="/Posts/TogglePostLike?handler=ToggleLike"
+                         hx-include="this"
+                         hx-target="#likes-@Model.Post.Post.Id"
+                         hx-swap="outerHTML">
+
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="postId" value="@Model.Post.Post.Id"/>
+                        <button type="submit" class="btn btn-link p-0 me-3 text-muted text-decoration-none fs-5 like-btn">
+                            <i class="bi bi-heart me-1"></i>@Model.Post.LikeCount
+                        </button>
+                    </div>
+                </auth-only>
+                <anon-only>
+                    <a asp-page="/Account/Login"
+                       class="btn btn-link p-0 me-3 text-muted text-decoration-none fs-5 like-btn">
+                        <i class="bi bi-heart me-1"></i>@Model.Post.LikeCount
+                    </a>
+                </anon-only>
+
+                <a asp-page="/Posts/Details" asp-route-id="@Model.Post.Post.Id"
+                   class="btn btn-link p-0 me-3 text-muted text-decoration-none fs-5 comment-btn">
+                    <i class="bi bi-chat me-1"></i>@Model.Post.CommentCount
+                </a>
+                <a
+                    class="btn btn-link p-0 text-muted text-decoration-none fs-5 view-btn">
+                    <i class="bi bi-eye me-1"></i>@Model.Post.ViewCount
+                </a>
             </div>
         </div>
     </div>
 
+    <auth-only>
+        <form method="post" asp-page-handler="AddComment">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="PostId" value="@Model.Post.Post.Id" />
+
+            <div class="d-flex align-items-start mb-3">
+                <img src="@Url.Content("~/" + CurrentUser.AvatarPath)" 
+                     class="rounded-circle me-2 align-self-center" width="36" height="36" alt="Your avatar" />
+                <div class="flex-grow-1 d-flex align-items-center border rounded-3 px-3 py-2 bg-light">
+                    <textarea name="Content"
+                              class="form-control border-0 bg-light me-2"
+                              placeholder="Write your comment..."
+                              rows="1"
+                              style="resize: none; box-shadow: none; overflow: hidden"
+                              required oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px';"></textarea>
+                    <button type="submit" class="btn btn-sm btn-primary px-3">
+                        <i class="bi bi-send-fill"></i>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </auth-only>
+    <anon-only>
+        <div class="text-center border rounded p-3 bg-light mb-3">
+            <a asp-page="/Account/Login" class="btn btn-outline-primary">Log in to comment</a>
+        </div>
+    </anon-only>
+    
     <h5 class="fw-bold mb-3">Comments</h5>
+    
+    <hr/>
+    
     @if(Model.Comments.Count() == 0)
     {
         <div class="alert alert-info">No comments yet. Be the first to comment!</div>
@@ -55,5 +127,4 @@
         }
     }
     
-    @*TODO option to add an comment on this post*@
 </div>

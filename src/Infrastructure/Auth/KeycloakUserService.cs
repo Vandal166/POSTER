@@ -28,7 +28,7 @@ public class KeycloakUserService : IKeycloakUserService
         _config = config;
     }
 
-    public async Task<IResult<string>> CreateAsync(RegisterUserDto dto, string adminToken, CancellationToken ct = default)
+    public async Task<IResult<Guid>> CreateAsync(RegisterUserDto dto, string adminToken, CancellationToken ct = default)
     {
         var client = _http.CreateClient("Keycloak");
 
@@ -44,26 +44,26 @@ public class KeycloakUserService : IKeycloakUserService
         var res = await _tokenGen.SendRequestAsync(client, req, ct); // this creates the user(if no errors) in keycloak
         if (res.StatusCode == HttpStatusCode.Conflict)
         {
-            return Result.Fail<string>("User already exists.");
+            return Result.Fail<Guid>("User already exists.");
         }
 
         if (res.StatusCode != HttpStatusCode.Created)
         {
-            return Result.Fail<string>($"Error: {res.StatusCode}");
+            return Result.Fail<Guid>($"Error: {res.StatusCode}");
         }
 
         // Location header ends with the new user ID
         var locationSegments = res.Headers.Location?.Segments;
         var newId = locationSegments?.Last();
-        if (string.IsNullOrEmpty(newId))
+        if (Guid.TryParse(newId, out var userId) is false)
         {
-            return Result.Fail<string>("Failed to retrieve new user ID.");
+            return Result.Fail<Guid>("Failed to retrieve new user ID.");
         }
 
-        return Result.Ok(newId);
+        return Result.Ok(userId);
     }
 
-    public async Task<IResult<string>> GetAsync(string userID, string adminToken, CancellationToken ct = default)
+    public async Task<IResult<string>> GetAsync(Guid userID, string adminToken, CancellationToken ct = default)
     {
         var client = _http.CreateClient("Keycloak");
 
@@ -84,7 +84,7 @@ public class KeycloakUserService : IKeycloakUserService
         return Result.Ok(userJson);
     }
     
-    public async Task<KeycloakUser?> GetUserAsync(string userID, CancellationToken ct = default)
+    public async Task<KeycloakUser?> GetUserAsync(Guid userID, CancellationToken ct = default)
     {
         var client = _http.CreateClient("Keycloak");
 
@@ -120,7 +120,7 @@ public class KeycloakUserService : IKeycloakUserService
         return JsonSerializer.Deserialize<KeycloakUser>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
     }
 
-    private async Task<IResult<string>> UpdateUserAsync(string userID, string userJson, string adminToken, Action<Dictionary<string, object>> updateAction,
+    private async Task<IResult<Guid>> UpdateUserAsync(Guid userID, string userJson, string adminToken, Action<Dictionary<string, object>> updateAction,
         string conflictMessage = "Conflict.", CancellationToken ct = default)
     {
         var client = _http.CreateClient("Keycloak");
@@ -144,7 +144,7 @@ public class KeycloakUserService : IKeycloakUserService
         {
             var user = await GetUserAsync(userID, ct);
             if (user is null)
-                return Result.Fail<string>("Unable to fetch user profile after update.");
+                return Result.Fail<Guid>("Unable to fetch user profile after update.");
             
             var newPrincipal = ClaimsPrincipalFactory.BuildClaims(user);
             await _currentUser.RefreshClaims(newPrincipal);
@@ -154,12 +154,12 @@ public class KeycloakUserService : IKeycloakUserService
 
         return putRes.StatusCode switch
         {
-            HttpStatusCode.Conflict => Result.Fail<string>(conflictMessage),
+            HttpStatusCode.Conflict => Result.Fail<Guid>(conflictMessage),
             _ => Result.Fail($"Error {putRes.StatusCode}")
         };
     }
 
-    public async Task<IResult<string>> UpdateUsernameAsync(string userID, string userName, string userJson, string adminToken, CancellationToken ct = default)
+    public async Task<IResult<Guid>> UpdateUsernameAsync(Guid userID, string userName, string userJson, string adminToken, CancellationToken ct = default)
     {
         return await UpdateUserAsync
         (
@@ -180,7 +180,7 @@ public class KeycloakUserService : IKeycloakUserService
         );
     }
 
-    public async Task<IResult<string>> UpdateAvatarAsync(string userID, string avatarPath, string userJson, string adminToken, CancellationToken ct = default)
+    public async Task<IResult<Guid>> UpdateAvatarAsync(Guid userID, string avatarPath, string userJson, string adminToken, CancellationToken ct = default)
     {
         return await UpdateUserAsync
         (

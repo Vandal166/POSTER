@@ -2,7 +2,7 @@
 
 public class KeycloakUser
 {
-    public string ID { get; set; }
+    public Guid ID { get; set; }
     public bool Enabled { get; set; }
     public string Username { get; set; }
     public string Email { get; set; }

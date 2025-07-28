@@ -15,7 +15,7 @@ public class AvatarService : IAvatarService
         _env = env;
     }
 
-    public async Task<string> UpdateAvatarAsync(string userID, AvatarDto file, CancellationToken ct = default)
+    public async Task<string> UpdateAvatarAsync(Guid userID, AvatarDto file, CancellationToken ct = default)
     {
         var uploadsPath = Path.Combine(_env.WebRootPath, "uploads", "avatars");
         if (!Directory.Exists(uploadsPath))

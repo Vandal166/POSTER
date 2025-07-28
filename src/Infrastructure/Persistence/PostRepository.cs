@@ -43,14 +43,15 @@ public class PostRepository : IPostRepository
                     p.Author.Username,
                     p.Author.AvatarPath,
                     p.Content,
-                    p.CreatedAt,
-                    p.Likes.Count,
-                    p.Comments.Count,
-                    p.Views.Count
+                    p.CreatedAt
                 )
             )
             .FirstOrDefaultAsync(ct);
     }
+    /*,
+                    p.Likes.Count,
+                    p.Comments.Count,
+                    p.Views.Count*/
 
     public async Task<List<Post>> GetUserFeedAsync(Guid userId, CancellationToken cancellationToken = default)
     {
@@ -73,14 +74,15 @@ public class PostRepository : IPostRepository
                 p.Author.Username,
                 p.Author.AvatarPath,
                 p.Content,
-                p.CreatedAt,
-                p.Likes.Count,
-                p.Comments.Count,
-                p.Views.Count
+                p.CreatedAt
             ));
         
        return await PagedList<PostDto>.CreateAsync(postsResponse, page, pageSize, cancellationToken);
     }
+    /*,
+                p.Likes.Count,
+                p.Comments.Count,
+                p.Views.Count*/
 
     public Task AddAsync(Post post, CancellationToken cancellationToken = default)
     {

@@ -83,7 +83,7 @@ public class AuthService : IAuthService
         return Result.Ok((userPrincipal, props));
     }
 
-    public async Task<Result> UpdateKeycloakUsernameAsync(string userID, UsernameDto dto, CancellationToken ct = default)
+    public async Task<Result> UpdateKeycloakUsernameAsync(Guid userID, UsernameDto dto, CancellationToken ct = default)
     {
         // gettin an admin token via client_credentials
         var adminToken = await _tokenProv.GetTokenAsync(ct);
@@ -99,7 +99,7 @@ public class AuthService : IAuthService
         await _userSync.SyncAsync(userID, ct);
         return Result.Ok();
     }   
-    public async Task<Result> UpdateKeycloakAvatarAsync(string userID, string avatarPath, CancellationToken ct = default)
+    public async Task<Result> UpdateKeycloakAvatarAsync(Guid userID, string avatarPath, CancellationToken ct = default)
     {
         // gettin an admin token via client_credentials
         var adminToken = await _tokenProv.GetTokenAsync(ct);
