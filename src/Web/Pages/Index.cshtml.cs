@@ -20,6 +20,9 @@ public class IndexModel : PageModel
     
     public int CurrentPage { get; private set; }
     public int TotalPages { get; private set; }
+    public const int PageSize = 4; // Default page size
+    public bool HasNextPage => CurrentPage < TotalPages;
+    public bool HasPreviousPage => CurrentPage > 1;
     
     public IndexModel(ICurrentUserService currentUser, IPostRepository postRepository, IPostLikeRepository postLikeRepo, IPostCommentRepository postCommentRepo, 
         IPostViewRepository postViewRepo)
@@ -31,14 +34,14 @@ public class IndexModel : PageModel
         _postViewRepo = postViewRepo;
     }
     
-    public async Task<IActionResult> OnGet(int pageNumber = 1, int pageSize = 10, CancellationToken ct = default)
+    public async Task<IActionResult> OnGet(int pageNumber = 1, CancellationToken ct = default)
     {
         var user = HttpContext.User;
         
         if(user?.Identity?.IsAuthenticated != false && _currentUser.HasClaim("profileCompleted", "false"))
             return RedirectToPage("/Account/CompleteProfile");
         
-        var pagedPosts = await _postRepository.GetAllAsync(pageNumber, pageSize, ct);
+        var pagedPosts = await _postRepository.GetAllAsync(pageNumber, PageSize, ct);
         var postDtos = pagedPosts.Items.Select(p =>
             p with
             {

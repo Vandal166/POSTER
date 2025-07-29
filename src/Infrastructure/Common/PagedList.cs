@@ -31,10 +31,10 @@ public class PagedList<T> : IPagedList<T>
     
     public static async Task<PagedList<T>> CreateAsync(IQueryable<T> source, int page, int pageSize, CancellationToken ct = default)
     {
-        var validPage     = Math.Max(1, page);
         var validPageSize = Math.Clamp(pageSize, 1, 100);
-
-        var totalCount = await source.CountAsync(ct);
+        var totalCount = (int)Math.Ceiling((double)await source.CountAsync(ct) / pageSize);
+        var validPage     = Math.Clamp(page, 1, totalCount);
+        
         var items = await source
             .Skip((validPage - 1) * validPageSize)
             .Take(validPageSize)

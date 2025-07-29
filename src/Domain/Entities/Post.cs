@@ -31,9 +31,6 @@ public sealed class Post : AuditableEntity
         if (authorID == Guid.Empty)
             return Result.Fail<Post>("Author ID cannot be empty.");
         
-        if (string.IsNullOrWhiteSpace(content) || content.Length > 280)
-            return Result.Fail<Post>("Content must be between 1 and 280 characters.");
-        
         var post = new Post
         {
             ID        = Guid.NewGuid(),

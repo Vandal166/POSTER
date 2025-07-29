@@ -53,10 +53,12 @@
             <!-- Left Sidebar -->
             <aside class="col-2 col-md-3 col-lg-2 bg-white">
                 <div class="d-flex flex-column">
-                    <a asp-page="/Posts/CreatePost" class="btn btn-primary text-start mb-3 fw-bold">
+                    <!-- Trigger Button -->
+                    <button type="button" class="btn btn-primary text-start mb-3 fw-bold"
+                            data-bs-toggle="modal" data-bs-target="#createPostModal">
                         <i class="bi bi-send-fill me-2"></i> New Post
-                    </a>
-                    
+                    </button>
+
                     <a asp-page="/Index" class="btn btn-light text-start mb-2">
                         <i class="bi bi-house-door me-2"></i> Home
                     </a>
@@ -99,5 +101,6 @@
 <script src="/js/htmx.min.js"></script>
 
 @await RenderSectionAsync("Scripts", required: false)
+@await Html.PartialAsync("_CreatePostPartial")
 </body>
 </html>

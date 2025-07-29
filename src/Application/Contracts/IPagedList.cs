@@ -6,4 +6,6 @@ public interface IPagedList<T>
     int TotalCount { get; }
     int Page { get; }
     int PageSize { get; }
+    bool HasNextPage { get; }
+    bool HasPreviousPage { get; }
 }

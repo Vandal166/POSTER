@@ -9,6 +9,7 @@ public class CreateCommentDtoValidator : AbstractValidator<CreateCommentDto>
     {
         RuleFor(x => x.Content)
             .NotEmpty()
-            .MinimumLength(4);
+            .MinimumLength(4)
+            .MaximumLength(250); //TODO add WithMessage
     }
 }

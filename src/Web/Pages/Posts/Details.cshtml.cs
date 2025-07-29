@@ -16,7 +16,13 @@ public class Details : PageModel
     
     public PostAggregateDto? Post { get; private set; } = null!;
     public IEnumerable<CommentDto> Comments { get; private set; } = Enumerable.Empty<CommentDto>();
-
+    
+    public int CurrentPage { get; private set; }
+    public int TotalPages { get; private set; }
+    public const int PageSize = 6; // Default page size
+    public bool HasNextPage => CurrentPage < TotalPages;
+    public bool HasPreviousPage => CurrentPage > 1;
+    
     public Details(ICurrentUserService currentUser, IPostRepository postRepository, IPostCommentRepository commentRepository, IPostLikeRepository postLikeRepo,
         IPostCommentRepository postCommentRepo, IPostViewRepository postViewRepo)
     {
@@ -27,7 +33,7 @@ public class Details : PageModel
         _postViewRepo = postViewRepo;
     }
 
-    public async Task<IActionResult> OnGetAsync(Guid id, int page = 1, int pageSize = 20, CancellationToken ct = default)
+    public async Task<IActionResult> OnGetAsync(Guid id, int pageNumber = 1, CancellationToken ct = default)
     {
         var post = await _postRepository.GetPostAsync(id, ct);
         if (post is null)
@@ -41,9 +47,12 @@ public class Details : PageModel
             ViewCount = await _postViewRepo.GetViewsCountByPostAsync(id, ct),
             IsLiked = await _postLikeRepo.IsPostLikedByUserAsync(post.Id, _currentUser.ID, ct)
         };
-        var pagedComments = await _postCommentRepo.GetCommentsByPostAsync(id, page, pageSize, ct);
+        var pagedComments = await _postCommentRepo.GetCommentsByPostAsync(id, pageNumber, PageSize, ct);
         Comments = pagedComments.Items;
 
+        CurrentPage = pagedComments.Page;
+        TotalPages = pagedComments.TotalCount;
+        
         return Page();
     }
 }

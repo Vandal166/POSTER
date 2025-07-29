@@ -9,6 +9,7 @@ public class CreatePostDtoValidator : AbstractValidator<CreatePostDto>
     {
         RuleFor(x => x.Content)
             .NotEmpty()
-            .MinimumLength(4);
+            .MinimumLength(4)
+            .MaximumLength(500);
     }
 }
