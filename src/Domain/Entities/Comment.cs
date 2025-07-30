@@ -29,10 +29,7 @@ public sealed class Comment : AuditableEntity
             return Result.Fail<Comment>("Post is required.");
         if (authorID == Guid.Empty)
             return Result.Fail<Comment>("Author is required.");
-        
-        if (string.IsNullOrWhiteSpace(content) || content.Length > 280)
-            return Result.Fail<Comment>("Content must be between 1 and 280 characters.");
-
+      
         var comment = new Comment
         {
             ID              = Guid.NewGuid(),

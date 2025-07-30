@@ -1,6 +1,6 @@
 ﻿@page
 @model Web.Pages.IndexModel
-@inject Application.Contracts.ICurrentUserService CurrentUser
+
 @{
     ViewData["Title"] = "Home";
 }
@@ -8,131 +8,17 @@
 <div class="container py-4" style="max-width: 600px;">
     <h4 class="fw-bold mb-4">Latest Posts</h4>
 
-    @foreach (var post in Model.Posts)
-    {
-        <div class="card shadow-sm mb-3">
-            <div class="card-body">
-
-                <!-- Post Header -->
-                <div class="d-flex align-items-center mb-2">
-                    <a asp-page="/User/Details" asp-route-id="@post.Post.AuthorAvatarPath">
-                        <img src="@Url.Content("~/" + post.Post.AuthorAvatarPath)" 
-                             class="rounded-circle me-2" width="40" height="40" alt="Avatar" />
-                    </a>
-                    <div>
-                        <a asp-page="/User/Details" asp-route-id="@post.Post.AuthorUsername" 
-                           class="fw-semibold text-decoration-none text-dark">
-                            @post.Post.AuthorUsername
-                        </a>
-                        <br />
-                        <small class="text-muted">@post.Post.CreatedAt.ToString("MMM d, yyyy 'at' h:mm tt")</small>
-                    </div>
-                </div>
-
-                <!-- Post Content (clickable only if clicked, but text selectable) -->
-                <p class="mb-2">
-                    <a asp-page="/Posts/Details" asp-route-id="@post.Post.Id" 
-                       class="text-decoration-none text-dark post-content-link" 
-                       style="white-space: pre-wrap; user-select: text;"
-                       draggable="false">@post.Post.Content</a>
-                    
-                    @if (post.Post.IsTruncated)
-                    {
-                        <br/>
-                        <a asp-page="/Posts/Details" asp-route-id="@post.Post.Id"
-                           class="text-primary text-decoration-none fw-semibold">Show more</a>
-                    }
-                </p>
-                <hr/>
-                <!-- Post Stats -->
-                <div class="d-flex justify-content-between align-items-center text-muted small fs-5">
-                    <div class="d-flex align-items-center">
-                        <auth-only>
-                            <div id="likes-@post.Post.Id"
-                                 hx-post="/Posts/TogglePostLike?handler=ToggleLike"
-                                 hx-include="this"
-                                 hx-target="#likes-@post.Post.Id"
-                                 hx-swap="outerHTML">
-
-                                @Html.AntiForgeryToken()
-                                <input type="hidden" name="postId" value="@post.Post.Id"/>
-                                <button type="submit" 
-                                        class="btn btn-link p-0 me-3 text-decoration-none fs-5 like-btn @(post.IsLiked ? "text-pink" : "text-muted")">
-                                    <i class="bi bi-heart me-1"></i>@post.LikeCount
-                                </button>
-                            </div>
-                        </auth-only>
-                        <anon-only>
-                            <a asp-page="/Account/Login"
-                               class="btn btn-link p-0 me-3 text-muted text-decoration-none fs-5 like-btn">
-                                <i class="bi bi-heart me-1"></i>@post.LikeCount
-                            </a>
-                        </anon-only>
-
-                        <a asp-page="/Posts/Details" asp-route-id="@post.Post.Id"
-                           class="btn btn-link p-0 me-3 text-muted text-decoration-none fs-5 comment-btn">
-                            <i class="bi bi-chat me-1"></i>@post.CommentCount
-                        </a>
-                        <a
-                            class="btn btn-link p-0 text-muted text-decoration-none fs-5 view-btn">
-                            <i class="bi bi-eye me-1"></i>@post.ViewCount
-                        </a>
-                    </div>
-                    
-                    <!-- Three Dots Dropdown -->
-                    <div class="dropdown">
-                        <button class="btn btn-link p-0 text-muted text-decoration-none fs-5" type="button" id="postOptionsDropdown-@post.Post.Id"
-                                data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-three-dots"></i>
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="postOptionsDropdown-@post.Post.Id">
-                            <auth-only>
-                                @if (CurrentUser.Username == post.Post.AuthorUsername)
-                                {
-                                    <li>
-                                        <form method="post" asp-page-handler="DeletePost" onsubmit="return confirm('Are you sure you want to delete this post?');">
-                                            @Html.AntiForgeryToken()
-                                            <input type="hidden" name="PostId" value="@post.Post.Id"/>
-                                            <button type="submit" class="dropdown-item text-danger">Delete Post</button>
-                                        </form>
-                                    </li>
-                                }
-                                else
-                                {
-                                    <li><button class="dropdown-item">Report Post</button></li>
-                                }
-                            </auth-only>
-                            <anon-only>
-                                <li><a asp-page="/Account/Login" class="dropdown-item">Log in to report</a></li>
-                            </anon-only>
-                            <li><button class="dropdown-item">Copy Link</button></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-    }
-
-    @if (Model.Posts.Any())
-    {
-        <!-- Pagination -->
-        <nav aria-label="Posts pagination">
-            <ul class="pagination justify-content-center">
-                <li class="page-item @(Model.HasPreviousPage ? "" : "disabled")">
-                    <a class="page-link" asp-route-pageNumber="@(Model.CurrentPage - 1)">Previous</a>
-                </li>
-                @for (var i = 1; i <= Model.TotalPages; i++)
-                {
-                    <li class="page-item @(Model.CurrentPage == i ? "active" : "")">
-                        <a class="page-link" asp-route-pageNumber="@i">@i</a>
-                    </li>
-                }
-                <li class="page-item @(Model.HasNextPage ? "" : "disabled")">
-                    <a class="page-link" asp-route-pageNumber="@(Model.CurrentPage + 1)">Next</a>
-                </li>
-            </ul>
-        </nav>
-    }
+    <div id="posts-container">
+        <partial name="Shared/_PostListPartial" model="Model.Posts"/>
+    </div>
+        
+    <div id="loader" 
+         hx-get="?handler=Paged&pageNumber=@(Model.CurrentPage + 1)"
+         hx-target="this"
+         hx-trigger="revealed"
+         hx-swap="outerHTML">
+        <div class="text-center text-muted">Loading more posts...</div>
+    </div>
 </div>
 
 <script src="js/index.js"></script>

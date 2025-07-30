@@ -1,6 +1,7 @@
 ﻿using Application.Contracts;
 using Application.Contracts.Persistence;
 using Application.DTOs;
+using Application.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
@@ -18,10 +19,7 @@ public class Details : PageModel
     public IEnumerable<CommentDto> Comments { get; private set; } = Enumerable.Empty<CommentDto>();
     
     public int CurrentPage { get; private set; }
-    public int TotalPages { get; private set; }
     public const int PageSize = 6; // Default page size
-    public bool HasNextPage => CurrentPage < TotalPages;
-    public bool HasPreviousPage => CurrentPage > 1;
     
     public Details(ICurrentUserService currentUser, IPostRepository postRepository, IPostCommentRepository commentRepository, IPostLikeRepository postLikeRepo,
         IPostCommentRepository postCommentRepo, IPostViewRepository postViewRepo)
@@ -35,6 +33,11 @@ public class Details : PageModel
 
     public async Task<IActionResult> OnGetAsync(Guid id, int pageNumber = 1, CancellationToken ct = default)
     {
+        var user = HttpContext.User;
+        
+        if(user?.Identity?.IsAuthenticated != false && _currentUser.HasClaim("profileCompleted", "false"))
+            return RedirectToPage("/Account/CompleteProfile");
+
         var post = await _postRepository.GetPostAsync(id, ct);
         if (post is null)
             return NotFound();
@@ -47,12 +50,26 @@ public class Details : PageModel
             ViewCount = await _postViewRepo.GetViewsCountByPostAsync(id, ct),
             IsLiked = await _postLikeRepo.IsPostLikedByUserAsync(post.Id, _currentUser.ID, ct)
         };
-        var pagedComments = await _postCommentRepo.GetCommentsByPostAsync(id, pageNumber, PageSize, ct);
-        Comments = pagedComments.Items;
-
-        CurrentPage = pagedComments.Page;
-        TotalPages = pagedComments.TotalCount;
+        
+        await OnGetPaged(id, pageNumber, ct);
         
         return Page();
+    }
+    
+    public async Task<IActionResult> OnGetPaged(Guid id, int pageNumber = 1, CancellationToken ct = default)
+    {
+        var pagedComments = await _postCommentRepo.GetCommentsByPostAsync(id, pageNumber, PageSize, ct);
+        bool hasMore = pagedComments.HasNextPage;
+
+        string nextUrl = hasMore ? $"?handler=Paged&id={id}&pageNumber={pageNumber + 1}" : string.Empty;
+
+        var model = new CommentLoaderViewModel
+        {
+            Comments = pagedComments.Items,
+            HasMore = hasMore,
+            NextUrl = nextUrl
+        };
+
+        return Partial("_CommentLoaderPartial", model);
     }
 }

@@ -1,6 +1,5 @@
 ﻿@page "{id:guid}"
 @using Application.Contracts
-@using Application.DTOs
 @model Web.Pages.Posts.Details
 @inject ICurrentUserService CurrentUser
 @{
@@ -85,8 +84,7 @@
                             @if (CurrentUser.Username == Model.Post.Post.AuthorUsername)
                             {
                                 <li>
-                                    <form method="post" asp-page-handler="DeletePost" onsubmit="return confirm('Are you sure you want to delete this post?');">
-                                        @Html.AntiForgeryToken()
+                                    <form method="post" asp-page-handler="DeletePost" asp-antiforgery="true" onsubmit="return confirm('Are you sure you want to delete this post?');">
                                         <input type="hidden" name="PostId" value="@Model.Post.Post.Id"/>
                                         <button type="submit" class="dropdown-item text-danger">Delete Post</button>
                                     </form>
@@ -123,42 +121,17 @@
     
     <hr/>
     
-    @if(!Model.Comments.Any())
-    {
-        <div class="alert alert-info">No comments yet. Be the first to comment!</div>
-    }
-    else
-    {
-        @foreach (var comment in Model.Comments)
-        {
-            <div class="card shadow-sm mb-2">
-                <div class="card-body">
-                    <div class="d-flex align-items-center mb-1">
-                        <strong>@comment.AuthorUsername</strong>
-                        <small class="text-muted ms-2">@comment.CreatedAt.ToString("MMM d, yyyy 'at' h:mm tt")</small>
-                    </div>
-                    <p class="mb-0">@comment.Content</p>
-                </div>
-            </div>
-        }
-        
-        <!-- Pagination -->
-        <nav aria-label="Comments pagination">
-            <ul class="pagination justify-content-center">
-                <li class="page-item @(Model.HasPreviousPage ? "" : "disabled")">
-                    <a class="page-link" asp-route-pageNumber="@(Model.CurrentPage - 1)">Previous</a>
-                </li>
-                @for (var i = 1; i <= Model.TotalPages; i++)
-                {
-                    <li class="page-item @(Model.CurrentPage == i ? "active" : "")">
-                        <a class="page-link" asp-route-pageNumber="@i">@i</a>
-                    </li>
-                }
-                <li class="page-item @(Model.HasNextPage ? "" : "disabled")">
-                    <a class="page-link" asp-route-pageNumber="@(Model.CurrentPage + 1)">Next</a>
-                </li>
-            </ul>
-        </nav>
-    }
+    @*Initial load of comments(needed)*@
+    <div id="comments-container">
+        <partial name="Shared/_CommentListPartial" model="Model.Comments"/>
+    </div>
+
+    <div id="loader" 
+         hx-get="?handler=Paged&id=@(Model.Post.Post.Id)&pageNumber=@(Model.CurrentPage + 1)"
+         hx-target="this"
+         hx-trigger="revealed"
+         hx-swap="outerHTML">
+        <div class="text-center text-muted">Loading more comments...</div>
+    </div>
     
 </div>

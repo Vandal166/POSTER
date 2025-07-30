@@ -26,11 +26,12 @@ public class PostCommentRepository : IPostCommentRepository
     {
         var commentsResponse =  _db.Comments
             .AsNoTracking()
-            .OrderByDescending(p => p.CreatedAt)
+            .OrderBy(p => p.CreatedAt)
             .Where(c => c.PostID == postID)
             .Select(c => new CommentDto(
                 c.ID,
                 c.Author.Username,
+                c.Author.AvatarPath,
                 c.Content,
                 c.CreatedAt
             ));

@@ -68,7 +68,7 @@ public class PostRepository : IPostRepository
     {
         var postsResponse = _db.Posts
             .AsNoTracking()
-            .OrderByDescending(p => p.CreatedAt)
+            .OrderBy(p => p.CreatedAt)
             .Select(p => new PostDto(
                 p.ID,
                 p.Author.Username,
@@ -79,10 +79,6 @@ public class PostRepository : IPostRepository
         
        return await PagedList<PostDto>.CreateAsync(postsResponse, page, pageSize, cancellationToken);
     }
-    /*,
-                p.Likes.Count,
-                p.Comments.Count,
-                p.Views.Count*/
 
     public Task AddAsync(Post post, CancellationToken cancellationToken = default)
     {

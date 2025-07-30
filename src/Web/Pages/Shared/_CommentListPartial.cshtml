@@ -1,0 +1,22 @@
+﻿@model IEnumerable<Application.DTOs.CommentDto>
+
+@foreach (var comment in Model)
+{
+    <div class="card shadow-sm mb-2">
+        <div class="card-body">
+            <div class="d-flex align-items-center mb-1">
+                <a asp-page="/User/Details" asp-route-id="@comment.AuthorAvatarPath">
+                    <img src="@Url.Content("~/" + comment.AuthorAvatarPath)" 
+                         class="rounded-circle me-2" width="40" height="40" alt="Avatar" />
+                </a>
+                <a asp-page="/User/Details" asp-route-id="@comment.AuthorUsername" 
+                   class="fw-semibold text-decoration-none text-dark">
+                    @comment.AuthorUsername
+                </a>
+                <small class="text-muted ms-2">@comment.CreatedAt.ToString("MMM d, yyyy 'at' h:mm tt")</small>
+            </div>
+            <hr/>
+            <p class="mb-0">@comment.Content</p>
+        </div>
+    </div>
+}

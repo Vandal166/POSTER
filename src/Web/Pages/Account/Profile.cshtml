@@ -11,7 +11,7 @@
 <div class="container mt-5">
     <h2>Your Profile</h2>
     <img src="@Url.Content("~/" + Model.AvatarPath)" alt="Avatar" class="img-thumbnail mb-3" style="width: 120px; height: 120px;" />
-    <form method="post" enctype="multipart/form-data" asp-page-handler="Avatar">
+    <form method="post" enctype="multipart/form-data" asp-page-handler="Avatar" asp-antiforgery="true">
         <div class="mb-3">
             <label for="AvatarFile" class="form-label">Change Avatar</label>
             <input type="file" class="form-control" id="AvatarFile" name="avatar" accept="image/*" />

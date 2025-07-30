@@ -1,0 +1,43 @@
+﻿@model Application.ViewModels.CommentLoaderViewModel
+@*
+1. Initial Load:
+
+First page loads with loader pointing to pageNumber=2
+
+When scrolled into view, HTMX requests page 2
+
+2. Response Handling:
+
+New comments are appended to #comments-container via hx-swap-oob
+
+Current loader is replaced with a new loader pointing to pageNumber=3 (or removed if no more pages)
+
+3. Subsequent Loads:
+
+Each new loader dynamically points to the next page
+
+Process repeats until HasNextPage=false
+*@
+@if (Model.HasMore)
+{
+    <div id="loader"
+         hx-get="@Model.NextUrl"
+         hx-target="this"
+         hx-trigger="revealed"
+         hx-swap="outerHTML">
+        <div class="text-center text-muted">Loading more comments...</div>
+    </div>
+}
+
+@if(!Model.Comments.Any())
+{
+    <div class="alert alert-info">No comments yet. Be the first to comment!</div>
+}
+else
+{
+    <div hx-swap-oob="beforeend:#comments-container">
+        
+        <partial name="Shared/_CommentListPartial" model="Model.Comments"/>
+        
+    </div>
+}

@@ -10,6 +10,6 @@ public class CreatePostDtoValidator : AbstractValidator<CreatePostDto>
         RuleFor(x => x.Content)
             .NotEmpty()
             .MinimumLength(4)
-            .MaximumLength(500);
+            .MaximumLength(1800).WithMessage("Post content must be between 4 and 1800 characters long.");
     }
 }

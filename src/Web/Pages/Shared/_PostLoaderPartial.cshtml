@@ -1,0 +1,25 @@
+﻿@model Application.ViewModels.PostLoaderViewModel
+
+@if (Model.HasMore)
+{
+    <div id="loader"
+         hx-get="@Model.NextUrl"
+         hx-target="this"
+         hx-trigger="revealed"
+         hx-swap="outerHTML">
+        <div class="text-center text-muted">Loading more posts...</div>
+    </div>
+}
+
+@if(!Model.Posts.Any())
+{
+    <div class="alert alert-info">No posts yet. Be the first to comment!</div>
+}
+else
+{
+    <div hx-swap-oob="beforeend:#posts-container">
+        
+        <partial name="Shared/_PostListPartial" model="Model.Posts"/>
+
+    </div>
+}

@@ -1,6 +1,7 @@
 using Application.Contracts;
 using Application.Contracts.Persistence;
 using Application.DTOs;
+using Application.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -19,10 +20,7 @@ public class IndexModel : PageModel
     public IEnumerable<PostAggregateDto> Posts { get; private set; } = Enumerable.Empty<PostAggregateDto>();
     
     public int CurrentPage { get; private set; }
-    public int TotalPages { get; private set; }
     public const int PageSize = 4; // Default page size
-    public bool HasNextPage => CurrentPage < TotalPages;
-    public bool HasPreviousPage => CurrentPage > 1;
     
     public IndexModel(ICurrentUserService currentUser, IPostRepository postRepository, IPostLikeRepository postLikeRepo, IPostCommentRepository postCommentRepo, 
         IPostViewRepository postViewRepo)
@@ -33,15 +31,25 @@ public class IndexModel : PageModel
         _postCommentRepo = postCommentRepo;
         _postViewRepo = postViewRepo;
     }
-    
-    public async Task<IActionResult> OnGet(int pageNumber = 1, CancellationToken ct = default)
+
+
+    public async Task<IActionResult> OnGet(CancellationToken ct = default)
     {
         var user = HttpContext.User;
         
         if(user?.Identity?.IsAuthenticated != false && _currentUser.HasClaim("profileCompleted", "false"))
             return RedirectToPage("/Account/CompleteProfile");
-        
+
+        await OnGetPaged(1, ct);
+        return Page();
+    }
+    
+    public async Task<IActionResult> OnGetPaged(int pageNumber = 1, CancellationToken ct = default)
+    {
         var pagedPosts = await _postRepository.GetAllAsync(pageNumber, PageSize, ct);
+        bool hasMore = pagedPosts.HasNextPage;
+        string nextUrl = hasMore ? $"?handler=Paged&pageNumber={pageNumber + 1}" : string.Empty;
+        
         var postDtos = pagedPosts.Items.Select(p =>
             p with
             {
@@ -61,10 +69,12 @@ public class IndexModel : PageModel
             });
         }
         
-        Posts = aggregates;
-        CurrentPage = pagedPosts.Page;
-        TotalPages = pagedPosts.TotalCount;
-        
-        return Page();
+        var vm = new PostLoaderViewModel
+        {
+            Posts = aggregates,
+            HasMore = hasMore,
+            NextUrl = nextUrl
+        };
+        return Partial("_PostLoaderPartial", vm);
     }
 }
