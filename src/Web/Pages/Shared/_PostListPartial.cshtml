@@ -57,13 +57,13 @@
                         </div>
                     </auth-only>
                     <anon-only>
-                        <a asp-page="/Account/Login"
+                        <a asp-page="/Account/Login" asp-route-returnUrl="@Context.Request.Path"
                            class="btn btn-link p-0 me-3 text-muted text-decoration-none fs-5 like-btn">
                             <i class="bi bi-heart me-1"></i>@post.LikeCount
                         </a>
                     </anon-only>
 
-                    <a asp-page="/Posts/Details" asp-route-id="@post.Post.Id"
+                    <a asp-page="/Posts/Details" asp-route-id="@post.Post.Id" asp-route-returnUrl="@Context.Request.Path"
                        class="btn btn-link p-0 me-3 text-muted text-decoration-none fs-5 comment-btn">
                         <i class="bi bi-chat me-1"></i>@post.CommentCount
                     </a>
@@ -97,7 +97,7 @@
                             }
                         </auth-only>
                         <anon-only>
-                            <li><a asp-page="/Account/Login" class="dropdown-item">Log in to report</a></li>
+                            <li><a asp-page="/Account/Login" asp-route-returnUrl="@Context.Request.Path" class="dropdown-item">Log in to report</a></li>
                         </anon-only>
                         <li><button class="dropdown-item">Copy Link</button></li>
                     </ul>

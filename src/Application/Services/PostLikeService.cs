@@ -21,7 +21,7 @@ public class PostLikeService : IPostLikeService
     public async Task<PostLikesDto> ToggleLikeAsync(Guid postID, Guid userID, CancellationToken ct = default)
     {
         if (await _posts.ExistsAsync(postID, ct) == false)
-            throw new KeyNotFoundException("Post not found");
+            throw new KeyNotFoundException("Post not found"); //TODO test this throw
         
         var alreadyLiked = await _postLikes.IsPostLikedByUserAsync(postID, userID, ct);
         if (alreadyLiked)

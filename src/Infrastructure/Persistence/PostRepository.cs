@@ -48,10 +48,22 @@ public class PostRepository : IPostRepository
             )
             .FirstOrDefaultAsync(ct);
     }
-    /*,
-                    p.Likes.Count,
-                    p.Comments.Count,
-                    p.Views.Count*/
+    
+    public async Task<PostDto?> GetPostByCommentAsync(Guid commentID, CancellationToken cancellationToken = default)
+    {
+        return await _db.Posts
+            .Where(p => p.Comments.Any(c => c.ID == commentID))
+            .Select(p => new PostDto
+                (
+                    p.ID,
+                    p.Author.Username,
+                    p.Author.AvatarPath,
+                    p.Content,
+                    p.CreatedAt
+                )
+            )
+            .FirstOrDefaultAsync(cancellationToken);
+    }
 
     public async Task<List<Post>> GetUserFeedAsync(Guid userId, CancellationToken cancellationToken = default)
     {

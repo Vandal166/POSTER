@@ -23,13 +23,12 @@ public class PostCommentService : IPostCommentService
         _uow = uow;
     }
 
-    public async Task<Result> CreateCommentAsync(Guid postID, Guid userID, CreateCommentDto dto,
-        CancellationToken cancellationToken = default)
+    public async Task<Result> CreateCommentAsync(Guid postID, Guid userID, CreateCommentDto dto, CancellationToken ct = default)
     {
-        if(await _posts.ExistsAsync(postID, cancellationToken) == false)
+        if(await _posts.ExistsAsync(postID, ct) == false)
             return Result.Fail("Post not found");
 
-        var validation = await _createCommentValidator.ValidateAsync(dto, cancellationToken);
+        var validation = await _createCommentValidator.ValidateAsync(dto, ct);
         if (!validation.IsValid)
             return Result.Fail(validation.Errors.Select(e => e.ErrorMessage));
 
@@ -37,13 +36,35 @@ public class PostCommentService : IPostCommentService
         if (comment.IsFailed)
             return Result.Fail(comment.Errors.Select(e => e.Message));
 
-        await _postComments.AddAsync(comment.Value, cancellationToken);
-        await _uow.SaveChangesAsync(cancellationToken);
+        await _postComments.AddAsync(comment.Value, ct);
+        await _uow.SaveChangesAsync(ct);
+
+        return Result.Ok();
+    }
+   
+    public async Task<Result> CreateCommentOnCommentAsync(Guid postID, Guid parentCommentID, Guid userID, CreateCommentDto dto, CancellationToken ct = default)
+    {
+        if(await _posts.ExistsAsync(postID, ct) == false)
+            return Result.Fail("Post not found");
+        
+        if(await _postComments.ExistsAsync(parentCommentID, ct) == false)
+            return Result.Fail("Comment not found");
+
+        var validation = await _createCommentValidator.ValidateAsync(dto, ct);
+        if (!validation.IsValid)
+            return Result.Fail(validation.Errors.Select(e => e.ErrorMessage));
+
+        var comment = Comment.Create(postID, userID, dto.Content, parentCommentID);
+        if (comment.IsFailed)
+            return Result.Fail(comment.Errors.Select(e => e.Message));
+
+        await _postComments.AddAsync(comment.Value, ct);
+        await _uow.SaveChangesAsync(ct);
 
         return Result.Ok();
     }
     
-    public async Task<Comment?> GetCommentAsync(Guid commentID, CancellationToken cancellationToken = default)
+    public async Task<CommentDto?> GetCommentAsync(Guid commentID, CancellationToken cancellationToken = default)
     {
         return await _postComments.GetCommentAsync(commentID, cancellationToken);
     }

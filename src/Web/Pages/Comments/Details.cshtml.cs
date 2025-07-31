@@ -5,35 +5,31 @@ using Application.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace Web.Pages.Posts;
+namespace Web.Pages.Comments;
 
 public class Details : PageModel
 {
     private readonly ICurrentUserService _currentUser;
-    private readonly IPostRepository _postRepository;
-    private readonly IPostCommentRepository _postCommentRepo;
-    private readonly IPostLikeRepository _postLikeRepo;
+    private readonly IPostCommentRepository _commentRepo;
     private readonly ICommentLikeRepository _commentLikeRepo;
-    private readonly IPostViewRepository _postViewRepo;
+    private readonly IPostRepository _postRepo;
     
-    public PostAggregateDto? Post { get; private set; } = null!;
+    
+    public CommentAggregateDto? Comment { get; private set; } = null!;
     public IEnumerable<CommentAggregateDto> Comments { get; private set; } = Enumerable.Empty<CommentAggregateDto>();
     
     public int CurrentPage { get; private set; }
     public const int PageSize = 6; // Default page size
     
-    public Details(ICurrentUserService currentUser, IPostRepository postRepository, IPostCommentRepository commentRepository, IPostLikeRepository postLikeRepo,
-        IPostCommentRepository postCommentRepo, ICommentLikeRepository commentLikeRepo, IPostViewRepository postViewRepo)
+    public Details(ICurrentUserService currentUser, IPostCommentRepository commentRepo, ICommentLikeRepository commentLikeRepo, IPostRepository postRepo)
     {
         _currentUser = currentUser;
-        _postRepository = postRepository;
-        _postCommentRepo = commentRepository;
-        _postLikeRepo = postLikeRepo;
+        _commentRepo = commentRepo;
         _commentLikeRepo = commentLikeRepo;
-        _postViewRepo = postViewRepo;
+        _postRepo = postRepo;
     }
 
-    // id is postID
+    // id is commentID
     public async Task<IActionResult> OnGetAsync(Guid id, int pageNumber = 1, CancellationToken ct = default)
     {
         var user = HttpContext.User;
@@ -41,17 +37,21 @@ public class Details : PageModel
         if(user?.Identity?.IsAuthenticated != false && _currentUser.HasClaim("profileCompleted", "false"))
             return RedirectToPage("/Account/CompleteProfile");
 
-        var post = await _postRepository.GetPostAsync(id, ct);
+        var comment = await _commentRepo.GetCommentAsync(id, ct);
+        if (comment is null)
+            return NotFound();
+        
+        var post = await _postRepo.GetPostByCommentAsync(id, ct);
         if (post is null)
             return NotFound();
         
-        Post = new PostAggregateDto
+        Comment = new CommentAggregateDto
         {
-            Post = post,
-            LikeCount = await _postLikeRepo.GetLikesCountByPostAsync(id, ct),
-            CommentCount = await _postCommentRepo.GetCommentsCountByPostAsync(id, ct),
-            ViewCount = await _postViewRepo.GetViewsCountByPostAsync(id, ct),
-            IsLiked = await _postLikeRepo.IsPostLikedByUserAsync(post.Id, _currentUser.ID, ct)
+            Comment = comment,
+            PostId = post.Id,
+            LikeCount = await _commentLikeRepo.GetLikesCountByCommentAsync(id, ct),
+            CommentCount = await _commentRepo.GetCommentsCountByCommentAsync(id, ct),
+            IsLiked = await _commentLikeRepo.IsCommentLikedByUserAsync(comment.Id, _currentUser.ID, ct)
         };
         
         await OnGetPaged(id, pageNumber, ct);
@@ -59,14 +59,17 @@ public class Details : PageModel
         return Page();
     }
     
-    //TODO set meaningful parameter names
     public async Task<IActionResult> OnGetPaged(Guid id, int pageNumber = 1, CancellationToken ct = default)
     {
-        var pagedComments = await _postCommentRepo.GetCommentsByPostAsync(id, pageNumber, PageSize, ct);
+        var pagedComments = await _commentRepo.GetCommentsByCommentAsync(id, pageNumber, PageSize, ct);
         bool hasMore = pagedComments.HasNextPage;
 
         string nextUrl = hasMore ? $"?handler=Paged&id={id}&pageNumber={pageNumber + 1}" : string.Empty;
 
+        /*var postID = await _postRepo.GetPostByCommentAsync(id, ct);
+        if (postID is null)
+            return NotFound();*/
+        
         var aggregates = new List<CommentAggregateDto>(pagedComments.Items.Count);
         foreach (var comment in pagedComments.Items)
         {
@@ -75,7 +78,7 @@ public class Details : PageModel
                 Comment = comment,
                 PostId = id,
                 LikeCount = await _commentLikeRepo.GetLikesCountByCommentAsync(comment.Id, ct),
-                CommentCount = await _postCommentRepo.GetCommentsCountByCommentAsync(comment.Id, ct),
+                CommentCount = await _commentRepo.GetCommentsCountByCommentAsync(comment.Id, ct),
                 IsLiked = await _commentLikeRepo.IsCommentLikedByUserAsync(comment.Id, _currentUser.ID, ct)
             });
         }

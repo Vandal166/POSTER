@@ -23,7 +23,7 @@ public sealed class Comment : AuditableEntity
     
     private Comment() { }
     
-    public static Result<Comment> Create(Guid postID, Guid authorID, string content, Comment? parent = null)
+    public static Result<Comment> Create(Guid postID, Guid authorID, string content, Guid? parentID = null)
     {
         if (postID == Guid.Empty)
             return Result.Fail<Comment>("Post is required.");
@@ -37,8 +37,7 @@ public sealed class Comment : AuditableEntity
             AuthorID        = authorID,
             Content         = content,
             CreatedAt       = DateTime.UtcNow,
-            ParentComment   = parent,
-            ParentCommentID = parent?.ID
+            ParentCommentID = parentID
         };
         return Result.Ok(comment);
     }

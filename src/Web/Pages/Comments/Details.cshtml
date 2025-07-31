@@ -1,9 +1,9 @@
 ﻿@page "{id:guid}"
 @using Application.Contracts
-@model Web.Pages.Posts.Details
+@model Web.Pages.Comments.Details
 @inject ICurrentUserService CurrentUser
 @{
-    ViewData["Title"] = "Post Details";
+    ViewData["Title"] = "Comment Details";
     var returnUrl = string.IsNullOrEmpty(Request.Query["returnUrl"]) ? "/" : Request.Query["returnUrl"].ToString();
 }
 
@@ -11,49 +11,49 @@
     <div class="card shadow-sm mb-3">
         <div class="card-body">
             
-           <!-- Back Button and Post Header -->
+           <!-- Back Button and Comment Header -->
            <div class="d-flex align-items-center mb-3 justify-content-between">
                <a href="@returnUrl"
                   class="btn btn-link text-decoration-none text-dark d-flex align-items-center p-0">
                    <i class="bi bi-arrow-left me-2 fs-5"></i>
-                   <span class="fw-bold fs-5">Post</span>
+                   <span class="fw-bold fs-5">Comment</span>
                </a>
                <div class="d-flex align-items-center text-end">
                    <div>
-                       <a asp-page="/User/Details" asp-route-id="@Model.Post.Post.AuthorUsername"
+                       <a asp-page="/User/Details" asp-route-id="@Model.Comment.Comment.AuthorUsername"
                           class="fw-semibold text-decoration-none text-dark">
-                           @Model.Post.Post.AuthorUsername
+                           @Model.Comment.Comment.AuthorUsername
                        </a>
                        <br/>
-                       <small class="text-muted">@Model.Post.Post.CreatedAt.ToString("MMM d, yyyy 'at' h:mm tt")</small>
+                       <small class="text-muted">@Model.Comment.Comment.CreatedAt.ToString("MMM d, yyyy 'at' h:mm tt")</small>
                    </div>
-                   <a asp-page="/User/Details" asp-route-id="@Model.Post.Post.AuthorUsername">
-                       <img src="@Url.Content("~/" + Model.Post.Post.AuthorAvatarPath)"
+                   <a asp-page="/User/Details" asp-route-id="@Model.Comment.Comment.AuthorUsername">
+                       <img src="@Url.Content("~/" + Model.Comment.Comment.AuthorAvatarPath)"
                             class="rounded-circle ms-2" width="40" height="40" alt="Avatar"/>
                    </a>
                </div>
            </div>
 
 
-            <!-- Post Content -->   
-            <p class="mb-2">@Model.Post.Post.Content</p>
+            <!-- Comment Content -->   
+            <p class="mb-2">@Model.Comment.Comment.Content</p>
             
             <hr/>
             
-            <!-- Post Stats -->
+            <!-- Comment Stats -->
             <div class="d-flex justify-content-between align-items-center text-muted small fs-5">
                 <div class="d-flex align-items-center">
                     <auth-only>
-                        <div id="likes-@Model.Post.Post.Id"
-                             hx-post="/Posts/TogglePostLike?handler=ToggleLike"
+                        <div id="likes-@Model.Comment.Comment.Id"
+                             hx-post="/Comments/ToggleCommentLike?handler=ToggleLike"
                              hx-include="this"
-                             hx-target="#likes-@Model.Post.Post.Id"
+                             hx-target="#likes-@Model.Comment.Comment.Id"
                              hx-swap="outerHTML">
 
                             @Html.AntiForgeryToken()
-                            <input type="hidden" name="postId" value="@Model.Post.Post.Id"/>
-                            <button type="submit" class="btn btn-link p-0 me-3 text-decoration-none fs-5 like-btn @(Model.Post.IsLiked ? "text-pink" : "text-muted")">
-                                <i class="bi bi-heart me-1"></i>@Model.Post.LikeCount
+                            <input type="hidden" name="commentId" value="@Model.Comment.Comment.Id"/>
+                            <button type="submit" class="btn btn-link p-0 me-3 text-decoration-none fs-5 like-btn @(Model.Comment.IsLiked ? "text-pink" : "text-muted")">
+                                <i class="bi bi-heart me-1"></i>@Model.Comment.LikeCount
                             </button>
                         </div>
                     </auth-only>
@@ -61,39 +61,35 @@
                     <anon-only>
                         <a asp-page="/Account/Login" asp-route-returnUrl="@HttpContext.Request.Path"
                            class="btn btn-link p-0 me-3 text-muted text-decoration-none fs-5 like-btn">
-                            <i class="bi bi-heart me-1"></i>@Model.Post.LikeCount
+                            <i class="bi bi-heart me-1"></i>@Model.Comment.LikeCount
                         </a>
                     </anon-only>
 
-                    <a asp-page="/Posts/Details" asp-route-id="@Model.Post.Post.Id"
+                    <a asp-page="/Comments/Details" asp-route-id="@Model.Comment.Comment.Id" asp-route-returnUrl="@HttpContext.Request.Path"
                        class="btn btn-link p-0 me-3 text-muted text-decoration-none fs-5 comment-btn">
-                        <i class="bi bi-chat me-1"></i>@Model.Post.CommentCount
-                    </a>
-                    <a
-                        class="btn btn-link p-0 text-muted text-decoration-none fs-5 view-btn">
-                        <i class="bi bi-eye me-1"></i>@Model.Post.ViewCount
+                        <i class="bi bi-chat me-1"></i>@Model.Comment.CommentCount
                     </a>
                 </div>
                 <!-- Three Dots Dropdown -->
                 <div class="dropdown">
-                    <button class="btn btn-link p-0 text-muted text-decoration-none fs-5" type="button" id="postOptionsDropdown"
+                    <button class="btn btn-link p-0 text-muted text-decoration-none fs-5" type="button" id="commentOptionsDropdown"
                             data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="bi bi-three-dots"></i>
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="postOptionsDropdown">
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="commentOptionsDropdown">
                         <auth-only>
-                            @if (CurrentUser.Username == Model.Post.Post.AuthorUsername)
+                            @if (CurrentUser.Username == Model.Comment.Comment.AuthorUsername)
                             {
                                 <li>
-                                    <form method="post" asp-page-handler="DeletePost" asp-antiforgery="true" onsubmit="return confirm('Are you sure you want to delete this post?');">
-                                        <input type="hidden" name="PostId" value="@Model.Post.Post.Id"/>
-                                        <button type="submit" class="dropdown-item text-danger">Delete Post</button>
+                                    <form method="post" asp-page-handler="DeleteComment" asp-antiforgery="true" onsubmit="return confirm('Are you sure you want to delete this comment?');">
+                                        <input type="hidden" name="CommentId" value="@Model.Comment.Comment.Id"/>
+                                        <button type="submit" class="dropdown-item text-danger">Delete Comment</button>
                                     </form>
                                 </li>
                             }
                             else
                             {
-                                <li><button class="dropdown-item">Report Post</button></li>
+                                <li><button class="dropdown-item">Report Comment</button></li>
                             }
                         </auth-only>
                         <anon-only>
@@ -108,7 +104,7 @@
 
     <auth-only>
         <div id="comment-form-wrapper">
-            <partial name="Shared/_CommentOnPostForm" model="new Application.DTOs.CreateCommentViewModel { EntityId = Model.Post.Post.Id }" />
+            <partial name="Shared/_CommentOnCommentForm" model="new Application.DTOs.CreateCommentViewModel { EntityId = Model.Comment.PostId, ParentCommentId = Model.Comment.Comment.Id }" /> @*TODO this wont work*@
         </div>
     </auth-only>
     
@@ -128,7 +124,7 @@
     </div>
 
     <div id="loader"
-         hx-get="?handler=Paged&id=@(Model.Post.Post.Id)&pageNumber=@(Model.CurrentPage + 1)"
+         hx-get="?handler=Paged&id=@(Model.Comment.Comment.Id)&pageNumber=@(Model.CurrentPage + 1)"
          hx-target="this"
          hx-trigger="revealed"
          hx-swap="outerHTML"

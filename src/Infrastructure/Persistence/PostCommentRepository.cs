@@ -16,18 +16,34 @@ public class PostCommentRepository : IPostCommentRepository
         _db = db;
     }
 
-    public async Task<Comment?> GetCommentAsync(Guid commentID, CancellationToken cancellationToken = default)
+    public async Task<bool> ExistsAsync(Guid commentID, CancellationToken cancellationToken = default)
     {
         return await _db.Comments
-            .FirstOrDefaultAsync(c => c.ID == commentID, cancellationToken);
+            .AsNoTracking()
+            .AnyAsync(c => c.ID == commentID, cancellationToken);
+    }
+
+    public async Task<CommentDto?> GetCommentAsync(Guid commentID, CancellationToken cancellationToken = default)
+    {
+        return await _db.Comments
+            .AsNoTracking()
+            .Where(c => c.ID == commentID)
+            .Select(c => new CommentDto(
+                c.ID,
+                c.Author.Username,
+                c.Author.AvatarPath,
+                c.Content,
+                c.CreatedAt
+            ))
+            .FirstOrDefaultAsync(cancellationToken);
     }
 
     public async Task<IPagedList<CommentDto>> GetCommentsByPostAsync(Guid postID, int page, int pageSize, CancellationToken cancellationToken = default)
     {
         var commentsResponse =  _db.Comments
             .AsNoTracking()
+            .Where(c => c.PostID == postID && c.ParentCommentID == null)
             .OrderBy(p => p.CreatedAt)
-            .Where(c => c.PostID == postID)
             .Select(c => new CommentDto(
                 c.ID,
                 c.Author.Username,
@@ -38,12 +54,36 @@ public class PostCommentRepository : IPostCommentRepository
         
         return await PagedList<CommentDto>.CreateAsync(commentsResponse, page, pageSize, cancellationToken);
     }
+    
+    public async Task<IPagedList<CommentDto>> GetCommentsByCommentAsync(Guid commentID, int page, int pageSize, CancellationToken cancellationToken = default)
+    {
+        var commentsResponse = _db.Comments
+            .AsNoTracking()
+            .Where(c => c.ParentCommentID == commentID)
+            .OrderBy(c => c.CreatedAt)
+            .Select(c => new CommentDto(
+                c.ID,
+                c.Author.Username,
+                c.Author.AvatarPath,
+                c.Content,
+                c.CreatedAt
+            ));
+
+        return await PagedList<CommentDto>.CreateAsync(commentsResponse, page, pageSize, cancellationToken);
+    }
 
     public async Task<int> GetCommentsCountByPostAsync(Guid postID, CancellationToken ct = default)
     {
         return await _db.Comments
             .AsNoTracking()
-            .CountAsync(c => c.PostID == postID, ct);
+            .CountAsync(c => c.PostID == postID && c.ParentCommentID == null, ct);
+    }
+
+    public async Task<int> GetCommentsCountByCommentAsync(Guid commentID, CancellationToken ct = default)
+    {
+        return await _db.Comments
+            .AsNoTracking()
+            .CountAsync(c => c.ParentCommentID == commentID, ct);
     }
 
     public Task AddAsync(Comment comment, CancellationToken cancellationToken = default)

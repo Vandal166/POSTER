@@ -16,6 +16,7 @@ public static class DependencyInjection
         
         services.AddScoped<IPostService, PostService>();
         services.AddScoped<IPostLikeService, PostLikeService>();
+        services.AddScoped<ICommentLikeService, CommentLikeService>();
         services.AddScoped<IPostCommentService, PostCommentService>();
         
         

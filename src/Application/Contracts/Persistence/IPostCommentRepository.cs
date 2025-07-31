@@ -5,9 +5,13 @@ namespace Application.Contracts.Persistence;
 
 public interface IPostCommentRepository
 {
-    Task<Comment?> GetCommentAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<bool> ExistsAsync(Guid commentID, CancellationToken cancellationToken = default);
+    Task<CommentDto?> GetCommentAsync(Guid id, CancellationToken cancellationToken = default);
     Task<IPagedList<CommentDto>> GetCommentsByPostAsync(Guid postID, int page, int pageSize, CancellationToken cancellationToken = default);
+    // getting nested comments by commentID
+    Task<IPagedList<CommentDto>> GetCommentsByCommentAsync(Guid commentID, int page, int pageSize, CancellationToken cancellationToken = default);
     Task<int> GetCommentsCountByPostAsync(Guid postID, CancellationToken ct = default);
+    Task<int> GetCommentsCountByCommentAsync(Guid commentID, CancellationToken ct = default);
     
     Task AddAsync(Comment comment, CancellationToken cancellationToken = default);
     Task UpdateAsync(Comment comment, CancellationToken cancellationToken = default);

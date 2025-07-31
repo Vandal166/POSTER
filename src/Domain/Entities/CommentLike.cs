@@ -11,20 +11,19 @@ public class CommentLike : AuditableEntity
     
     private CommentLike() { }
     
-    public static Result<CommentLike> Create(Comment? comment, User? user)
+    public static Result<CommentLike> Create(Guid commentID, Guid userID)
     {
-        if (comment is null) 
+        if (commentID == Guid.Empty)
             return Result.Fail<CommentLike>("Comment is required.");
-        if (user is null)
+        
+        if (userID == Guid.Empty)
             return Result.Fail<CommentLike>("User is required.");
         
         var like = new CommentLike
         {
             ID      = Guid.NewGuid(),
-            CommentID = comment.ID,
-            Comment = comment,
-            UserID  = user.ID,
-            User    = user,
+            CommentID = commentID,
+            UserID  = userID,
             CreatedAt = DateTime.UtcNow
         };
         return Result.Ok(like);

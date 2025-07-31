@@ -1,0 +1,33 @@
+﻿@model Application.DTOs.CreateCommentViewModel
+@inject Application.Contracts.ICurrentUserService CurrentUser
+
+<auth-only>
+    <form method="post"
+          hx-post="/Comments/CreateComment?handler=CommentOnComment"
+          hx-target="#comment-form-wrapper"
+          hx-swap="outerHTML"
+          id="comment-form" asp-antiforgery="true">
+            
+        <input type="hidden" name="postId" value="@Model.EntityId"/>
+        <input type="hidden" name="parentCommentId" value="@Model.ParentCommentId"/>
+
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+        <div class="d-flex align-items-start mb-3">
+            <img src="@Url.Content("~/" + CurrentUser.AvatarPath)"
+                 class="rounded-circle me-2 align-self-center" width="36" height="36" alt="Your avatar"/>
+            <div class="flex-grow-1 d-flex align-items-center border rounded-3 px-3 py-2 bg-light">
+                <textarea name="Content"
+                              class="form-control border-0 bg-light me-2"
+                              placeholder="Write your comment..."
+                              rows="1" minlength="4" maxlength="500"
+                              style="resize: none; box-shadow: none; overflow: hidden"
+                              required oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px';"></textarea>
+
+                <button type="submit" class="btn btn-sm btn-primary px-3">
+                    <i class="bi bi-send-fill"></i>
+                </button>
+            </div>
+        </div>
+    </form>
+</auth-only>

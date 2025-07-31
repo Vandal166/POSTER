@@ -12,13 +12,19 @@
         <partial name="Shared/_PostListPartial" model="Model.Posts"/>
     </div>
         
-    <div id="loader" 
+    <div id="loader"
          hx-get="?handler=Paged&pageNumber=@(Model.CurrentPage + 1)"
          hx-target="this"
          hx-trigger="revealed"
-         hx-swap="outerHTML">
-        <div class="text-center text-muted">Loading more posts...</div>
+         hx-swap="outerHTML"
+         hx-indicator="#loading-indicator">
+        
+        <div id="loading-indicator">
+            @await Html.PartialAsync("Shared/_LoadingIndicatorPartial")
+        </div>
+        
     </div>
 </div>
+
 
 <script src="js/index.js"></script>

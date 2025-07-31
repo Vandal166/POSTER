@@ -75,6 +75,7 @@ public class IndexModel : PageModel
             HasMore = hasMore,
             NextUrl = nextUrl
         };
+        
         return Partial("_PostLoaderPartial", vm);
     }
 }

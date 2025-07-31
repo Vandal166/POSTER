@@ -6,9 +6,15 @@
          hx-get="@Model.NextUrl"
          hx-target="this"
          hx-trigger="revealed"
-         hx-swap="outerHTML">
-        <div class="text-center text-muted">Loading more posts...</div>
+         hx-swap="outerHTML"
+         hx-indicator="#loading-indicator">
+        
+        <div id="loading-indicator">
+            @await Html.PartialAsync("Shared/_LoadingIndicatorPartial")
+        </div>
+        
     </div>
+    
 }
 
 @if(!Model.Posts.Any())

@@ -3,12 +3,12 @@
 
 <auth-only>
     <form method="post"
-          hx-post="/Posts/CreateComment?handler=Comment"
+          hx-post="/Comments/CreateComment?handler=CommentOnPost"
           hx-target="#comment-form-wrapper"
           hx-swap="outerHTML"
           id="comment-form" asp-antiforgery="true">
             
-        <input type="hidden" name="PostId" value="@Model.PostId"/>
+        <input type="hidden" name="postId" value="@Model.EntityId"/>
 
         <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
