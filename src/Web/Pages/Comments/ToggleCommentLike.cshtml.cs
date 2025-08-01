@@ -23,6 +23,6 @@ public class LikeCommentModel : PageModel
     {
         var vm = await _likeService.ToggleLikeAsync(commentId, _currentUser.ID, ct);
 
-        return Partial("_CommentLikesPartial", vm);
+        return Partial("Shared/Comments/_CommentLikesPartial", vm);
     }
 }

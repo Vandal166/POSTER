@@ -1,0 +1,34 @@
+﻿@model Application.DTOs.PostAggregateDto
+
+<div class="d-flex align-items-center">
+    <auth-only>
+        <div id="likes-@Model.Post.Id"
+             hx-post="/Posts/TogglePostLike?handler=ToggleLike"
+             hx-include="this"
+             hx-target="#likes-@Model.Post.Id"
+             hx-swap="outerHTML">
+
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="postId" value="@Model.Post.Id"/>
+            <button type="submit" 
+                    class="btn btn-link p-0 me-3 text-decoration-none fs-5 like-btn @(Model.IsLiked ? "text-pink" : "text-muted")">
+                <i class="bi bi-heart me-1"></i>@Model.LikeCount
+            </button>
+        </div>
+    </auth-only>
+    <anon-only>
+        <a asp-page="/Account/Login" asp-route-returnUrl="@Context.Request.Path"
+           class="btn btn-link p-0 me-3 text-muted text-decoration-none fs-5 like-btn">
+            <i class="bi bi-heart me-1"></i>@Model.LikeCount
+        </a>
+    </anon-only>
+
+    <a asp-page="/Posts/Details" asp-route-id="@Model.Post.Id" asp-route-returnUrl="@Context.Request.Path"
+       class="btn btn-link p-0 me-3 text-muted text-decoration-none fs-5 comment-btn">
+        <i class="bi bi-chat me-1"></i>@Model.CommentCount
+    </a>
+    <a
+        class="btn btn-link p-0 text-muted text-decoration-none fs-5 view-btn">
+        <i class="bi bi-eye me-1"></i>@Model.ViewCount
+    </a>
+</div>

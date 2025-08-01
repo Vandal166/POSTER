@@ -108,7 +108,7 @@
 
     <auth-only>
         <div id="comment-form-wrapper">
-            <partial name="Shared/_CommentOnPostForm" model="new Application.DTOs.CreateCommentViewModel { EntityId = Model.Post.Post.Id }" />
+            <partial name="Shared/Comments/_CommentOnPostForm" model="new Application.DTOs.CreateCommentViewModel { EntityId = Model.Post.Post.Id }" />
         </div>
     </auth-only>
     
@@ -124,7 +124,7 @@
     
     @*Initial load of comments(needed)*@
     <div id="comments-container">
-        <partial name="Shared/_CommentListPartial" model="Model.Comments"/>
+        <partial name="Shared/Comments/_CommentListPartial" model="Model.Comments"/>
     </div>
 
     <div id="loader"

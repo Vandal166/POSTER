@@ -34,7 +34,7 @@ public class CreateComment : PageModel
                 EntityId = postId,
                 Content = CommentDto.Content
             };
-            return Partial("_CommentOnPostForm", viewModel);
+            return Partial("Shared/Comments/_CommentOnPostForm", viewModel);
         }
         
         var result = await _commentService.CreateCommentAsync(postId, _currentUser.ID, CommentDto, ct);
@@ -51,7 +51,7 @@ public class CreateComment : PageModel
                 EntityId = postId,
                 Content = CommentDto.Content
             };
-            return Partial("_CommentOnPostForm", viewModel);
+            return Partial("Shared/Comments/_CommentOnPostForm", viewModel);
         }
 
         // HTMX will look for this and trigger a client-side redirect
@@ -70,7 +70,7 @@ public class CreateComment : PageModel
                 ParentCommentId = parentCommentId,
                 Content = CommentDto.Content
             };
-            return Partial("_CommentOnCommentForm", viewModel);
+            return Partial("Shared/Comments/_CommentOnCommentForm", viewModel);
         }
         
         var result = await _commentService.CreateCommentOnCommentAsync(postId, parentCommentId,_currentUser.ID, CommentDto, ct);
@@ -88,7 +88,7 @@ public class CreateComment : PageModel
                 ParentCommentId = parentCommentId,
                 Content = CommentDto.Content
             };
-            return Partial("_CommentOnCommentForm", viewModel);
+            return Partial("Shared/Comments/_CommentOnCommentForm", viewModel);
         }
 
         // HTMX will look for this and trigger a client-side redirect

@@ -14,7 +14,7 @@ public class Details : PageModel
     private readonly IPostCommentRepository _postCommentRepo;
     private readonly IPostLikeRepository _postLikeRepo;
     private readonly ICommentLikeRepository _commentLikeRepo;
-    private readonly IPostViewRepository _postViewRepo;
+    private readonly IPostViewService _postViewService;
     
     public PostAggregateDto? Post { get; private set; } = null!;
     public IEnumerable<CommentAggregateDto> Comments { get; private set; } = Enumerable.Empty<CommentAggregateDto>();
@@ -23,14 +23,14 @@ public class Details : PageModel
     public const int PageSize = 6; // Default page size
     
     public Details(ICurrentUserService currentUser, IPostRepository postRepository, IPostCommentRepository commentRepository, IPostLikeRepository postLikeRepo,
-        IPostCommentRepository postCommentRepo, ICommentLikeRepository commentLikeRepo, IPostViewRepository postViewRepo)
+        IPostCommentRepository postCommentRepo, ICommentLikeRepository commentLikeRepo, IPostViewService postViewService)
     {
         _currentUser = currentUser;
         _postRepository = postRepository;
         _postCommentRepo = commentRepository;
         _postLikeRepo = postLikeRepo;
         _commentLikeRepo = commentLikeRepo;
-        _postViewRepo = postViewRepo;
+        _postViewService = postViewService;
     }
 
     // id is postID
@@ -45,12 +45,14 @@ public class Details : PageModel
         if (post is null)
             return NotFound();
         
+        await _postViewService.AddViewAsync(id, _currentUser.ID, ct);
+        
         Post = new PostAggregateDto
         {
             Post = post,
             LikeCount = await _postLikeRepo.GetLikesCountByPostAsync(id, ct),
             CommentCount = await _postCommentRepo.GetCommentsCountByPostAsync(id, ct),
-            ViewCount = await _postViewRepo.GetViewsCountByPostAsync(id, ct),
+            ViewCount = await _postViewService.GetViewsCountByPostAsync(id, ct),
             IsLiked = await _postLikeRepo.IsPostLikedByUserAsync(post.Id, _currentUser.ID, ct)
         };
         
@@ -59,7 +61,6 @@ public class Details : PageModel
         return Page();
     }
     
-    //TODO set meaningful parameter names
     public async Task<IActionResult> OnGetPaged(Guid id, int pageNumber = 1, CancellationToken ct = default)
     {
         var pagedComments = await _postCommentRepo.GetCommentsByPostAsync(id, pageNumber, PageSize, ct);
@@ -87,6 +88,6 @@ public class Details : PageModel
             NextUrl = nextUrl
         };
 
-        return Partial("_CommentLoaderPartial", vm);
+        return Partial("Shared/Comments/_CommentLoaderPartial", vm);
     }
 }

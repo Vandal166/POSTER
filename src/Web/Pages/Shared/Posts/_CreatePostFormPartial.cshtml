@@ -1,0 +1,39 @@
+﻿@model Application.DTOs.CreatePostDto
+@inject Application.Contracts.ICurrentUserService CurrentUser
+
+<form method="post"
+      asp-page="/Posts/CreatePost"
+      hx-post="/Posts/CreatePost"
+      hx-target="#create-post-modal-content"
+      hx-swap="innerHTML"
+      asp-antiforgery="true">
+    
+    <div class="modal-header border-0">
+        <h5 class="modal-title fw-semibold" id="createPostModalLabel">Create Post</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+
+    <div class="modal-body">
+        <div class="d-flex align-items-start">
+            <img src="@Url.Content("~/" + CurrentUser.AvatarPath)" class="rounded-circle me-3" width="40" height="40" alt="Avatar" />
+            <textarea asp-for="Content"
+                      class="form-control bg-light"
+                      placeholder="What's on your mind?"
+                      rows="3" minlength="4" maxlength="1800"
+                      required
+                      style="resize: none; box-shadow: none; overflow: hidden;"
+                      oninput="this.style.height='auto';this.style.height=this.scrollHeight + 'px';"></textarea>
+            <span asp-validation-for="Content" class="text-danger"></span>
+        </div>
+    </div>
+    
+    <div class="px-3"><hr/></div>
+    
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+    
+    <div class="modal-footer border-0">
+        <button type="submit" class="btn btn-primary px-4">
+            <i class="bi bi-send-fill me-2"></i>Post
+        </button>
+    </div>
+</form>

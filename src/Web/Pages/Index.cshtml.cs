@@ -76,6 +76,6 @@ public class IndexModel : PageModel
             NextUrl = nextUrl
         };
         
-        return Partial("_PostLoaderPartial", vm);
+        return Partial("Shared/Posts/_PostLoaderPartial", vm);
     }
 }

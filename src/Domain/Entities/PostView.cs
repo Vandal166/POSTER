@@ -10,20 +10,19 @@ public class PostView : AuditableEntity
     public User User { get; private set; } = null!; // the unique-user who viewed the post
     
     private PostView() { }
-    public static Result<PostView> Create(Post? post, User? user)
+    public static Result<PostView> Create(Guid postID, Guid userID)
     {
-        if (post is null) 
-            return Result.Fail<PostView>("Post is required.");
-        if (user is null)
-            return Result.Fail<PostView>("User is required.");
+        if (postID == Guid.Empty)
+            return Result.Fail("Post ID cannot be empty.");
+        
+        if (userID == Guid.Empty)
+            return Result.Fail("User ID cannot be empty.");
         
         var view = new PostView
         {
             ID      = Guid.NewGuid(),
-            PostID  = post.ID,
-            Post    = post,
-            UserID  = user.ID,
-            User    = user,
+            PostID  = postID,
+            UserID  = userID,
             CreatedAt = DateTime.UtcNow
         };
         return Result.Ok(view);

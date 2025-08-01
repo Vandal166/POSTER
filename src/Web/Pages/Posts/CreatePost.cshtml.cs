@@ -1,6 +1,7 @@
 ﻿using Application.Contracts;
 using Application.Contracts.Persistence;
 using Application.DTOs;
+using Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -29,16 +30,21 @@ public class CreatePost : PageModel
     {
         if (!ModelState.IsValid)
         {
-            return Partial("_CreatePostPartial", this);
+            return Partial("Shared/Posts/_CreatePostFormPartial", PostDto);
         }
 
         var result = await _postService.CreatePostAsync(PostDto, _currentUser.ID, ct);
 
         if (!result.IsSuccess)
         {
-            return RedirectToPage("/Index"); //TODO display an floating error
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Message);
+            }
+            return Partial("Shared/Posts/_CreatePostFormPartial", PostDto); //TODO display an floating error
         }
 
-        return RedirectToPage("/Index"); // Redirect to the index page after creating a post
+        Response.Headers["HX-Redirect"] = Url.Page("/Index");
+        return new EmptyResult();
     }
 }

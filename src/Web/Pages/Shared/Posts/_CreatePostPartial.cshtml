@@ -1,0 +1,19 @@
+﻿@model Application.DTOs.CreatePostDto
+
+<!-- Modal -->
+<div class="modal fade" id="createPostModal" tabindex="-1" aria-labelledby="createPostModalLabel" aria-hidden="true">
+    <div class="modal-dialog" style="margin-top: 10rem !important; max-width: 600px !important;">
+        <div class="modal-content border-0 rounded-4 shadow " id="create-post-modal-content">
+            
+            <partial name="Shared/Posts/_CreatePostFormPartial" model="Model" />
+            
+        </div>
+    </div>
+</div>
+
+<script>    
+    /*Clearing the modal on access*/
+    document.getElementById('createPostModal').addEventListener('show.bs.modal', function () {
+    this.querySelector('textarea[name="Content"]').value = '';
+});
+</script>

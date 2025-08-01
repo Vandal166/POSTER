@@ -90,6 +90,6 @@ public class Details : PageModel
             NextUrl = nextUrl
         };
 
-        return Partial("_CommentLoaderPartial", vm);
+        return Partial("Shared/Comments/_CommentLoaderPartial", vm);
     }
 }

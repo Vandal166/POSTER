@@ -4,9 +4,8 @@
 
 @foreach (var post in Model)
 {
-   <div class="card shadow-sm mb-3">
+    <div class="card shadow-sm mb-3" id="post-@post.Post.Id" data-post-id="@post.Post.Id">
         <div class="card-body">
-
             <!-- Post Header -->
             <div class="d-flex align-items-center mb-2">
                 <a asp-page="/User/Details" asp-route-id="@post.Post.AuthorAvatarPath">
@@ -39,39 +38,9 @@
             </p>
             <hr/>
             <!-- Post Stats -->
-            <div class="d-flex justify-content-between align-items-center text-muted small fs-5">
-                <div class="d-flex align-items-center">
-                    <auth-only>
-                        <div id="likes-@post.Post.Id"
-                             hx-post="/Posts/TogglePostLike?handler=ToggleLike"
-                             hx-include="this"
-                             hx-target="#likes-@post.Post.Id"
-                             hx-swap="outerHTML">
-
-                            @Html.AntiForgeryToken()
-                            <input type="hidden" name="postId" value="@post.Post.Id"/>
-                            <button type="submit" 
-                                    class="btn btn-link p-0 me-3 text-decoration-none fs-5 like-btn @(post.IsLiked ? "text-pink" : "text-muted")">
-                                <i class="bi bi-heart me-1"></i>@post.LikeCount
-                            </button>
-                        </div>
-                    </auth-only>
-                    <anon-only>
-                        <a asp-page="/Account/Login" asp-route-returnUrl="@Context.Request.Path"
-                           class="btn btn-link p-0 me-3 text-muted text-decoration-none fs-5 like-btn">
-                            <i class="bi bi-heart me-1"></i>@post.LikeCount
-                        </a>
-                    </anon-only>
-
-                    <a asp-page="/Posts/Details" asp-route-id="@post.Post.Id" asp-route-returnUrl="@Context.Request.Path"
-                       class="btn btn-link p-0 me-3 text-muted text-decoration-none fs-5 comment-btn">
-                        <i class="bi bi-chat me-1"></i>@post.CommentCount
-                    </a>
-                    <a
-                        class="btn btn-link p-0 text-muted text-decoration-none fs-5 view-btn">
-                        <i class="bi bi-eye me-1"></i>@post.ViewCount
-                    </a>
-                </div>
+            <div class="d-flex justify-content-between align-items-center text-muted small fs-5" id="post-stats-@post.Post.Id">
+                
+                <partial name="Shared/Posts/_PostStatsPartial" model="post"/>
                 
                 <!-- Three Dots Dropdown -->
                 <div class="dropdown">
@@ -106,3 +75,66 @@
         </div>
     </div>
 }
+<script>
+    document.body.addEventListener('htmx:afterSwap', (e) => {
+        if (e.target.id === 'posts-container' || e.target.id === 'loader') {
+            document.querySelectorAll("[data-post-id]").forEach(postElement => {
+                if (!postElement._watching) {
+                    startWatchingPost(postElement, postElement.dataset.postId);
+                    postElement._watching = true;
+                }
+            });
+        }
+    });
+    function isCenterLineOverlapping(postElement) {
+        const postRect = postElement.getBoundingClientRect();
+        const lineY = window.innerHeight / 2;
+        return postRect.top <= lineY && postRect.bottom >= lineY;
+    }
+
+    function startWatchingPost(postElement, postId) {
+            let viewed = false;
+            let timer = null;
+        function checkOverlap() {
+            if (viewed) return;
+
+            if (isCenterLineOverlapping(postElement)) {
+                if (!timer) {
+                    timer = setTimeout(() => {
+                        sendView(postId);
+                        viewed = true;
+                    }, 3000); // after 3 seconds of being in view
+                }
+            } else {
+                clearTimeout(timer);
+                timer = null;
+            }
+        }
+
+        window.addEventListener("scroll", checkOverlap);
+        window.addEventListener("resize", checkOverlap);
+        checkOverlap(); // Initial check
+    }
+
+    function sendView(postId) {
+        fetch('/Posts/ViewPost', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ postID: postId })
+        })
+        .then(response => {
+            if (!response.ok) {
+                console.error('Failed to send view for post:', postId);
+            } else {
+                console.log('View sent for post:', postId);
+                htmx.ajax('GET', `/Posts/ViewPost?postId=${postId}`, {
+                    target: `#post-stats-${postId}`,
+                    swap: 'outerHTML'
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error sending view for post:', postId, error);
+        });
+    }
+</script>

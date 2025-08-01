@@ -12,11 +12,13 @@ public class LikePostModel : PageModel
 {
     private readonly ICurrentUserService _currentUser;
     private readonly IPostLikeService _likeService;
+    private readonly IPostViewService _postViewService;
 
-    public LikePostModel(ICurrentUserService currentUser, IPostLikeService likeService)
+    public LikePostModel(ICurrentUserService currentUser, IPostLikeService likeService, IPostViewService postViewService)
     {
         _currentUser = currentUser;
         _likeService = likeService;
+        _postViewService = postViewService;
     }
     
 
@@ -24,6 +26,8 @@ public class LikePostModel : PageModel
     {
         var vm = await _likeService.ToggleLikeAsync(postId, _currentUser.ID, ct);
 
-        return Partial("_PostLikesPartial", vm);
+        await _postViewService.AddViewAsync(postId, _currentUser.ID, ct);
+        
+        return Partial("Shared/Posts/_PostLikesPartial", vm);
     }
 }
