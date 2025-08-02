@@ -34,7 +34,7 @@ public class CreatePost : PageModel
         }
 
         var result = await _postService.CreatePostAsync(PostDto, _currentUser.ID, ct);
-
+//TODO add images[] here since PostImages is an separate entity
         if (!result.IsSuccess)
         {
             foreach (var error in result.Errors)

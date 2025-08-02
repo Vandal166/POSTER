@@ -10,6 +10,7 @@ public class PosterDbContext : DbContext
 
     public DbSet<User> Users => Set<User>();
     public DbSet<Post> Posts => Set<Post>();
+    public DbSet<PostImage> PostImages => Set<PostImage>();
     public DbSet<Comment> Comments => Set<Comment>();
     public DbSet<PostLike> PostLikes => Set<PostLike>();
     public DbSet<CommentLike> CommentLikes => Set<CommentLike>();
@@ -48,7 +49,8 @@ etc
                 .WithMany()
                 .HasForeignKey(p => p.AuthorID)
                 .OnDelete(DeleteBehavior.Restrict);
-            b.Property(p => p.CreatedAt).HasDefaultValueSql("now()");
+            
+           b.Property(p => p.CreatedAt).HasDefaultValueSql("now()");
         });
         
         // ------ Comment ------
@@ -113,6 +115,17 @@ etc
                 .WithMany()
                 .HasForeignKey(v => v.UserID);
             b.Property(p => p.CreatedAt).HasDefaultValueSql("now()");
+        });
+        
+        modelBuilder.Entity<PostImage>(b =>
+        {
+            b.HasKey(pi => pi.ID);
+            b.HasOne(pi => pi.Post)
+                .WithMany(p => p.Images)
+                .HasForeignKey(pi => pi.PostID)
+                .OnDelete(DeleteBehavior.Cascade); // Deleting a post deletes its images
+            b.Property(pi => pi.ImageFileID).IsRequired();
+            b.Property(pi => pi.CreatedAt).HasDefaultValueSql("now()");
         });
     }
 }

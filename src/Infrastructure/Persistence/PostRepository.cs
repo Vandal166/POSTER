@@ -43,7 +43,8 @@ public class PostRepository : IPostRepository
                     p.Author.Username,
                     p.Author.AvatarPath,
                     p.Content,
-                    p.CreatedAt
+                    p.CreatedAt,
+                    p.VideoFileID
                 )
             )
             .FirstOrDefaultAsync(ct);
@@ -59,7 +60,8 @@ public class PostRepository : IPostRepository
                     p.Author.Username,
                     p.Author.AvatarPath,
                     p.Content,
-                    p.CreatedAt
+                    p.CreatedAt,
+                    p.VideoFileID
                 )
             )
             .FirstOrDefaultAsync(cancellationToken);
@@ -86,7 +88,8 @@ public class PostRepository : IPostRepository
                 p.Author.Username,
                 p.Author.AvatarPath,
                 p.Content,
-                p.CreatedAt
+                p.CreatedAt,
+                p.VideoFileID
             ));
         
        return await PagedList<PostDto>.CreateAsync(postsResponse, page, pageSize, cancellationToken);

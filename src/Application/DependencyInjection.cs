@@ -1,14 +1,17 @@
 ﻿using Application.Contracts;
 using Application.Contracts.Persistence;
 using Application.Services;
+using Azure.Storage.Blobs;
 using FluentValidation;
+using Microsoft.Extensions.Azure;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Application;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddApplication(this IServiceCollection services)
+    public static IServiceCollection AddApplication(this IServiceCollection services, IConfiguration configuration)
     {
         var assembly = typeof(DependencyInjection).Assembly;
 
@@ -19,7 +22,9 @@ public static class DependencyInjection
         services.AddScoped<IPostViewService, PostViewService>();
         services.AddScoped<ICommentLikeService, CommentLikeService>();
         services.AddScoped<IPostCommentService, PostCommentService>();
-        
+
+        services.AddSingleton<IBlobService, BlobService>();
+        services.AddSingleton(_ => new BlobServiceClient(configuration.GetConnectionString("BlobStorage")));
         
         return services;
     }

@@ -23,17 +23,229 @@
                       required
                       style="resize: none; box-shadow: none; overflow: hidden;"
                       oninput="this.style.height='auto';this.style.height=this.scrollHeight + 'px';"></textarea>
+            
+            
             <span asp-validation-for="Content" class="text-danger"></span>
         </div>
+        
+        <!-- Video Preview -->
+        <div id="videoPreview" class="mt-3 d-none position-relative">
+            <video id="videoElement"
+                   class="w-100 rounded shadow-sm"
+                   controls muted></video>
+        
+            <button type="button"
+                    class="btn btn-sm btn-outline-danger position-absolute"
+                    style="top: 8px; right: 8px; z-index: 2;"
+                    id="removeVideoBtn">
+                <i class="bi bi-x"></i>
+            </button>
+        </div>
+        
+        <!-- Image Preview -->
+        <div id="imagePreview" class="mt-3 d-none position-relative">
+            <img id="imageElement"
+                 class="w-100 rounded shadow-sm"
+                 alt="Image Preview" />
+            
+            <button type="button"
+                    class="btn btn-sm btn-outline-danger position-absolute"
+                    style="top: 8px; right: 8px; z-index: 2;"
+                    id="removeImageBtn">
+                <i class="bi bi-x"></i>
+            </button>
+        </div>
+        
     </div>
     
-    <div class="px-3"><hr/></div>
+        <div class="px-3"><hr/></div>
     
     <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
     
     <div class="modal-footer border-0">
+        <div>
+            <!-- Upload Trigger -->
+            <button type="button" class="btn btn-outline-secondary" id="uploadVideoBtn">
+                <i class="bi bi-camera-video"></i>
+            </button>
+
+            <!-- Hidden File Input -->
+            <input type="file" id="videoInput" accept="video/*" style="display: none;" />
+
+            <!-- Hidden Field to hold uploaded video ID -->
+            <input type="hidden" name="VideoFileID" id="videoFileID" />
+            
+        </div>
+        
+        <div>
+            <!-- Upload for images -->
+            <button type="button" class="btn btn-outline-secondary" id="uploadImageBtn">
+                <i class="bi bi-image"></i>
+            </button>
+            
+            <!-- Hidden File Input for Images (allow multiple) -->
+            <input type="file" id="imageInput" accept="image/*" multiple style="display: none;" />
+
+            <!-- Container for image previews -->
+            <div id="imagePreviewList" class="mt-3 d-none position-relative"></div>
+
+            <!-- Hidden Field to hold uploaded image IDs (comma-separated) -->
+            <input type="hidden" name="ImageFileIDs" id="imageFileIDs" />
+        </div>
+        
         <button type="submit" class="btn btn-primary px-4">
             <i class="bi bi-send-fill me-2"></i>Post
         </button>
     </div>
 </form>
+
+<script>
+    const videoBtn = document.getElementById('uploadVideoBtn');
+    const videoInput = document.getElementById('videoInput');
+    const videoPreview = document.getElementById('videoPreview');
+    const videoElement = document.getElementById('videoElement');
+    const videoFileIDInput = document.getElementById('videoFileID');
+    const removeBtn = document.getElementById('removeVideoBtn');
+
+    videoBtn.addEventListener('click', () => {
+        videoInput.click();
+    });
+   
+    videoInput.addEventListener('change', async () => {
+        const file = videoInput.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+            const res = await fetch('/videos', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'RequestVerificationToken': token
+                }
+            });
+
+            if (!res.ok){
+                const errorText = await res.text();
+                alert("Video upload failed" + errorText); //TODO display an float error modal 
+                throw new Error("Upload failed");
+            }
+
+            const { fileID } = await res.json();
+
+            // Set hidden input
+            videoFileIDInput.value = fileID;
+
+            // Show preview
+            videoElement.src = `/videos/${fileID}`;
+            videoPreview.classList.remove('d-none');
+        } catch (err) {
+            console.error(err);
+        }
+    });
+
+    removeBtn.addEventListener('click', async () => {
+        const fileID = videoFileIDInput.value;
+        if (fileID) {
+            try {
+                await fetch(`/videos/${fileID}`, {
+                    method: 'DELETE'
+                });
+            } catch (err) {
+                console.error('Failed to delete video:', err);
+            }
+        }
+
+        videoElement.src = '';
+        videoFileIDInput.value = '';
+        videoPreview.classList.add('d-none');
+        videoInput.value = '';
+    });
+
+
+    const imageBtn = document.getElementById('uploadImageBtn');
+    const imageInput = document.getElementById('imageInput');
+    const imagePreviewList = document.getElementById('imagePreviewList');
+    const imageFileIDsInput = document.getElementById('imageFileIDs');
+
+    let imageIDs = [];
+
+    imageBtn.addEventListener('click', () => {
+        imageInput.click();
+    });
+
+    imageInput.addEventListener('change', async () => {
+        const files = Array.from(imageInput.files);
+        if (!files.length) return;
+
+        imagePreviewList.innerHTML = '';
+        imageIDs = [];
+
+        for (const file of files) {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+                const res = await fetch('/images', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'RequestVerificationToken': token
+                    }
+                });
+
+                if (!res.ok) {
+                    const errorText = await res.text();
+                    alert("Image upload failed: " + errorText);
+                    continue;
+                }
+
+                const { fileID } = await res.json();
+                imageIDs.push(fileID);
+
+                // Create preview element
+                const wrapper = document.createElement('div');
+                wrapper.className = 'd-inline-block position-relative m-1';
+
+                const img = document.createElement('img');
+                img.src = `/images/${fileID}`;
+                img.className = 'rounded shadow-sm';
+                img.style.width = '120px';
+                img.style.height = '120px';
+                img.style.objectFit = 'cover';
+
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.className = 'btn btn-sm btn-outline-danger position-absolute';
+                removeBtn.style.top = '4px';
+                removeBtn.style.right = '4px';
+                removeBtn.innerHTML = '<i class="bi bi-x"></i>';
+                removeBtn.onclick = async () => {
+                    await fetch(`/images/${fileID}`, { method: 'DELETE' });
+                    wrapper.remove();
+                    imageIDs = imageIDs.filter(id => id !== fileID);
+                    imageFileIDsInput.value = imageIDs.join(',');
+                    if (imageIDs.length === 0) imagePreviewList.classList.add('d-none');
+                };
+
+                wrapper.appendChild(img);
+                wrapper.appendChild(removeBtn);
+                imagePreviewList.appendChild(wrapper);
+
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        imageFileIDsInput.value = imageIDs.join(',');
+        if (imageIDs.length > 0) imagePreviewList.classList.remove('d-none');
+        imageInput.value = '';
+    });
+
+</script>

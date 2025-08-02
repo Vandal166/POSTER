@@ -9,9 +9,9 @@ using Web.Endpoints;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer();
-
+builder.Services.AddSwaggerGen();
 builder.Services
-    .AddApplication()
+    .AddApplication(builder.Configuration)
     .AddInfrastructure(builder.Configuration)
     .AddWebServices(builder.Configuration);
 
@@ -31,6 +31,9 @@ if (app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Error");
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
+
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseSerilogRequestLogging();
@@ -41,10 +44,14 @@ app.UseRouting(); // Enable routing for endpoints
 app.UseAuthentication(); // Authentication - login, token validation, etc.
 app.UseAuthorization(); // Authorization - access control based on policies/roles
 
+app.UseAntiforgery();
+
 app.MapStaticAssets();
 app.MapRazorPages()
     .WithStaticAssets();
-app.MapPostLikeEndpoints();
+
+
+app.MapBlobStorageEndpoints(); // used for uploading/downloading (videos/images)
 
 #if USE_SEEDING
 using (var scope = app.Services.CreateScope())

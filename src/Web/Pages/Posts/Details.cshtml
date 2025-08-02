@@ -34,9 +34,18 @@
                </div>
            </div>
 
-
             <!-- Post Content -->   
             <p class="mb-2">@Model.Post.Post.Content</p>
+            
+            @if (Model.Post.Post.VideoFileID is not null)
+            {
+                <video class="w-100 rounded shadow-sm mt-2"
+                       style="max-height: 320px;"
+                       controls muted loop preload="metadata">
+                    <source src="/videos/@Model.Post.Post.VideoFileID" type="video/mp4"> @*/videos/guid is the endpoint form minimal api*@
+                    Your browser does not support the video tag.
+                </video>
+            }
             
             <hr/>
             

@@ -3,6 +3,7 @@ using System;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Data.Migrations
 {
     [DbContext(typeof(PosterDbContext))]
-    partial class PosterDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250802145601_Add VideoFile to Post entity")]
+    partial class AddVideoFiletoPostentity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -127,36 +130,6 @@ namespace Infrastructure.Data.Migrations
                     b.HasIndex("AuthorID");
 
                     b.ToTable("Posts");
-                });
-
-            modelBuilder.Entity("Domain.Entities.PostImage", b =>
-                {
-                    b.Property<Guid>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("now()");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("ImageFileID")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("PostID")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("ID");
-
-                    b.HasIndex("PostID");
-
-                    b.ToTable("PostImages");
                 });
 
             modelBuilder.Entity("Domain.Entities.PostLike", b =>
@@ -310,17 +283,6 @@ namespace Infrastructure.Data.Migrations
                     b.Navigation("Author");
                 });
 
-            modelBuilder.Entity("Domain.Entities.PostImage", b =>
-                {
-                    b.HasOne("Domain.Entities.Post", "Post")
-                        .WithMany("Images")
-                        .HasForeignKey("PostID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Post");
-                });
-
             modelBuilder.Entity("Domain.Entities.PostLike", b =>
                 {
                     b.HasOne("Domain.Entities.Post", "Post")
@@ -367,8 +329,6 @@ namespace Infrastructure.Data.Migrations
             modelBuilder.Entity("Domain.Entities.Post", b =>
                 {
                     b.Navigation("Comments");
-
-                    b.Navigation("Images");
 
                     b.Navigation("Likes");
 

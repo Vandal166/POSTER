@@ -26,7 +26,7 @@ public class PostService : IPostService
         if (!validation.IsValid)
             return Result.Fail<Guid>(validation.Errors.Select(e => e.ErrorMessage));
         
-        var post = Domain.Entities.Post.Create(userID, dto.Content);
+        var post = Domain.Entities.Post.Create(userID, dto.Content, dto.VideoFileID);
         if (post.IsFailed)
             return Result.Fail<Guid>(post.Errors.Select(e => e.Message));
 

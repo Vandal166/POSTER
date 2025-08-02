@@ -10,6 +10,7 @@
     depends_on:
         - web.database
         - web.keycloak
+        - azurite
     environment:
       - ConnectionStrings__Poster_DB=Host=web.database;Port=5432;Database=Poster_DB;Username=postgres;Password=postgres
       - Keycloak__Authority=https://keycloak:8180/auth/realms/PosterRealm
@@ -55,3 +56,15 @@
       - ./.containers/keycloak_postgres:/var/lib/postgresql/data
     ports:
       - "5433:5432"
+        
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite
+    container_name: "azurite"
+    hostname: azurite
+    restart: always
+    ports:
+      - "10000:10000" # Blob service
+      - "10001:10001" # Queue service
+      - "10002:10002" # Table service
+    volumes:
+      - ./.containers/azurite:/data
