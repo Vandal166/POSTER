@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Persistence;
 
-public class PostRepository : IPostRepository
+public sealed class PostRepository : IPostRepository
 {
     private readonly PosterDbContext _db;
     public PostRepository(PosterDbContext db)
@@ -44,7 +44,8 @@ public class PostRepository : IPostRepository
                     p.Author.AvatarPath,
                     p.Content,
                     p.CreatedAt,
-                    p.VideoFileID
+                    p.VideoFileID,
+                    p.Images.Select(pi => pi.ID).ToArray()
                 )
             )
             .FirstOrDefaultAsync(ct);
@@ -61,7 +62,8 @@ public class PostRepository : IPostRepository
                     p.Author.AvatarPath,
                     p.Content,
                     p.CreatedAt,
-                    p.VideoFileID
+                    p.VideoFileID,
+                    p.Images.Select(pi => pi.ImageFileID).ToArray()
                 )
             )
             .FirstOrDefaultAsync(cancellationToken);
@@ -89,7 +91,8 @@ public class PostRepository : IPostRepository
                 p.Author.AvatarPath,
                 p.Content,
                 p.CreatedAt,
-                p.VideoFileID
+                p.VideoFileID,
+                p.Images.Select(pi => pi.ImageFileID).ToArray()
             ));
         
        return await PagedList<PostDto>.CreateAsync(postsResponse, page, pageSize, cancellationToken);

@@ -1,6 +1,4 @@
-﻿@using Application.Contracts
-@model IEnumerable<Application.DTOs.PostAggregateDto>
-@inject ICurrentUserService CurrentUser
+﻿@model IEnumerable<Application.DTOs.PostAggregateDto>
 
 @foreach (var post in Model)
 {
@@ -36,15 +34,54 @@
                        class="text-primary text-decoration-none fw-semibold">Show more</a>
                 }
             
-                <!-- Post Video -->
-                @if (post.Post.VideoFileID is not null)
+                @if (post.Post.VideoFileID is not null || (post.Post.ImageFileIDs is not null && post.Post.ImageFileIDs.Any())) // prevent rendering if no media
                 {
-                    <video class="w-100 rounded shadow-sm mt-2"
-                           style="max-height: 320px;"
-                           controls muted loop preload="metadata">
-                        <source src="/videos/@post.Post.VideoFileID" type="video/mp4"> @*/videos/guid is the endpoint form minimal api*@
-                        Your browser does not support the video tag.
-                    </video>
+                    var mediaItems = new List<string>();
+                    if (post.Post.VideoFileID is not null)
+                    {
+                        mediaItems.Add($"/videos/{post.Post.VideoFileID}");
+                    }
+                    if (post.Post.ImageFileIDs is not null)
+                    {
+                        mediaItems.AddRange(post.Post.ImageFileIDs.Select(id => $"/images/{id}"));
+                    }
+
+                    var carouselId = $"mediaCarousel_{post.Post.Id}"; // ID for each post's media carousel
+                    <div id="@carouselId" class="carousel slide mt-3">
+                        <div class="carousel-inner rounded shadow-sm" style="height: 320px;">
+                            @for (int i = 0; i < mediaItems.Count; i++)
+                            {
+                                var isVideo = mediaItems[i].StartsWith("/videos/");
+                                <div class="carousel-item @(i == 0 ? "active" : "") h-100">
+                                    @if (isVideo)
+                                    {
+                                        <video class="d-block w-100 h-100 object-fit-cover" controls muted loop preload="metadata" poster="" data-fallback="/uploads/content-not-found.png">
+                                            <source src="@mediaItems[i]" type="video/mp4"/>
+                                            Your browser does not support the video tag.
+                                        </video>
+                                    }
+                                    else
+                                    {
+                                        <div class="ratio ratio-16x9 rounded shadow-sm" style="max-height: 320px;">
+                                            <img src="@mediaItems[i]" class="d-block w-100 h-100 object-fit-cover" alt="Post Media" data-fallback="/uploads/content-not-found.png" />
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </div>
+
+                        @if (mediaItems.Count > 1)
+                        {
+                            <button class="carousel-control-prev align-self-center" type="button" data-bs-target="#@carouselId" data-bs-slide="prev" style="width: auto; height: auto; padding: 0.5rem;">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Previous</span>
+                            </button>
+                            <button class="carousel-control-next align-self-center" type="button" data-bs-target="#@carouselId" data-bs-slide="next" style="width: auto; height: auto; padding: 0.5rem;">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Next</span>
+                            </button>
+                        }
+                    </div>
                 }
             </p>
             
@@ -56,68 +93,31 @@
         </div>
     </div>
 }
-<auth-only>
 <script>
-    document.body.addEventListener('htmx:afterSwap', (e) => {
-        if (e.target.id === 'posts-container' || e.target.id === 'loader') {
-            document.querySelectorAll("[data-post-id]").forEach(postElement => {
-                if (!postElement._watching) {
-                    startWatchingPost(postElement, postElement.dataset.postId);
-                    postElement._watching = true;
+    // setting default src for images and videos on 404
+    function setFallbackOnError(selector, attr = 'src') {
+        document.querySelectorAll(selector).forEach(el => {
+            el.addEventListener('error', function handler() {
+                if (el[attr] !== el.dataset.fallback) {
+                    el[attr] = el.dataset.fallback;
                 }
+                el.removeEventListener('error', handler);
             });
-        }
-    });
-    function isCenterLineOverlapping(postElement) {
-        const postRect = postElement.getBoundingClientRect();
-        const lineY = window.innerHeight / 2;
-        return postRect.top <= lineY && postRect.bottom >= lineY;
-    }
-
-    function startWatchingPost(postElement, postId) {
-            let viewed = false;
-            let timer = null;
-        function checkOverlap() {
-            if (viewed) return;
-
-            if (isCenterLineOverlapping(postElement)) {
-                if (!timer) {
-                    timer = setTimeout(() => {
-                        sendView(postId);
-                        viewed = true;
-                    }, 3000); // after 3 seconds of being in view
-                }
-            } else {
-                clearTimeout(timer);
-                timer = null;
-            }
-        }
-
-        window.addEventListener("scroll", checkOverlap);
-        window.addEventListener("resize", checkOverlap);
-        checkOverlap(); // Initial check
-    }
-
-    function sendView(postId) {
-        fetch('/Posts/ViewPost', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ postID: postId })
-        })
-        .then(response => {
-            if (!response.ok) {
-                console.error('Failed to send view for post:', postId);
-            } else {
-                console.log('View sent for post:', postId);
-                htmx.ajax('GET', `/Posts/ViewPost?postId=${postId}`, {
-                    target: `#post-stats-${postId}`,
-                    swap: 'outerHTML'
-                });
-            }
-        })
-        .catch(error => {
-            console.error('Error sending view for post:', postId, error);
         });
     }
+    document.querySelectorAll('video[data-fallback] source').forEach(source => {
+        source.addEventListener('error', function handler() {
+            const video = source.parentElement;
+            if (video && video.poster !== video.dataset.fallback) {
+                video.poster = video.dataset.fallback;
+            }
+            source.removeEventListener('error', handler);
+        });
+    });
+    
+    setFallbackOnError('img[data-fallback]', 'src');
 </script>
+
+<auth-only>
+    <script src="js/viewPostHandler.js"></script>
 </auth-only>

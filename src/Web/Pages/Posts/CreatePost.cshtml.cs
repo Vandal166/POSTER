@@ -1,7 +1,6 @@
 ﻿using Application.Contracts;
 using Application.Contracts.Persistence;
 using Application.DTOs;
-using Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -19,8 +18,7 @@ public class CreatePost : PageModel
         _currentUser = currentUser;
         _postService = postService;
     }
-
-
+    
     public IActionResult OnGet() => RedirectToPage("/Index");
     
     [BindProperty]
@@ -34,7 +32,7 @@ public class CreatePost : PageModel
         }
 
         var result = await _postService.CreatePostAsync(PostDto, _currentUser.ID, ct);
-//TODO add images[] here since PostImages is an separate entity
+
         if (!result.IsSuccess)
         {
             foreach (var error in result.Errors)

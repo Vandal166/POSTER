@@ -92,13 +92,34 @@ public static class DependencyInjection
                             c.Value.Equals("true", StringComparison.OrdinalIgnoreCase)))
                     {
                         context.Response.Redirect("/Account/CompleteProfile");
+                        return Task.CompletedTask;
+                    }
+                    
+                    // def behavior (redirect to AccessDeniedPath)
+                    if (context.Request.Headers["HX-Request"] == "true") // if the request is an htmx request
+                    {
+                        context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                        context.Response.Headers["HX-Redirect"] = context.Options.AccessDeniedPath.Value;
                     }
                     else
                     {
-                        // def behavior (redirect to AccessDeniedPath)
                         context.Response.Redirect(context.Options.AccessDeniedPath);
                     }
 
+                    return Task.CompletedTask;
+                };
+                
+                options.Events.OnRedirectToLogin = context =>
+                {
+                    if (context.Request.Headers["HX-Request"] == "true") // if the request is an htmx request
+                    {
+                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                        context.Response.Headers["HX-Redirect"] = context.Options.LoginPath.Value;
+                    }
+                    else
+                    {
+                        context.Response.Redirect(context.Options.LoginPath);
+                    }
                     return Task.CompletedTask;
                 };
             })

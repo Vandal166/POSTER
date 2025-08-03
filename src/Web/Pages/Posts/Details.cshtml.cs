@@ -36,9 +36,7 @@ public class Details : PageModel
     // id is postID
     public async Task<IActionResult> OnGetAsync(Guid id, int pageNumber = 1, CancellationToken ct = default)
     {
-        var user = HttpContext.User;
-        
-        if(user?.Identity?.IsAuthenticated != false && _currentUser.HasClaim("profileCompleted", "false"))
+        if(_currentUser.IsAuthenticated && _currentUser.HasClaim("profileCompleted", "false"))
             return RedirectToPage("/Account/CompleteProfile");
 
         var post = await _postRepository.GetPostAsync(id, ct);

@@ -35,9 +35,7 @@ public class IndexModel : PageModel
 
     public async Task<IActionResult> OnGet(CancellationToken ct = default)
     {
-        var user = HttpContext.User;
-        
-        if(user?.Identity?.IsAuthenticated != false && _currentUser.HasClaim("profileCompleted", "false"))
+        if(_currentUser.IsAuthenticated && _currentUser.HasClaim("profileCompleted", "false"))
             return RedirectToPage("/Account/CompleteProfile");
 
         await OnGetPaged(1, ct);

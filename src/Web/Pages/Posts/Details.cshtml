@@ -1,7 +1,5 @@
 ﻿@page "{id:guid}"
-@using Application.Contracts
 @model Web.Pages.Posts.Details
-@inject ICurrentUserService CurrentUser
 @{
     ViewData["Title"] = "Post Details";
     var returnUrl = string.IsNullOrEmpty(Request.Query["returnUrl"]) ? "/" : Request.Query["returnUrl"].ToString();
@@ -50,68 +48,8 @@
             <hr/>
             
             <!-- Post Stats -->
-            <div class="d-flex justify-content-between align-items-center text-muted small fs-5">
-                <div class="d-flex align-items-center">
-                    <auth-only>
-                        <div id="likes-@Model.Post.Post.Id"
-                             hx-post="/Posts/TogglePostLike?handler=ToggleLike"
-                             hx-include="this"
-                             hx-target="#likes-@Model.Post.Post.Id"
-                             hx-swap="outerHTML">
-
-                            @Html.AntiForgeryToken()
-                            <input type="hidden" name="postId" value="@Model.Post.Post.Id"/>
-                            <button type="submit" class="btn btn-link p-0 me-3 text-decoration-none fs-5 like-btn @(Model.Post.IsLiked ? "text-pink" : "text-muted")">
-                                <i class="bi bi-heart me-1"></i>@Model.Post.LikeCount
-                            </button>
-                        </div>
-                    </auth-only>
-                    
-                    <anon-only>
-                        <a asp-page="/Account/Login" asp-route-returnUrl="@HttpContext.Request.Path"
-                           class="btn btn-link p-0 me-3 text-muted text-decoration-none fs-5 like-btn">
-                            <i class="bi bi-heart me-1"></i>@Model.Post.LikeCount
-                        </a>
-                    </anon-only>
-
-                    <a asp-page="/Posts/Details" asp-route-id="@Model.Post.Post.Id"
-                       class="btn btn-link p-0 me-3 text-muted text-decoration-none fs-5 comment-btn">
-                        <i class="bi bi-chat me-1"></i>@Model.Post.CommentCount
-                    </a>
-                    <a
-                        class="btn btn-link p-0 text-muted text-decoration-none fs-5 view-btn">
-                        <i class="bi bi-eye me-1"></i>@Model.Post.ViewCount
-                    </a>
-                </div>
-                <!-- Three Dots Dropdown -->
-                <div class="dropdown">
-                    <button class="btn btn-link p-0 text-muted text-decoration-none fs-5" type="button" id="postOptionsDropdown"
-                            data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-three-dots"></i>
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="postOptionsDropdown">
-                        <auth-only>
-                            @if (CurrentUser.Username == Model.Post.Post.AuthorUsername)
-                            {
-                                <li>
-                                    <form method="post" asp-page-handler="DeletePost" asp-antiforgery="true" onsubmit="return confirm('Are you sure you want to delete this post?');">
-                                        <input type="hidden" name="PostId" value="@Model.Post.Post.Id"/>
-                                        <button type="submit" class="dropdown-item text-danger">Delete Post</button>
-                                    </form>
-                                </li>
-                            }
-                            else
-                            {
-                                <li><button class="dropdown-item">Report Post</button></li>
-                            }
-                        </auth-only>
-                        <anon-only>
-                            <li><a asp-page="/Account/Login" asp-route-returnUrl="@HttpContext.Request.Path" class="dropdown-item">Log in to report</a></li>
-                        </anon-only>
-                        <li><button class="dropdown-item">Copy Link</button></li>
-                    </ul>
-                </div>
-            </div>
+            <partial name="Shared/Posts/_PostStatsPartial" model="Model.Post"/>
+            
         </div>
     </div>
 

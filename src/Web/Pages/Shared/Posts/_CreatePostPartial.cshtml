@@ -15,5 +15,22 @@
     /*Clearing the modal on access*/
     document.getElementById('createPostModal').addEventListener('show.bs.modal', function () {
     this.querySelector('textarea[name="Content"]').value = '';
+
+        // Clear image previews and IDs
+        const imagePreviewList = document.getElementById('imagePreviewList');
+        if (imagePreviewList) {
+            imagePreviewList.innerHTML = '';
+            imagePreviewList.classList.add('d-none');
+        }
+        window.imageIDs = [];
+        // clear video preview and ID
+        const videoPreview = document.getElementById('videoPreview');
+        if (videoPreview) {
+            videoPreview.classList.add('d-none');
+        }
+        const videoFileID = document.getElementById('videoFileID');
+        if (videoFileID) {
+            videoFileID.value = '';
+        }
 });
 </script>

@@ -22,6 +22,9 @@ public sealed class CurrentUserService : ICurrentUserService
     public bool Enabled =>
         bool.TryParse(User.FindFirst("enabled")?.Value, out var enabled) && enabled;
 
+    public bool IsAuthenticated =>
+        User.Identity?.IsAuthenticated ?? false;
+    
     public string Username =>
         User.Identity?.Name ?? User.FindFirst(ClaimTypes.Name)?.Value ?? string.Empty;
     

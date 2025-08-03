@@ -10,12 +10,14 @@ namespace Application.Services;
 public class PostService : IPostService
 {
     private readonly IPostRepository _posts;
+    private readonly IPostImageRepository _postImages;
     private readonly IValidator<CreatePostDto> _createPostValidator;
     private readonly IUnitOfWork _uow;
 
-    public PostService(IPostRepository posts, IValidator<CreatePostDto> createPostValidator, IUnitOfWork uow)
+    public PostService(IPostRepository posts, IPostImageRepository postImages, IValidator<CreatePostDto> createPostValidator, IUnitOfWork uow)
     {
         _posts = posts;
+        _postImages = postImages;
         _createPostValidator = createPostValidator;
         _uow = uow;
     }
@@ -26,11 +28,21 @@ public class PostService : IPostService
         if (!validation.IsValid)
             return Result.Fail<Guid>(validation.Errors.Select(e => e.ErrorMessage));
         
-        var post = Domain.Entities.Post.Create(userID, dto.Content, dto.VideoFileID);
+        var post = Post.Create(userID, dto.Content, dto.VideoFileID);
+        var postImages = new List<PostImage>();
+        foreach (var imageIDs in dto.ImageFileIDs ?? Enumerable.Empty<Guid>())
+        {
+            var postImageResult = PostImage.Create(post.Value.ID, imageIDs);
+            if (postImageResult.IsFailed)
+                return Result.Fail<Guid>(postImageResult.Errors.Select(e => e.Message));
+            postImages.Add(postImageResult.Value);
+        }
         if (post.IsFailed)
             return Result.Fail<Guid>(post.Errors.Select(e => e.Message));
 
         await _posts.AddAsync(post.Value, cancellationToken);
+        await _postImages.AddRangeAsync(postImages, cancellationToken);
+        
         await _uow.SaveChangesAsync(cancellationToken);
 
         return Result.Ok(post.Value.ID);

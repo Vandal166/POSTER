@@ -31,6 +31,7 @@ public static class DependencyInjection
         services.AddScoped<IAvatarService, AvatarService>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IPostRepository, PostRepository>();
+        services.AddScoped<IPostImageRepository, PostImagesRepository>();
         services.AddScoped<IPostLikeRepository, PostLikeRepository>();
         services.AddScoped<ICommentLikeRepository, CommentLikeRepository>();
         services.AddScoped<IPostCommentRepository, PostCommentRepository>();

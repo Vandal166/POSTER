@@ -9,7 +9,7 @@
             <div id="likes-@Model.Post.Id"
                  hx-post="/Posts/TogglePostLike?handler=ToggleLike"
                  hx-include="this"
-                 hx-target="#likes-@Model.Post.Id"
+                 hx-target="#post-stats-@Model.Post.Id"
                  hx-swap="outerHTML">
 
                 @Html.AntiForgeryToken()
