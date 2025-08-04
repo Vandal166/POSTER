@@ -11,7 +11,8 @@ public interface IPostRepository
     Task<PostDto?> GetPostByCommentAsync(Guid commentID, CancellationToken cancellationToken = default);
     Task<List<Post>> GetUserFeedAsync(Guid userId, CancellationToken cancellationToken = default);
 
-    Task<IPagedList<PostDto>> GetAllAsync(int page, int pageSize, CancellationToken cancellationToken = default);
+    //Keyset pagination
+    Task<List<PostDto>> GetAllAsync(DateTime? lastCreatedAt, int pageSize, CancellationToken ct = default);
     
     Task AddAsync(Post post, CancellationToken cancellationToken = default);
     Task UpdateAsync(Post post, CancellationToken cancellationToken = default);

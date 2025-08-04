@@ -56,7 +56,8 @@ public class PostService : IPostService
     
     public async Task<IPagedList<PostDto>> GetAllAsync(int page, int pageSize, CancellationToken cancellationToken = default)
     {
-        return await _posts.GetAllAsync(page, pageSize, cancellationToken);
+        //return await _posts.GetAllAsync(page, pageSize, cancellationToken);
+        return null;
     }
     
     public async Task<Post?> DeletePostAsync(Guid id, CancellationToken cancellationToken = default)

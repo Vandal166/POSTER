@@ -9,40 +9,80 @@
     <div class="card shadow-sm mb-3">
         <div class="card-body">
             
-           <!-- Back Button and Post Header -->
-           <div class="d-flex align-items-center mb-3 justify-content-between">
-               <a href="@returnUrl"
-                  class="btn btn-link text-decoration-none text-dark d-flex align-items-center p-0">
-                   <i class="bi bi-arrow-left me-2 fs-5"></i>
-                   <span class="fw-bold fs-5">Post</span>
-               </a>
-               <div class="d-flex align-items-center text-end">
-                   <div>
-                       <a asp-page="/User/Details" asp-route-id="@Model.Post.Post.AuthorUsername"
-                          class="fw-semibold text-decoration-none text-dark">
-                           @Model.Post.Post.AuthorUsername
-                       </a>
-                       <br/>
-                       <small class="text-muted">@Model.Post.Post.CreatedAt.ToString("MMM d, yyyy 'at' h:mm tt")</small>
-                   </div>
-                   <a asp-page="/User/Details" asp-route-id="@Model.Post.Post.AuthorUsername">
-                       <img src="@Url.Content("~/" + Model.Post.Post.AuthorAvatarPath)"
-                            class="rounded-circle ms-2" width="40" height="40" alt="Avatar"/>
-                   </a>
-               </div>
-           </div>
+            <!-- Back Button and Post Header -->
+            <div class="d-flex align-items-center mb-3 justify-content-between">
+                <a href="javascript:history.back()"
+                   class="btn btn-link text-decoration-none text-dark d-flex align-items-center p-0">
+                    <i class="bi bi-arrow-left me-2 fs-5"></i>
+                    <span class="fw-bold fs-5">Post</span>
+                </a>
+                <div class="d-flex align-items-center text-end">
+                    <div>
+                        <a asp-page="/User/Details" asp-route-id="@Model.Post.Post.AuthorUsername"
+                           class="fw-semibold text-decoration-none text-dark">
+                            @Model.Post.Post.AuthorUsername
+                        </a>
+                        <br/>
+                        <small class="text-muted">@Model.Post.Post.CreatedAt.ToString("MMM d, yyyy 'at' h:mm tt")</small>
+                    </div>
+                    <a asp-page="/User/Details" asp-route-id="@Model.Post.Post.AuthorUsername">
+                        <img src="@Url.Content("~/" + Model.Post.Post.AuthorAvatarPath)"
+                             class="rounded-circle ms-2" width="40" height="40" alt="Avatar"/>
+                    </a>
+                </div>
+            </div>
 
             <!-- Post Content -->   
             <p class="mb-2">@Model.Post.Post.Content</p>
             
-            @if (Model.Post.Post.VideoFileID is not null)
+            @if (Model.Post.Post.VideoFileID is not null || (Model.Post.Post.ImageFileIDs is not null && Model.Post.Post.ImageFileIDs.Any())) // prevent rendering if no media
             {
-                <video class="w-100 rounded shadow-sm mt-2"
-                       style="max-height: 320px;"
-                       controls muted loop preload="metadata">
-                    <source src="/videos/@Model.Post.Post.VideoFileID" type="video/mp4"> @*/videos/guid is the endpoint form minimal api*@
-                    Your browser does not support the video tag.
-                </video>
+                var mediaItems = new List<string>();
+                if (Model.Post.Post.VideoFileID is not null)
+                {
+                    mediaItems.Add($"/videos/{Model.Post.Post.VideoFileID}");
+                }
+                if (Model.Post.Post.ImageFileIDs is not null)
+                {
+                    mediaItems.AddRange(Model.Post.Post.ImageFileIDs.Select(id => $"/images/{id}"));
+                }
+
+                var carouselId = $"mediaCarousel_{Model.Post.Post.Id}"; // ID for each post's media carousel
+                <div id="@carouselId" class="carousel slide mt-3">
+                    <div class="carousel-inner rounded shadow-sm" style="height: 320px;">
+                        @for (int i = 0; i < mediaItems.Count; i++)
+                        {
+                            var isVideo = mediaItems[i].StartsWith("/videos/");
+                            <div class="carousel-item @(i == 0 ? "active" : "") h-100">
+                                @if (isVideo)
+                                {
+                                    <video class="d-block w-100 h-100 object-fit-cover" controls muted loop preload="metadata" poster="" data-fallback="/uploads/content-not-found.png">
+                                        <source src="@mediaItems[i]" type="video/mp4"/>
+                                        Your browser does not support the video tag.
+                                    </video>
+                                }
+                                else
+                                {
+                                    <div class="ratio ratio-16x9 rounded shadow-sm" style="max-height: 320px;">
+                                        <img src="@mediaItems[i]" class="d-block w-100 h-100 object-fit-cover" alt="Post Media" data-fallback="/uploads/content-not-found.png" />
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+
+                    @if (mediaItems.Count > 1)
+                    {
+                        <button class="carousel-control-prev align-self-center" type="button" data-bs-target="#@carouselId" data-bs-slide="prev" style="width: auto; height: auto; padding: 0.5rem;">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Previous</span>
+                        </button>
+                        <button class="carousel-control-next align-self-center" type="button" data-bs-target="#@carouselId" data-bs-slide="next" style="width: auto; height: auto; padding: 0.5rem;">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Next</span>
+                        </button>
+                    }
+                </div>
             }
             
             <hr/>
@@ -88,3 +128,5 @@
     </div>
     
 </div>
+
+<script src="/js/defaultSrcImage.js"></script>

@@ -18,12 +18,7 @@ public class Login : PageModel
 
     [BindProperty]
     public LoginUserDto Dto { get; set; }
-
-    public void OnGet()
-    {
-        // just render the form TODO for Return button, redirect to where the user came from
-    }
-
+    
     public async Task<IActionResult> OnPostAsync(CancellationToken ct)
     {
         if (!ModelState.IsValid)

@@ -40,6 +40,7 @@ app.UseSerilogRequestLogging();
 app.UseHttpsRedirection();
 app.UseStaticFiles(); // Serve static files like CSS, JS, images, etc.
 app.UseRouting(); // Enable routing for endpoints
+app.UseStatusCodePagesWithReExecute("/Error"); // Custom error pages for status codes
 
 app.UseAuthentication(); // Authentication - login, token validation, etc.
 app.UseAuthorization(); // Authorization - access control based on policies/roles

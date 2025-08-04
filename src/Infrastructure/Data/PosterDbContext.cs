@@ -19,12 +19,7 @@ public class PosterDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-        /*
-         *  Entity 'User' has a global query filter defined and is the required end of a relationship with the entity 'Post'. This may lead to unexpected results when the required entity is filtered out. Either configure the na
-vigation as optional, or define matching query filters for both entities in the navigation.
-etc
-         */
-        
+     
         // ------ User ------
         modelBuilder.Entity<User>(b =>
         {
@@ -50,7 +45,8 @@ etc
                 .HasForeignKey(p => p.AuthorID)
                 .OnDelete(DeleteBehavior.Restrict);
             
-           b.Property(p => p.CreatedAt).HasDefaultValueSql("now()");
+            b.HasIndex(p => p.CreatedAt);
+            b.Property(p => p.CreatedAt).HasDefaultValueSql("now()");
         });
         
         // ------ Comment ------

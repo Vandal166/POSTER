@@ -1,6 +1,33 @@
 ﻿/* Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
 for details on configuring this project to bundle and minify static web assets. */
 
+/* Make header sticky */
+header {
+  position: sticky;
+  top: 0;
+  z-index: 1030; /* above content */
+}
+.row {
+  min-height: 100vh;
+  align-items: flex-start;
+}
+.main-wrapper, .row {
+  min-height: 100vh;
+}
+
+aside.col-2, aside.col-md-3, aside.col-lg-2,
+aside.col-lg-3 {
+  position: sticky;
+  top: 75px;
+  z-index: 1020;
+  overflow-y: auto;
+}
+
+/* Main content and #center-line remain non-sticky */
+main,
+#center-line {
+  position: static;
+}
 /* Center everything like Twitter desktop */
 .main-wrapper {
   max-width: 1200px;  /* Twitter uses ~990-1200px */

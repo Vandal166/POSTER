@@ -13,7 +13,7 @@
     </div>
         
     <div id="loader"
-         hx-get="?handler=Paged&pageNumber=@(Model.CurrentPage + 1)"
+         hx-get="?handler=Paged&lastCreatedAt=@(Model.LastCreatedAt)"
          hx-target="this"
          hx-trigger="revealed"
          hx-swap="outerHTML"

@@ -19,7 +19,7 @@ public class IndexModel : PageModel
     
     public IEnumerable<PostAggregateDto> Posts { get; private set; } = Enumerable.Empty<PostAggregateDto>();
     
-    public int CurrentPage { get; private set; }
+    public DateTime? LastCreatedAt { get; private set; }
     public const int PageSize = 4; // Default page size
     
     public IndexModel(ICurrentUserService currentUser, IPostRepository postRepository, IPostLikeRepository postLikeRepo, IPostCommentRepository postCommentRepo, 
@@ -38,17 +38,21 @@ public class IndexModel : PageModel
         if(_currentUser.IsAuthenticated && _currentUser.HasClaim("profileCompleted", "false"))
             return RedirectToPage("/Account/CompleteProfile");
 
-        await OnGetPaged(1, ct);
+        await OnGetPaged(null, ct);
         return Page();
     }
     
-    public async Task<IActionResult> OnGetPaged(int pageNumber = 1, CancellationToken ct = default)
+    //TODO authenticated users are always made to call the OnGetPaged method when unauthenticated not
+    public async Task<IActionResult> OnGetPaged(DateTime? lastCreatedAt, CancellationToken ct = default)
     {
-        var pagedPosts = await _postRepository.GetAllAsync(pageNumber, PageSize, ct);
-        bool hasMore = pagedPosts.HasNextPage;
-        string nextUrl = hasMore ? $"?handler=Paged&pageNumber={pageNumber + 1}" : string.Empty;
+        var pagedPosts = await _postRepository.GetAllAsync(lastCreatedAt, PageSize, ct);
+        bool hasMore = pagedPosts.Count == PageSize; // if the count is equal to PageSize, it means there are more posts available
+        string nextUrl = hasMore
+            ? $"?handler=Paged&lastCreatedAt={Uri.EscapeDataString(pagedPosts.Last().CreatedAt.ToString("o"))}"
+            : string.Empty;
+
         
-        var postDtos = pagedPosts.Items.Select(p =>
+        var postDtos = pagedPosts.Select(p =>
             p with
             {
                 Content = (p.IsTruncated ? string.Concat(p.Content.AsSpan(0, 300), "...") : p.Content)

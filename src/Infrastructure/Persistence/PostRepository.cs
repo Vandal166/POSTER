@@ -79,12 +79,22 @@ public sealed class PostRepository : IPostRepository
             .ThenInclude(c => c.Author)
             .ToListAsync(cancellationToken);
     }
-
-    public async Task<IPagedList<PostDto>> GetAllAsync(int page, int pageSize, CancellationToken cancellationToken = default)
+    
+    // using Keyset pagination
+    public async Task<List<PostDto>> GetAllAsync(DateTime? lastCreatedAt, int pageSize, CancellationToken ct = default)
     {
-        var postsResponse = _db.Posts
+        IQueryable<Post> query = _db.Posts
             .AsNoTracking()
-            .OrderBy(p => p.CreatedAt)
+            .OrderByDescending(p => p.CreatedAt);
+
+        if (lastCreatedAt.HasValue)
+        {
+            var utcCreatedAt = DateTime.SpecifyKind(lastCreatedAt.Value, DateTimeKind.Utc);
+            query = query.Where(p => p.CreatedAt < utcCreatedAt);
+        }
+
+        return await query
+            .Take(pageSize)
             .Select(p => new PostDto(
                 p.ID,
                 p.Author.Username,
@@ -93,9 +103,8 @@ public sealed class PostRepository : IPostRepository
                 p.CreatedAt,
                 p.VideoFileID,
                 p.Images.Select(pi => pi.ImageFileID).ToArray()
-            ));
-        
-       return await PagedList<PostDto>.CreateAsync(postsResponse, page, pageSize, cancellationToken);
+            ))
+            .ToListAsync(ct);
     }
 
     public Task AddAsync(Post post, CancellationToken cancellationToken = default)
