@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Web.Common;
+using Web.Contracts;
 using Web.Services;
 
 namespace Web;
@@ -18,6 +20,7 @@ public static class DependencyInjection
     {
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
+        services.AddScoped<IToastBuilder, ToastNotificationBuilder>();
         
         IConfigurationSection keycloakSettings = configuration.GetSection("Keycloak");
         services.AddAuthorizationBuilder();
@@ -28,6 +31,13 @@ public static class DependencyInjection
             })
             .AddCookie(options => 
             {
+                options.Cookie.Name = "Poster.Auth";
+                options.Cookie.HttpOnly = true;
+                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+                options.Cookie.SameSite = SameSiteMode.Strict;
+                options.ExpireTimeSpan = TimeSpan.FromHours(2);
+                options.SlidingExpiration = true; // renew cookie on each request
+                
                 options.LoginPath = "/Account/Login";      // redirect here if unauthenticated
                 options.LogoutPath = "/Account/Logout";
                 

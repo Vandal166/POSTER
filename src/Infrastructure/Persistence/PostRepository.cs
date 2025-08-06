@@ -22,15 +22,6 @@ public sealed class PostRepository : IPostRepository
             .AsNoTracking()
             .AnyAsync(p => p.ID == postId, cancellationToken);
     }
-
-    /*public async Task<Post?> GetPostAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        return await _db.Posts
-            .Include(p => p.Author)
-            .Include(p => p.Comments)
-            .ThenInclude(c => c.Author)
-            .FirstOrDefaultAsync(p => p.ID == id, cancellationToken);
-    }*/
     
     public async Task<PostDto?> GetPostAsync(Guid postID, CancellationToken ct = default)
     {
@@ -49,6 +40,16 @@ public sealed class PostRepository : IPostRepository
                 )
             )
             .FirstOrDefaultAsync(ct);
+    }
+    
+    public async Task<Post?> GetPostByIDAsync(Guid postID, CancellationToken ct = default)
+    {
+        return await _db.Posts
+            .Include(p => p.Author)
+            .Include(p => p.Comments).ThenInclude(c => c.Author)
+            .Include(p => p.Images)
+            .AsSplitQuery()
+            .FirstOrDefaultAsync(p => p.ID == postID, ct);
     }
     
     public async Task<PostDto?> GetPostByCommentAsync(Guid commentID, CancellationToken cancellationToken = default)
@@ -121,6 +122,8 @@ public sealed class PostRepository : IPostRepository
 
     public Task DeleteAsync(Post post, CancellationToken cancellationToken = default)
     {
+       // await _db.Posts.Where(p => p.ID == post.ID).ExecuteDeleteAsync(cancellationToken);
+        
         _db.Posts.Remove(post);
         return Task.CompletedTask;
     }

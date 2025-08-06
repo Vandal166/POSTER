@@ -15,7 +15,6 @@ public class BlobService : IBlobService
         _blobServiceClient = blobServiceClient;
     }
 
-    //TODO check https://www.youtube.com/watch?v=Ft4SJgQETAk for his clean architecture setup
     public async Task<Guid> UploadFileAsync(Stream fileStream, string contentType, string containerName, CancellationToken ct = default)
     {
         BlobContainerClient containerClient = _blobServiceClient.GetBlobContainerClient(containerName);

@@ -4,8 +4,6 @@ using Microsoft.AspNetCore.Hosting;
 
 namespace Infrastructure.Persistence;
 
-//TODO Attirubte
-//<a href="https://www.flaticon.com/free-icons/profile-image" title="profile-image icons">Profile-image icons created by Md Tanvirul Haque - Flaticon</a>
 public class AvatarService : IAvatarService
 {
     private readonly IWebHostEnvironment _env;

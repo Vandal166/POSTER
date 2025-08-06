@@ -16,6 +16,13 @@ public class PosterDbContext : DbContext
     public DbSet<CommentLike> CommentLikes => Set<CommentLike>();
     public DbSet<PostView> PostViews => Set<PostView>();
     
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder
+            .LogTo(Console.WriteLine, Microsoft.Extensions.Logging.LogLevel.Information)
+            .EnableSensitiveDataLogging();
+    }
+    
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

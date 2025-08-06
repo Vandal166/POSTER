@@ -4,6 +4,7 @@ using Application.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Web.Common;
 
 namespace Web.Pages.Posts;
 
@@ -39,7 +40,8 @@ public class CreatePost : PageModel
             {
                 ModelState.AddModelError(string.Empty, error.Message);
             }
-            return Partial("Shared/Posts/_CreatePostFormPartial", PostDto); //TODO display an floating error
+            return Partial("Shared/Posts/_CreatePostFormPartial", PostDto)
+                .WithHxToast(Response.HttpContext, "Error creating post", "error");
         }
 
         Response.Headers["HX-Redirect"] = Url.Page("/Index");

@@ -4,6 +4,7 @@ using Application.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Web.Common;
 
 namespace Web.Pages.Posts;
 
@@ -33,7 +34,7 @@ public class LikePostModel : PageModel
             return NotFound();
         
         var likeResult = await _likeService.ToggleLikeAsync(postId, _currentUser.ID, ct);
-
+        
         await _postViewService.AddViewAsync(postId, _currentUser.ID, ct);
         
         var vm = new PostAggregateDto

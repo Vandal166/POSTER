@@ -48,11 +48,10 @@
                 @if (CurrentUser.Username == Model.Post.AuthorUsername)
                 {
                     <li>
-                        <form method="post" asp-page-handler="DeletePost" asp-antiforgery="true" onsubmit="return confirm('Are you sure you want to delete this post?');">
-                                            
-                            <input type="hidden" name="PostId" value="@Model.Post.Id"/>
-                            <button type="submit" class="dropdown-item text-danger">Delete Post</button>
-                        </form>
+                        <button type="button" class="dropdown-item text-danger" onclick="showDeleteModal('@Model.Post.Id')">
+                            Delete post
+                        </button>
+                        
                     </li>
                 }
                 else
@@ -67,3 +66,13 @@
         </ul>
     </div>
 </div>
+
+<auth-only>
+    <script>
+      function showDeleteModal(postId) {
+        document.getElementById('deletePostId').value = postId;
+        var modal = new bootstrap.Modal(document.getElementById('deletePostModal'));
+        modal.show();
+      }
+    </script>
+</auth-only>

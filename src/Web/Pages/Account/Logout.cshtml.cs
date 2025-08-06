@@ -8,10 +8,8 @@ namespace Web.Pages;
 
 public class Logout : PageModel
 {
-    public IActionResult OnGet()
-    {
-        return RedirectToPage("/Index"); // if the user tries to access the logout page directly, redirect them to the index page
-    }
+    public IActionResult OnGet() => RedirectToPage("/Index");
+    
     public async Task<IActionResult> OnPostAsync()
     {
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);

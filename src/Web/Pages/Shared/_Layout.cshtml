@@ -14,69 +14,74 @@
     <link rel="stylesheet" href="~/Web.styles.css" asp-append-version="true"/>
 </head>
 <body class="bg-light">
-    <header class="border-bottom bg-white">
-        <nav class="navbar navbar-expand-lg navbar-light me-3">
-            <!-- Web Logo -->
-            <a class="navbar-brand fw-bold text-primary ms-1" asp-page="/Index">Poster</a>
+<header class="border-bottom bg-white">
+    <nav class="navbar navbar-expand-lg navbar-light me-3">
+        <!-- Web Logo -->
+        <a class="navbar-brand fw-bold text-primary ms-1" asp-page="/Index">Poster</a>
 
-            <!-- Search Bar -->
-            <form class="d-none d-md-flex mx-auto border rounded-3" method="get" asp-page="/Search">
-                <div class="input-group flex-nowrap">
-                    <span class="input-group-text bg-white border-0">
-                        <i class="bi bi-search"></i>
-                    </span>
-                    <input type="text" name="q" class="form-control form-control-lg border-0 shadow-none" placeholder="Search posts..." />
-                </div>
-            </form>
-
-            <!-- Right Side: User Info & Auth Buttons -->
-            <div class="ms-auto d-flex align-items-center">
-                <auth-only>
-                    <div asp-authenticated="true" class="d-flex align-items-center me-3">
-                        <img src="@Url.Content("~/" + CurrentUser.AvatarPath)" alt="Avatar" class="rounded-circle" width="32" height="32" />
-                        <span class="ms-2 fw-semibold">@CurrentUser.Username</span>
-                        <form method="post" asp-page="/Account/Logout" class="mb-0">
-                            <button type="submit" class="btn btn-outline-danger btn-sm ms-2">Logout</button>
-                        </form>
-                    </div>
-                </auth-only>
-                
-                <anon-only>
-                    <a class="btn btn-outline-primary btn-sm me-2" asp-page="/Account/Login">Login</a>
-                    <a class="btn btn-primary btn-sm" asp-page="/Account/Register">Sign Up</a>
-                </anon-only>
+        <!-- Search Bar -->
+        <form class="d-none d-md-flex mx-auto border rounded-3" method="get" asp-page="/Search">
+            <div class="input-group flex-nowrap">
+                <span class="input-group-text bg-white border-0">
+                    <i class="bi bi-search"></i>
+                </span>
+                <input type="text" name="q" class="form-control form-control-lg border-0 shadow-none" placeholder="Search posts..." />
             </div>
-        </nav>
-    </header>
-@*TODO make it not scroll with page*@
-    <div class="main-wrapper">
-        <div class="row mt-3">
-            <!-- Left Sidebar -->
-            <aside class="col-2 col-md-3 col-lg-2 bg-white">
-                <div class="d-flex flex-column">
-                    <!-- Trigger Button -->
-                    <button type="button" class="btn btn-primary text-start mb-3 fw-bold"
-                            data-bs-toggle="modal" data-bs-target="#createPostModal">
-                        <i class="bi bi-send-fill me-2"></i> New Post
-                    </button>
+        </form>
 
-                    <a asp-page="/Index" class="btn btn-light text-start mb-2">
-                        <i class="bi bi-house-door me-2"></i> Home
-                    </a>
-                    <a asp-page="/Notifications" class="btn btn-light text-start mb-2">
-                        <i class="bi bi-bell me-2"></i> Notifications
-                    </a>
-                    <a asp-page="/Account/Profile" class="btn btn-light text-start">
-                        <i class="bi bi-person me-2"></i> Profile
-                    </a>
+        <!-- Right Side: User Info & Auth Buttons -->
+        <div class="ms-auto d-flex align-items-center">
+            <auth-only>
+                <div asp-authenticated="true" class="d-flex align-items-center me-3">
+                    <img src="@Url.Content("~/" + CurrentUser.AvatarPath)" alt="Avatar" class="rounded-circle" width="32" height="32" />
+                    <span class="ms-2 fw-semibold">@CurrentUser.Username</span>
+                    <form method="post" asp-page="/Account/Logout" class="mb-0">
+                        <button type="submit" class="btn btn-outline-danger btn-sm ms-2">Logout</button>
+                    </form>
                 </div>
-            </aside>
+            </auth-only>
+                
+            <anon-only>
+                <a class="btn btn-outline-primary btn-sm me-2" asp-page="/Account/Login">Login</a>
+                <a class="btn btn-primary btn-sm" asp-page="/Account/Register">Sign Up</a>
+            </anon-only>
+        </div>
+    </nav>
+</header>
 
-            <!-- Main Content Area -->
-            <main role="main" class="col-10 col-md-9 col-lg-7">
-                @RenderBody() @*TODO loading circle when the main content is rendered*@
-            </main>
-            <div id="center-line" style="
+<div class="main-wrapper">
+    <div class="row mt-3">
+        <!-- Left Sidebar -->
+        <aside class="col-2 col-md-3 col-lg-2 bg-white">
+            <div class="d-flex flex-column">
+                <!-- Trigger Button -->
+                <button type="button" class="btn btn-primary text-start mb-3 fw-bold"
+                        data-bs-toggle="modal" data-bs-target="#createPostModal">
+                    <i class="bi bi-send-fill me-2"></i> New Post
+                </button>
+
+                <a asp-page="/Index" class="btn btn-light text-start mb-2">
+                    <i class="bi bi-house-door me-2"></i> Home
+                </a>
+                    
+                <a asp-page="/Messages" class="btn btn-light text-start mb-2">
+                    <i class="bi bi-chat-dots me-2"></i> Messages
+                </a>
+                    
+                <a asp-page="/Notifications" class="btn btn-light text-start mb-2">
+                    <i class="bi bi-bell me-2"></i> Notifications
+                </a>
+                <a asp-page="/Account/Profile" class="btn btn-light text-start">
+                    <i class="bi bi-person me-2"></i> Profile
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main role="main" class="col-10 col-md-9 col-lg-7">
+            @RenderBody()
+        </main>
+        <div id="center-line" style="
                 position: fixed;
                 top: 50%;
                 left: 0;
@@ -85,22 +90,22 @@
                 pointer-events: none;
                 background-color: transparent; /* red for testing */
                 z-index: 9999;">
-            </div>
-
-            <!-- Optional Right Sidebar (for trends, suggestions, etc.) -->
-            <aside class="d-none d-lg-block col-lg-3">
-                <div class="p-3 bg-white">
-                    <h5 class="mb-3">Trending Topics</h5>
-                    <ul class="list-unstyled">
-                        <li><a href="#" class="text-decoration-none">#ASP.NETCore</a></li>
-                        <li><a href="#" class="text-decoration-none">#Blazor</a></li>
-                        <li><a href="#" class="text-decoration-none">#WebDevelopment</a></li>
-                        <li><a href="#" class="text-decoration-none">#CSharp</a></li>
-                    </ul>
-                </div>
-            </aside>
         </div>
+
+        <!-- Optional Right Sidebar (for trends, suggestions, etc.) -->
+        <aside class="d-none d-lg-block col-lg-3">
+            <div class="p-3 bg-white">
+                <h5 class="mb-3">Trending Topics</h5>
+                <ul class="list-unstyled">
+                    <li><a href="#" class="text-decoration-none">#ASP.NETCore</a></li>
+                    <li><a href="#" class="text-decoration-none">#Blazor</a></li>
+                    <li><a href="#" class="text-decoration-none">#WebDevelopment</a></li>
+                    <li><a href="#" class="text-decoration-none">#CSharp</a></li>
+                </ul>
+            </div>
+        </aside>
     </div>
+</div>
 
 <footer class="border-top text-muted text-center mt-4 py-2">
     &copy; 2025 - Poster - <a asp-page="/Privacy">Privacy</a>
@@ -110,8 +115,12 @@
 <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 <script src="~/js/site.js" asp-append-version="true"></script>
 <script src="/js/htmx.min.js"></script>
+<script src="js/showToastNotif.js"> </script>
 
 @await RenderSectionAsync("Scripts", required: false)
 @await Html.PartialAsync("Shared/Posts/_CreatePostPartial", new CreatePostDto(string.Empty))
+@await Html.PartialAsync("Shared/_ToastNotificationPartial")
+@await Component.InvokeAsync("Toast")
 </body>
 </html>
+

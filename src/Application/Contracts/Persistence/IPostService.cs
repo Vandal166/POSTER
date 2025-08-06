@@ -11,5 +11,5 @@ public interface IPostService
     Task<IPagedList<PostDto>> GetAllAsync(int page, int pageSize, CancellationToken cancellationToken = default);
     
     Task<Post?> GetPostAsync(Guid id, CancellationToken cancellationToken = default);
-    Task<Post?> DeletePostAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<Result<bool>> DeletePostAsync(Guid id, Guid currentUserID, CancellationToken cancellationToken = default);
 }

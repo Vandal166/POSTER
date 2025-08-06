@@ -60,17 +60,18 @@ public class PostService : IPostService
         return null;
     }
     
-    public async Task<Post?> DeletePostAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<Result<bool>> DeletePostAsync(Guid id, Guid currentUserID, CancellationToken cancellationToken = default)
     {
-        /*var post = await _posts.GetPostAsync(id, cancellationToken);
+        var post = await _posts.GetPostByIDAsync(id, cancellationToken);
         if (post is null)
-            return null;
+            return Result.Fail<bool>("Post not found");
         
-        //TODO delete comments and likes before via injecting their repos
+        if (post.AuthorID != currentUserID)
+            return Result.Fail<bool>("Unable to delete post that does not belong to you");
+        
         await _posts.DeleteAsync(post, cancellationToken);
         await _uow.SaveChangesAsync(cancellationToken);
         
-        return post;*/
-        return null;
+        return Result.Ok(true);
     }
 }

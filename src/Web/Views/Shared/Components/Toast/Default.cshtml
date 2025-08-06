@@ -1,0 +1,13 @@
+﻿@model List<Application.DTOs.ToastMessage>?
+
+@if (Model is not null && Model.Any())
+{
+    <script>
+        window.addEventListener("DOMContentLoaded", () => {
+            @foreach (var message in Model)
+            {
+                <text>showToast("@message.Message", "@message.Type.ToString()");</text>
+            }
+        });
+    </script>
+}

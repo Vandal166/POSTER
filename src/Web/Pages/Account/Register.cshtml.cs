@@ -3,6 +3,7 @@ using Infrastructure.Auth;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Web.Common;
+using Web.Contracts;
 
 namespace Web.Pages;
 
@@ -10,16 +11,16 @@ namespace Web.Pages;
 public class Register : PageModel
 {
     private readonly IAuthService _auth;
+    private readonly IToastBuilder _toastBuilder;
 
-    public Register(IAuthService auth) => _auth = auth;
+    public Register(IAuthService auth, IToastBuilder toastBuilder)
+    {
+        _auth = auth;
+        _toastBuilder = toastBuilder;
+    }
 
     [BindProperty]
     public RegisterUserDto Dto { get; set; }
-
-    public void OnGet()
-    {
-        // just render the form
-    }
 
     public async Task<IActionResult> OnPostAsync(CancellationToken ct)
     {
@@ -34,7 +35,9 @@ public class Register : PageModel
             return Page();
         }
         
-        // redirect to home or protected area
+        _toastBuilder.SetToast("Registration Successful, you can now log in", ToastType.Success)
+            .Build(TempData);
+            
         return RedirectToPage("/Account/Login");
     }
 }

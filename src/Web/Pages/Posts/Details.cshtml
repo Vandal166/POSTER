@@ -99,6 +99,10 @@
         </div>
     </auth-only>
     
+    <auth-only>
+        <partial name="Shared/Posts/_DeletePostFormPartial" />
+    </auth-only>
+    
     <anon-only>
         <div class="text-center border rounded p-3 bg-light mb-3">
             <a asp-page="/Account/Login" asp-route-returnUrl="@HttpContext.Request.Path" class="btn btn-outline-primary">Log in to comment</a>

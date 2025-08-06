@@ -14,7 +14,6 @@ public class ROPTokenGeneratorService : ITokenGenerator<HttpResponseMessage>
     // Generates a token using the Resource Owner Password Credentials (ROP) grant type.
     public async Task<HttpResponseMessage> GenerateTokenAsync(HttpClient client, FormUrlEncodedContent formUrlEncodedContent, CancellationToken cancellationToken = default)
     {
-        //TODO use Authorization Code with PKCE instead of Resource Owner Password grant
         return await client.PostAsync(
             "protocol/openid-connect/token",
             formUrlEncodedContent,

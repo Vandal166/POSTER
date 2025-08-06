@@ -49,7 +49,7 @@ public sealed class UserService : IUserService
 
     public async Task<Result> UpdateAvatarAsync(Guid userID, AvatarDto fileDto, CancellationToken ct = default)
     {
-        var validation = await _avatarValidator.ValidateAsync(fileDto, ct); //TODO (file == null || file.Length == 0)
+        var validation = await _avatarValidator.ValidateAsync(fileDto, ct);
         if (!validation.IsValid)
             return Result.Fail(validation.Errors.Select(e => e.ErrorMessage));
         

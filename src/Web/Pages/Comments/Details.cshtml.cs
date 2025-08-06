@@ -37,7 +37,7 @@ public class Details : PageModel
 
         var comment = await _commentRepo.GetCommentAsync(id, ct);
         if (comment is null)
-            return NotFound();
+            return NotFound(); //TODO test this and see if its better than IToastBuilder
         
         var post = await _postRepo.GetPostByCommentAsync(id, ct);
         if (post is null)
@@ -63,10 +63,6 @@ public class Details : PageModel
         bool hasMore = pagedComments.HasNextPage;
 
         string nextUrl = hasMore ? $"?handler=Paged&id={id}&pageNumber={pageNumber + 1}" : string.Empty;
-
-        /*var postID = await _postRepo.GetPostByCommentAsync(id, ct);
-        if (postID is null)
-            return NotFound();*/
         
         var aggregates = new List<CommentAggregateDto>(pagedComments.Items.Count);
         foreach (var comment in pagedComments.Items)

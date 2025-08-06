@@ -42,15 +42,14 @@ public class IndexModel : PageModel
         return Page();
     }
     
-    //TODO authenticated users are always made to call the OnGetPaged method when unauthenticated not
     public async Task<IActionResult> OnGetPaged(DateTime? lastCreatedAt, CancellationToken ct = default)
     {
         var pagedPosts = await _postRepository.GetAllAsync(lastCreatedAt, PageSize, ct);
         bool hasMore = pagedPosts.Count == PageSize; // if the count is equal to PageSize, it means there are more posts available
+        
         string nextUrl = hasMore
             ? $"?handler=Paged&lastCreatedAt={Uri.EscapeDataString(pagedPosts.Last().CreatedAt.ToString("o"))}"
             : string.Empty;
-
         
         var postDtos = pagedPosts.Select(p =>
             p with
