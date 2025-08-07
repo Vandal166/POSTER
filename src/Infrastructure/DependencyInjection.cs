@@ -30,12 +30,15 @@ public static class DependencyInjection
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IAvatarService, AvatarService>();
         services.AddScoped<IUserRepository, UserRepository>();
+        
         services.AddScoped<IPostRepository, PostRepository>();
         services.AddScoped<IPostImageRepository, PostImagesRepository>();
         services.AddScoped<IPostLikeRepository, PostLikeRepository>();
         services.AddScoped<ICommentLikeRepository, CommentLikeRepository>();
         services.AddScoped<IPostCommentRepository, PostCommentRepository>();
         services.AddScoped<IPostViewRepository, PostViewRepository>();
+        
+        services.AddScoped<IConversationRepository, ConversationRepository>();
         
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddSingleton<IPasswordHasher, BcryptHasher>();

@@ -29,7 +29,7 @@ public class CompleteProfile : PageModel
     {
         _toastBuilder.SetToast("Complete your profile to continue", ToastType.Error) //TODO create Warning type
             .Build(TempData);
-        //TODO since CompleteProfile doesnt have Layout view it also does not have a way to display the Toast notif
+        
         return Page();
     }
     

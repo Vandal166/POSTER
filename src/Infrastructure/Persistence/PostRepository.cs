@@ -8,6 +8,65 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Persistence;
 
+public sealed class ConversationRepository : IConversationRepository
+{
+    private readonly PosterDbContext _db;
+    public ConversationRepository(PosterDbContext db)
+    {
+        _db = db;
+    }
+
+    public async Task<bool> ExistsAsync(Guid conversationId, CancellationToken ct = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<ConversationDto?> GetConversationAsync(Guid conversationId, CancellationToken ct = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<List<ConversationDto>> GetAllAsync(Guid currentUserID, DateTime? lastMessageAt, int pageSize, CancellationToken ct = default)
+    {
+        IQueryable<Conversation> query = _db.Conversations
+            .AsNoTracking()
+            .Where(c => c.Participants.Any(p => p.UserID == currentUserID))
+            .OrderByDescending(p => p.Messages.OrderByDescending(m => m.CreatedAt).Select(m => m.CreatedAt).FirstOrDefault());
+
+        if (lastMessageAt.HasValue)
+        {
+            var utcLastMessageAt = DateTime.SpecifyKind(lastMessageAt.Value, DateTimeKind.Utc);
+            query = query.Where(p => p.Messages.OrderByDescending(m => m.CreatedAt).Select(m => m.CreatedAt).FirstOrDefault() < utcLastMessageAt);
+        }
+
+        return await query
+            .Take(pageSize)
+            .Select(p => new ConversationDto(
+                p.ID,
+                p.Name,
+                p.ProfilePicturePath,
+                p.Messages.OrderByDescending(m => m.CreatedAt).Select(m => m.Content).FirstOrDefault()!,
+                p.Messages.OrderByDescending(m => m.CreatedAt).Select(m => m.CreatedAt).FirstOrDefault()
+            ))
+            .ToListAsync(ct);
+    }
+
+    public async Task AddAsync(Conversation conversation, CancellationToken ct = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task UpdateAsync(Conversation conversation, CancellationToken ct = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task DeleteAsync(Conversation conversation, CancellationToken ct = default)
+    {
+        throw new NotImplementedException();
+    }
+}
+
 public sealed class PostRepository : IPostRepository
 {
     private readonly PosterDbContext _db;

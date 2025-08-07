@@ -20,3 +20,16 @@ public interface IPostRepository
     Task UpdateAsync(Post post, CancellationToken cancellationToken = default);
     Task DeleteAsync(Post post, CancellationToken cancellationToken = default);
 }
+
+public interface IConversationRepository
+{
+    Task<bool> ExistsAsync(Guid conversationId, CancellationToken ct = default);
+
+    Task<ConversationDto?> GetConversationAsync(Guid conversationId, CancellationToken ct = default);
+    Task<List<ConversationDto>> GetAllAsync(Guid currentUserID, DateTime? lastMessageAt, int pageSize, CancellationToken ct = default);
+    
+    
+    Task AddAsync(Conversation conversation, CancellationToken ct = default);
+    Task UpdateAsync(Conversation conversation, CancellationToken ct = default);
+    Task DeleteAsync(Conversation conversation, CancellationToken ct = default);
+}

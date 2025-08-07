@@ -64,8 +64,8 @@
                     <i class="bi bi-house-door me-2"></i> Home
                 </a>
                     
-                <a asp-page="/Messages" class="btn btn-light text-start mb-2">
-                    <i class="bi bi-chat-dots me-2"></i> Messages
+                <a asp-page="/Account/Conversations/ConversationList" class="btn btn-light text-start mb-2">
+                    <i class="bi bi-chat-dots me-2"></i> Conversations
                 </a>
                     
                 <a asp-page="/Notifications" class="btn btn-light text-start mb-2">
@@ -114,8 +114,8 @@
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
 <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 <script src="~/js/site.js" asp-append-version="true"></script>
-<script src="/js/htmx.min.js"></script>
-<script src="js/showToastNotif.js"> </script>
+<script src="~/js/htmx.min.js"></script>
+<script src="~/js/showToastNotif.js"> </script>
 
 @await RenderSectionAsync("Scripts", required: false)
 @await Html.PartialAsync("Shared/Posts/_CreatePostPartial", new CreatePostDto(string.Empty))

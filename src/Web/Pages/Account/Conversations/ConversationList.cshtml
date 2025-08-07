@@ -1,0 +1,135 @@
+﻿@page
+@model Web.Pages.Messages.ConversationList
+
+@{
+    ViewData["Title"] = "Conversations";
+}
+
+<div class="container py-4" style="max-width: 600px;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="fw-bold mb-0">Conversations</h4>
+        <button type="button" class="btn btn-primary text-start fw-bold" data-bs-toggle="modal" data-bs-target="#newConversationModal">
+            <i class="bi bi-envelope-plus me-2"></i>New Conversation
+        </button>
+    </div>
+    
+    <div id="conversations-container">
+        <partial name="Shared/Account/Conversations/_ConversationListPartial" model="Model.Conversations"/>
+    </div>
+
+    <div id="loader"
+         hx-get="?handler=Paged&lastMessageAt=@(Model.LastMessageAt)"
+         hx-target="this"
+         hx-trigger="revealed"
+         hx-swap="outerHTML"
+         hx-indicator="#loading-indicator">
+
+        <div id="loading-indicator">
+            @await Html.PartialAsync("Shared/_LoadingIndicatorPartial")
+        </div>
+    </div>
+</div>
+
+<!-- New Conversation Modal -->
+<div class="modal fade" id="newConversationModal" tabindex="-1" aria-labelledby="newConversationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form 
+                method="post"
+                hx-post="?handler=Create"
+                hx-target="body"
+                hx-swap="none">
+                
+                <div class="modal-header">
+                    <h5 class="modal-title" id="newConversationModalLabel">Start New Conversation</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+
+                    <!-- Search by username -->
+                    <div class="mb-3">
+                        <label for="userSearchInput" class="form-label">Search Users</label>
+                        
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="userSearchInput"
+                            placeholder="Enter username"
+                            name="username"
+                            autocomplete="off"
+                            hx-get="?handler=UserSearch"
+                            hx-target="#userSearchResults"
+                            hx-trigger="keyup changed delay:300ms"
+                            hx-swap="innerHTML"
+                        />
+
+                    </div>
+
+                    <div id="userSearchResults">
+                        <!-- Search results rendered here -->
+                    </div>
+
+                    <div class="mt-3">
+                        <h6>Selected Users</h6>
+                        <ul id="selectedUsers" class="list-group mb-2"></ul>
+
+                        <!-- Hidden input to collect selected user IDs -->
+                        <input type="hidden" name="selectedUserIds" id="selectedUserIds" />
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create</button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.body.addEventListener("htmx:afterSwap", function (e) {
+        console.log("HTMX swapped content into", e.detail.target);
+    });
+
+    document.body.addEventListener("htmx:responseError", function (e) {
+        console.error("HTMX response error", e.detail.xhr.responseText);
+    });
+    const selectedUsers = new Map();
+
+    function addUserToSelection(userId, username) {
+        if (selectedUsers.has(userId)) return;
+
+        selectedUsers.set(userId, username);
+        renderSelectedUsers();
+    }
+
+    function removeUserFromSelection(userId) {
+        selectedUsers.delete(userId);
+        renderSelectedUsers();
+    }
+
+    function renderSelectedUsers() {
+        const list = document.getElementById('selectedUsers');
+        const hiddenInput = document.getElementById('selectedUserIds');
+
+        list.innerHTML = '';
+        const ids = [];
+
+        selectedUsers.forEach((username, id) => {
+            const li = document.createElement('li');
+            li.className = 'list-group-item d-flex justify-content-between align-items-center';
+            li.innerHTML = `
+                ${username}
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeUserFromSelection('${id}')">Remove</button>
+            `;
+            list.appendChild(li);
+            ids.push(id);
+        });
+
+        hiddenInput.value = ids.join(',');
+    }
+</script>

@@ -1,0 +1,30 @@
+﻿@model Application.ViewModels.ConversationLoaderViewModel
+
+@if (Model.HasMore)
+{
+    <div id="loader"
+         hx-get="@Model.NextUrl"
+         hx-target="this"
+         hx-trigger="revealed"
+         hx-swap="outerHTML"
+         hx-indicator="#loading-indicator">
+        
+        <div id="loading-indicator">
+            @await Html.PartialAsync("Shared/_LoadingIndicatorPartial")
+        </div>
+        
+    </div>
+    
+}
+@if(!Model.Conversations.Any())
+{
+    <div class="alert alert-info">No conversations yet.</div>
+}
+else
+{
+    <div hx-swap-oob="beforeend:#conversations-container">
+        
+        <partial name="Shared/Account/Conversations/_ConversationListPartial" model="Model.Conversations"/>
+
+    </div>
+}

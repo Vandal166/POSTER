@@ -3,6 +3,7 @@ using System;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Data.Migrations
 {
     [DbContext(typeof(PosterDbContext))]
-    partial class PosterDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250807133739_Add Conversation,messaging etc")]
+    partial class AddConversationmessagingetc
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -101,9 +104,6 @@ namespace Infrastructure.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("AdminID")
-                        .HasColumnType("uuid");
-
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -112,22 +112,12 @@ namespace Infrastructure.Data.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("ProfilePicturePath")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("ID");
 
-                    b.HasIndex("AdminID");
-
-                    b.ToTable("Conversations");
+                    b.ToTable("Conversation");
                 });
 
             modelBuilder.Entity("Domain.Entities.ConversationUser", b =>
@@ -147,7 +137,7 @@ namespace Infrastructure.Data.Migrations
 
                     b.HasIndex("UserID");
 
-                    b.ToTable("ConversationUsers");
+                    b.ToTable("ConversationUser");
                 });
 
             modelBuilder.Entity("Domain.Entities.Message", b =>
@@ -186,7 +176,7 @@ namespace Infrastructure.Data.Migrations
 
                     b.HasIndex("SenderID");
 
-                    b.ToTable("Messages");
+                    b.ToTable("Message");
                 });
 
             modelBuilder.Entity("Domain.Entities.MessageImage", b =>
@@ -216,7 +206,7 @@ namespace Infrastructure.Data.Migrations
 
                     b.HasIndex("MessageID");
 
-                    b.ToTable("MessageImages");
+                    b.ToTable("MessageImage");
                 });
 
             modelBuilder.Entity("Domain.Entities.Post", b =>
@@ -423,16 +413,6 @@ namespace Infrastructure.Data.Migrations
                     b.Navigation("Comment");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Conversation", b =>
-                {
-                    b.HasOne("Domain.Entities.User", "Admin")
-                        .WithMany()
-                        .HasForeignKey("AdminID")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("Admin");
                 });
 
             modelBuilder.Entity("Domain.Entities.ConversationUser", b =>

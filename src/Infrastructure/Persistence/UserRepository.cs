@@ -1,6 +1,9 @@
-﻿using Application.Contracts.Persistence;
+﻿using Application.Contracts;
+using Application.Contracts.Persistence;
+using Application.DTOs;
 using Domain.Entities;
 using FluentResults;
+using Infrastructure.Common;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -39,6 +42,22 @@ public class UserRepository : IUserRepository
             errors.Add(new Error($"Email '{user.Email.Value}' already exists."));
         }
         return errors;*/ return null;
+    }
+    
+    public async Task<IPagedList<UserDto>> SearchByUsernameAsync(string username, int page, int pageSize, CancellationToken ct = default)
+    {
+        var userResponse =  _db.Users
+            .AsNoTracking()
+            .Where(u => EF.Functions.ILike(u.Username, $"%{username}%"))
+            .OrderByDescending(u => u.Username)
+            .Select(u => new UserDto(
+                u.ID, 
+                u.Username, 
+                u.AvatarPath
+            ));
+        
+        
+        return await PagedList<UserDto>.CreateAsync(userResponse, page, pageSize, ct);
     }
     
     public async Task<User?> GetUserAsync(Guid userID, CancellationToken cancellationToken = default)

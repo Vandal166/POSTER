@@ -60,5 +60,9 @@
 <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
 <script src="~/lib/jquery-validation-unobtrusive/dist/jquery.validate.unobtrusive.min.js"></script>
 <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="~/js/showToastNotif.js"> </script>
+
+@await Html.PartialAsync("Shared/_ToastNotificationPartial")
+@await Component.InvokeAsync("Toast")
 </body>
 </html>

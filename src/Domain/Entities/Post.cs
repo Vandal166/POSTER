@@ -1,6 +1,10 @@
 ﻿using FluentResults;
 
 namespace Domain.Entities;
+/*
+ * <Avatar><Username of the sender> <Date of message>
+ * <Content>
+ */
 
 /*
  *<Avatar><Username of the author> <Date of post>

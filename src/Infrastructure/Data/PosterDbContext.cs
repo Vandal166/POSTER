@@ -16,6 +16,12 @@ public class PosterDbContext : DbContext
     public DbSet<CommentLike> CommentLikes => Set<CommentLike>();
     public DbSet<PostView> PostViews => Set<PostView>();
     
+    public DbSet<Conversation> Conversations => Set<Conversation>();
+    public DbSet<ConversationUser> ConversationUsers => Set<ConversationUser>();
+    public DbSet<Message> Messages => Set<Message>();
+    public DbSet<MessageImage> MessageImages => Set<MessageImage>();
+    
+    
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder
@@ -120,6 +126,7 @@ public class PosterDbContext : DbContext
             b.Property(p => p.CreatedAt).HasDefaultValueSql("now()");
         });
         
+        // ------ PostImage ------
         modelBuilder.Entity<PostImage>(b =>
         {
             b.HasKey(pi => pi.ID);
@@ -129,6 +136,76 @@ public class PosterDbContext : DbContext
                 .OnDelete(DeleteBehavior.Cascade); // Deleting a post deletes its images
             b.Property(pi => pi.ImageFileID).IsRequired();
             b.Property(pi => pi.CreatedAt).HasDefaultValueSql("now()");
+        });
+        
+        // ------ ConversationUser ------
+        modelBuilder.Entity<ConversationUser>(b =>
+        {
+            b.HasKey(cu => new { cu.ConversationID, cu.UserID });
+
+            b.HasOne(cu => cu.Conversation)
+                .WithMany(c => c.Participants)
+                .HasForeignKey(cu => cu.ConversationID)
+                .OnDelete(DeleteBehavior.Cascade); // delete conversation -> delete participants
+
+            b.HasOne(cu => cu.User)
+                .WithMany()
+                .HasForeignKey(cu => cu.UserID)
+                .OnDelete(DeleteBehavior.Cascade); // delete user -> remove from conversations
+
+            b.Property(p => p.JoinedAt).HasDefaultValueSql("now()");
+        });
+        
+        // ------ Conversation ------
+        modelBuilder.Entity<Conversation>(b =>
+        {
+            b.HasKey(c => c.ID);
+            b.Property(c => c.Name).IsRequired();
+            b.Property(c => c.ProfilePicturePath).IsRequired();
+            b.HasOne(c => c.Admin)
+                .WithMany()
+                .HasForeignKey(c => c.AdminID)
+                .OnDelete(DeleteBehavior.SetNull);
+            
+            b.HasMany(c => c.Participants)
+                .WithOne(p => p.Conversation)
+                .HasForeignKey(p => p.ConversationID)
+                .OnDelete(DeleteBehavior.Cascade); // removing a conversation removes its participants
+            
+            b.HasMany(c => c.Messages)
+                .WithOne(m => m.Conversation)
+                .HasForeignKey(m => m.ConversationID)
+                .OnDelete(DeleteBehavior.Cascade); // removing a conversation removes its messages
+            
+            b.Property(c => c.CreatedAt).HasDefaultValueSql("now()");
+        });
+        
+        // ------ Message ------
+        modelBuilder.Entity<Message>(b =>
+        {
+            b.HasKey(m => m.ID);
+            b.Property(m => m.Content).IsRequired();
+            b.HasOne(m => m.Sender)
+                .WithMany()
+                .HasForeignKey(m => m.SenderID)
+                .OnDelete(DeleteBehavior.Restrict); // sender can be deleted without affecting messages
+            b.HasOne(m => m.Conversation)
+                .WithMany(c => c.Messages)
+                .HasForeignKey(m => m.ConversationID)
+                .OnDelete(DeleteBehavior.Cascade); // removing a conversation removes its messages
+            b.Property(p => p.CreatedAt).HasDefaultValueSql("now()");
+        });
+        
+        // ------ MessageImage ------
+        modelBuilder.Entity<MessageImage>(b =>
+        {
+            b.HasKey(mi => mi.ID);
+            b.HasOne(mi => mi.Message)
+                .WithMany(m => m.Images)
+                .HasForeignKey(mi => mi.MessageID)
+                .OnDelete(DeleteBehavior.Cascade); // removing a message removes its images
+            b.Property(mi => mi.ImageFileID).IsRequired();
+            b.Property(p => p.CreatedAt).HasDefaultValueSql("now()");
         });
     }
 }

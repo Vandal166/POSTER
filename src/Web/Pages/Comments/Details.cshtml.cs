@@ -37,7 +37,7 @@ public class Details : PageModel
 
         var comment = await _commentRepo.GetCommentAsync(id, ct);
         if (comment is null)
-            return NotFound(); //TODO test this and see if its better than IToastBuilder
+            return NotFound();
         
         var post = await _postRepo.GetPostByCommentAsync(id, ct);
         if (post is null)

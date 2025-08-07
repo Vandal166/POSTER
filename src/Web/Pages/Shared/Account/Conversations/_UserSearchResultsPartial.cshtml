@@ -1,0 +1,23 @@
+﻿@model IEnumerable<Application.DTOs.UserDto>
+
+@if (!Model.Any())
+{
+    <p class="text-muted">No users found.</p>
+}
+else
+{
+    <ul class="list-group">
+        @foreach (var user in Model)
+        {
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                    <img src="@Url.Content("~/" + user.AvatarPath)" class="rounded-circle me-2" width="32" height="32" />
+                    @user.Username
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-success" onclick="addUserToSelection('@user.Id', '@user.Username')">
+                    Add
+                </button>
+            </li>
+        }
+    </ul>
+}
