@@ -30,6 +30,7 @@ public interface IConversationRepository
     
     
     Task AddAsync(Conversation conversation, CancellationToken ct = default);
+    Task AddParticipantsAsync(ConversationUser conversationUser, CancellationToken ct = default);
     Task UpdateAsync(Conversation conversation, CancellationToken ct = default);
     Task DeleteAsync(Conversation conversation, CancellationToken ct = default);
 }

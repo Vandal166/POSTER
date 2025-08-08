@@ -161,7 +161,7 @@ public class PosterDbContext : DbContext
         {
             b.HasKey(c => c.ID);
             b.Property(c => c.Name).IsRequired();
-            b.Property(c => c.ProfilePicturePath).IsRequired();
+            b.Property(c => c.ProfilePictureID).IsRequired();
             b.HasOne(c => c.Admin)
                 .WithMany()
                 .HasForeignKey(c => c.AdminID)

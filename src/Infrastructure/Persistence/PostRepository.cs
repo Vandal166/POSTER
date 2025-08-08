@@ -28,32 +28,45 @@ public sealed class ConversationRepository : IConversationRepository
 
     public async Task<List<ConversationDto>> GetAllAsync(Guid currentUserID, DateTime? lastMessageAt, int pageSize, CancellationToken ct = default)
     {
-        IQueryable<Conversation> query = _db.Conversations
+        var query = _db.Conversations
             .AsNoTracking()
             .Where(c => c.Participants.Any(p => p.UserID == currentUserID))
-            .OrderByDescending(p => p.Messages.OrderByDescending(m => m.CreatedAt).Select(m => m.CreatedAt).FirstOrDefault());
-
+            .Select(c => new
+            {
+                Conversation = c,
+                LastMessageCreatedAt = c.Messages.OrderByDescending(m => m.CreatedAt).Select(m => m.CreatedAt).FirstOrDefault(),
+                LastMessageContent = c.Messages.OrderByDescending(m => m.CreatedAt).Select(m => m.Content).FirstOrDefault()
+            });
+        
         if (lastMessageAt.HasValue)
         {
             var utcLastMessageAt = DateTime.SpecifyKind(lastMessageAt.Value, DateTimeKind.Utc);
-            query = query.Where(p => p.Messages.OrderByDescending(m => m.CreatedAt).Select(m => m.CreatedAt).FirstOrDefault() < utcLastMessageAt);
+            query = query.Where(x => x.LastMessageCreatedAt < utcLastMessageAt);        
         }
 
         return await query
+            .OrderByDescending(x => x.LastMessageCreatedAt)
             .Take(pageSize)
-            .Select(p => new ConversationDto(
-                p.ID,
-                p.Name,
-                p.ProfilePicturePath,
-                p.Messages.OrderByDescending(m => m.CreatedAt).Select(m => m.Content).FirstOrDefault()!,
-                p.Messages.OrderByDescending(m => m.CreatedAt).Select(m => m.CreatedAt).FirstOrDefault()
+            .Select(x => new ConversationDto(
+                x.Conversation.ID,
+                x.Conversation.Name,
+                x.Conversation.ProfilePictureID,
+                x.LastMessageContent!,
+                x.LastMessageCreatedAt
             ))
             .ToListAsync(ct);
     }
 
-    public async Task AddAsync(Conversation conversation, CancellationToken ct = default)
+    public Task AddAsync(Conversation conversation, CancellationToken ct = default)
     {
-        throw new NotImplementedException();
+        _db.Conversations.Add(conversation);
+        return Task.CompletedTask;
+    }
+
+    public Task AddParticipantsAsync(ConversationUser conversationUser, CancellationToken ct = default)
+    {
+        _db.ConversationUsers.Add(conversationUser);
+        return Task.CompletedTask;
     }
 
     public async Task UpdateAsync(Conversation conversation, CancellationToken ct = default)

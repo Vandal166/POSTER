@@ -1,10 +1,12 @@
 ﻿using Application.Contracts;
 using Application.Contracts.Persistence;
 using Application.DTOs;
+using Application.Services;
 using Application.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Web.Common;
 
 namespace Web.Pages.Messages;
 
@@ -13,6 +15,7 @@ public class ConversationList : PageModel
 {
     private readonly ICurrentUserService _currentUser;
     private readonly IConversationRepository _conversationRepo;
+    private readonly IConversationService _conversationService;
     private readonly IUserRepository _userRepository;
     
     public IEnumerable<ConversationDto> Conversations { get; private set; } = Enumerable.Empty<ConversationDto>();
@@ -20,10 +23,15 @@ public class ConversationList : PageModel
     
     public const int PageSize = 8; // Default page size
     
-    public ConversationList(ICurrentUserService currentUser, IConversationRepository conversationRepo, IUserRepository userRepository)
+    [BindProperty]
+    public CreateConversationDto ConversationDto { get; set; }
+    
+    public ConversationList(ICurrentUserService currentUser, IConversationRepository conversationRepo, 
+        IConversationService conversationService, IUserRepository userRepository)
     {
         _currentUser = currentUser;
         _conversationRepo = conversationRepo;
+        _conversationService = conversationService;
         _userRepository = userRepository;
     }
 
@@ -65,24 +73,39 @@ public class ConversationList : PageModel
     
     public async Task<PartialViewResult> OnGetUserSearchAsync(string username, CancellationToken ct = default)
     {
-        var users = await _userRepository.SearchByUsernameAsync(username, 1, 10, ct);
+        if (string.IsNullOrWhiteSpace(username))
+            return Partial("Shared/Account/Conversations/_UserSearchResultsPartial", Enumerable.Empty<UserDto>());
+      
+        var users = await _userRepository.SearchByUsernameAsync(username.Trim(), 1, 10, ct);
         return Partial("Shared/Account/Conversations/_UserSearchResultsPartial", users.Items);
     }
     
-    public async Task<IActionResult> OnPostCreateAsync(string selectedUserIds)
+    public async Task<IActionResult> OnPostCreateAsync(string selectedUserIds, CancellationToken ct = default)
     {
-        var ids = selectedUserIds
-            ?.Split(',', StringSplitOptions.RemoveEmptyEntries)
-            .Select(Guid.Parse)
-            .Distinct()
-            .ToList();
-
-        if (ids is null || ids.Count < 2)
+        if (!ModelState.IsValid)
         {
-            return BadRequest("At least 2 participants are required.");
+            return Partial("Shared/Account/Conversations/_CreateConversationFormPartial", ConversationDto);
         }
         
+        var ids = selectedUserIds
+            ?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(Guid.Parse)
+            .Append(_currentUser.ID)
+            .Distinct()
+            .ToList();
+        
+        var result = await _conversationService.CreateConversationAsync(_currentUser.ID, ids, ConversationDto, ct);
+        if (result.IsFailed)
+        {
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Message);
+            }
+            return Partial("Shared/Account/Conversations/_CreateConversationFormPartial", ConversationDto)
+                .WithHxToast(Response.HttpContext, "Error creating conversation", "error");
+        }
+        
+        Response.Headers["HX-Redirect"] = Url.Page("/Account/Conversations/ConversationList");
         return new EmptyResult();
     }
-
 }

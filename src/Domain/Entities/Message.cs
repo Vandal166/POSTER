@@ -10,7 +10,7 @@ public sealed class ConversationUser
     public Guid UserID { get; set; }
     public User User { get; set; } = null!;
     
-    public DateTime JoinedAt { get; private set; }
+    public DateTime JoinedAt { get; set; }
 }
 
 
@@ -18,7 +18,7 @@ public sealed class ConversationUser
 public sealed class Conversation : AuditableEntity
 {
     public string Name { get; private set; } = null!;
-    public string ProfilePicturePath { get; private set; } = null!;
+    public Guid ProfilePictureID { get; private set; } // the profile picture ID from Blob Storage
     
     public Guid? AdminID { get; private set; } // the user who created the conversation, null if its a 1v1 conversation
     public User? Admin { get; private set; }
@@ -31,30 +31,20 @@ public sealed class Conversation : AuditableEntity
 
     private Conversation() {}
     
-    public static Result<Conversation> Create(string name, string profilePicturePath, IEnumerable<Guid> userIds)
+    public static Result<Conversation> Create(string name, Guid profilePictureID, Guid? adminID = null)
     {
         if (string.IsNullOrWhiteSpace(name))
             return Result.Fail<Conversation>("Conversation name cannot be empty.");
 
-        if (profilePicturePath is null)
-            return Result.Fail<Conversation>("Profile picture path cannot be null.");
-
-        var ids = userIds?.Distinct().ToList();
-
-        if (ids is null || ids.Count < 2)
-            return Result.Fail<Conversation>("A conversation must have at least two unique users.");
-
-        if (ids.Any(id => id == Guid.Empty))
-            return Result.Fail<Conversation>("User IDs cannot be empty.");
-
-        Guid? adminID = ids.Count > 2 ? ids.First() : null; // only assigning admin for group convos
-
+        if (profilePictureID == Guid.Empty)
+            return Result.Fail<Conversation>("Profile picture path cannot be empty.");
+        
         var conversation = new Conversation
         {
             ID = Guid.NewGuid(),
             CreatedAt = DateTime.UtcNow,
             Name = name,
-            ProfilePicturePath = profilePicturePath,
+            ProfilePictureID = profilePictureID,
             AdminID = adminID
         };
 

@@ -7,7 +7,70 @@ using FluentValidation;
 
 namespace Application.Services;
 
-public class PostService : IPostService
+public sealed class ConversationService : IConversationService
+{
+    private readonly IConversationRepository _conversations;
+    private readonly IValidator<CreateConversationDto> _createConversationValidator;
+    private readonly IUnitOfWork _uow;
+    
+    public ConversationService(IConversationRepository conversations, IValidator<CreateConversationDto> createConversationValidator, IUnitOfWork uow)
+    {
+        _conversations = conversations;
+        _createConversationValidator = createConversationValidator;
+        _uow = uow;
+    }
+
+    
+    public async Task<Result<Guid>> CreateConversationAsync(Guid currentUserID, List<Guid>? participantIDs, CreateConversationDto dto, CancellationToken ct = default)
+    {
+        if (participantIDs is null || participantIDs.Count < 2)
+            return Result.Fail<Guid>("At least two participants are required to create a conversation.");
+        
+        var validation = await _createConversationValidator.ValidateAsync(dto, ct);
+        if (!validation.IsValid)
+            return Result.Fail<Guid>(validation.Errors.Select(e => e.ErrorMessage));
+        
+        var conversation = Conversation.Create(dto.Name, dto.ProfilePictureFileID, participantIDs.Count > 2 ? currentUserID : null); // setting an admin only if its an group conv
+        if (conversation.IsFailed)
+            return Result.Fail<Guid>(conversation.Errors.Select(e => e.Message));
+        
+        await _conversations.AddAsync(conversation.Value, ct);
+        //TODO upon creating, add an default Message impersonating the creator so that the covnersation.Message is correctly indexed via CreatedAt and shown up top
+        
+        var conversationUsers = participantIDs.Select(id => new ConversationUser
+        {
+            ConversationID = conversation.Value.ID,
+            UserID = id,
+            JoinedAt = DateTime.UtcNow
+        }).ToList();
+
+        foreach (var user in conversationUsers)
+        {
+            await _conversations.AddParticipantsAsync(user, ct);
+        }
+        await _uow.SaveChangesAsync(ct);
+        
+        return Result.Ok(conversation.Value.ID);
+    }
+
+    public async Task<IPagedList<ConversationDto>> GetAllAsync(Guid currentUserID, DateTime? lastMessageAt, int pageSize,
+        CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<ConversationDto?> GetConversationAsync(Guid conversationID, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<Result<bool>> DeleteConversationAsync(Guid conversationID, Guid currentUserID, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+public sealed class PostService : IPostService
 {
     private readonly IPostRepository _posts;
     private readonly IPostImageRepository _postImages;

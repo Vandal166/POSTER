@@ -1,0 +1,63 @@
+﻿@model Application.DTOs.CreateConversationDto
+
+<!-- New Conversation Modal -->
+<div class="modal fade" id="newConversationModal" tabindex="-1" aria-labelledby="newConversationModalLabel" aria-hidden="true">
+    <div class="modal-dialog" style="margin-top: 10rem !important; max-width: 600px !important;">
+        <div class="modal-content">
+    
+            <partial name="Shared/Account/Conversations/_CreateConversationFormPartial" model="Model" />
+            
+        </div>
+    </div>
+</div>
+
+<script>
+    /*Clearing the modal on access*/
+    document.getElementById('newConversationModal').addEventListener('show.bs.modal', function () {
+        // Clear conversation name
+        const nameInput = document.querySelector('#newConversationModal input[name="Name"]');
+        if (nameInput) nameInput.value = '';
+
+        // Clear profile picture
+        const hiddenInput = document.getElementById('conversationProfilePictureFileID');
+        if (hiddenInput) hiddenInput.value = '';
+        const imagePreviewList = document.getElementById('conversationImagePreviewList');
+        if (imagePreviewList) {
+            imagePreviewList.innerHTML = '';
+            imagePreviewList.classList.add('d-none');
+        }
+
+        // Set default profile picture if none is set
+        const defaultImagePath = '/uploads/images/default-conversation.png';
+        if (hiddenInput && imagePreviewList && (!hiddenInput.value || hiddenInput.value === '')) {
+            imagePreviewList.innerHTML = `
+            <div class="d-inline-block position-relative m-1">
+                <img src="${defaultImagePath}" class="rounded shadow-sm" style="width:90px;height:90px;object-fit:cover;">
+            </div>
+        `;
+            imagePreviewList.classList.remove('d-none');
+            hiddenInput.value = 'd5b4058a-345c-4ff9-9d0f-2fdca4f795f6'; // Default image ID
+        }
+        
+        // Clear user search input
+        const userSearchInput = document.getElementById('userSearchInput');
+        if (userSearchInput) userSearchInput.value = '';
+
+        // Clear user search results
+        const userSearchResults = document.getElementById('userSearchResults');
+        if (userSearchResults) userSearchResults.innerHTML = '';
+        
+        // Clear selected users
+        const selectedUsersList = document.getElementById('selectedUsers');
+        if (selectedUsersList) selectedUsersList.innerHTML = '';
+        const selectedUserIdsInput = document.getElementById('selectedUserIds');
+        if (selectedUserIdsInput) selectedUserIdsInput.value = '';
+        const feedback = document.getElementById('selectedUserIdsFeedback');
+        if (feedback) feedback.textContent = '';
+
+        // Also clear the selectedUsers Map if it exists
+        if (window.selectedUsers && typeof window.selectedUsers.clear === 'function') {
+            window.selectedUsers.clear();
+        }
+});
+</script>

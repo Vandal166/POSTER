@@ -1,0 +1,226 @@
+﻿@model Application.DTOs.CreateConversationDto
+
+<!-- New Conversation Modal -->
+<form 
+    method="post"
+    enctype="multipart/form-data"
+    hx-post="?handler=Create"
+    hx-target="body"
+    hx-swap="none">
+    
+    <div class="modal-header">
+        <h5 class="modal-title" id="newConversationModalLabel">Start New Conversation</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+
+    <div class="modal-body">
+
+        <div class="row mb-3">
+            <!-- Conversation Name -->
+            <div class="col">
+                <label asp-for="@Model.Name" class="form-label">Conversation Name</label>
+                <input asp-for="@Model.Name" class="form-control" placeholder="Enter conversation name" required/>
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <!-- Profile Picture -->
+            <div class="col-auto text-end">
+                <label class="form-label">Profile Picture</label>
+                <button type="button" class="btn btn-outline-secondary" id="uploadConversationImageBtn">
+                    <i class="bi bi-image"></i>
+                </button>
+                <input type="file" id="conversationImageInput" accept="image/*" style="display: none;"/>
+                <input type="hidden" name="ProfilePictureFileID" id="conversationProfilePictureFileID" />
+                <div id="conversationImagePreviewList" class="d-none position-relative"></div>
+                <span asp-validation-for="ProfilePictureFileID" class="text-danger"></span>
+            </div>
+        </div>
+        
+        <!-- Search by username -->
+        <div>
+            <label for="userSearchInput" class="form-label">Search Users</label>
+            
+            <input
+                type="text"
+                class="form-control"
+                id="userSearchInput"
+                placeholder="Enter username"
+                name="username"
+                autocomplete="off"
+                hx-get="?handler=UserSearch"
+                hx-target="#userSearchResults"
+                hx-trigger="keyup changed delay:300ms"
+                hx-swap="innerHTML"
+            />
+
+        </div>
+        
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+        
+        <div id="userSearchResults">
+            <!-- Search results rendered here -->
+        </div>
+
+        <div class="mt-3">
+            <h6>Selected Users</h6>
+            <ul id="selectedUsers" class="list-group mb-2"></ul>
+
+            <!-- Hidden input to collect selected user IDs -->
+            <input type="hidden" name="selectedUserIds" id="selectedUserIds" required/>
+            <span id="selectedUserIdsFeedback" class="text-danger"></span>
+        </div>
+
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="submit" class="btn btn-primary">Create</button>
+    </div>
+
+</form>
+        
+
+<script>
+
+    const imageBtn = document.getElementById('uploadConversationImageBtn');
+    const imageInput = document.getElementById('conversationImageInput');
+    const imagePreviewList = document.getElementById('conversationImagePreviewList');
+    const hiddenInput = document.getElementById('conversationProfilePictureFileID');
+
+    imageBtn.addEventListener('click', () => imageInput.click());
+    
+    const form = document.querySelector('#newConversationModal form');
+    const selectedUserIdsInput = document.getElementById('selectedUserIds');
+
+    form.addEventListener('submit', function (e) {
+        const feedback = document.getElementById('selectedUserIdsFeedback');
+        if (!selectedUserIdsInput.value) {
+            feedback.textContent = 'Select at least one user.';
+            selectedUserIdsInput.classList.add('is-invalid');
+            e.preventDefault();
+        } else {
+            feedback.textContent = '';
+            selectedUserIdsInput.classList.remove('is-invalid');
+        }
+    });
+    imageInput.addEventListener('change', async () => {
+        const files = Array.from(imageInput.files);
+        if (!files.length) return;
+
+        // Only allow one profile picture
+        const file = files[0];
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+            const res = await fetch('/images', {
+                method: 'POST',
+                body: formData,
+                headers: { 'RequestVerificationToken': token }
+            });
+
+            if (!res.ok) {
+                alert("Image upload failed: " + await res.text());
+                return;
+            }
+
+            const { fileID } = await res.json();
+            hiddenInput.value = fileID;
+
+            // Show preview
+            imagePreviewList.innerHTML = '';
+            const wrapper = document.createElement('div');
+            wrapper.className = 'd-inline-block position-relative m-1';
+
+            const img = document.createElement('img');
+            img.src = `/images/${fileID}`;
+            img.className = 'rounded shadow-sm';
+            img.style.width = '90px';
+            img.style.height = '90px';
+            img.style.objectFit = 'cover';
+
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.className = 'btn btn-sm btn-outline-danger position-absolute';
+            removeBtn.style.top = '0px';
+            removeBtn.style.right = '0px';
+            removeBtn.innerHTML = '<i class="bi bi-x"></i>';
+            removeBtn.onclick = async () => {
+                await fetch(`/images/${fileID}`, { method: 'DELETE' });
+                wrapper.remove();
+                hiddenInput.value = '';
+                imagePreviewList.classList.add('d-none');
+            };
+
+            wrapper.appendChild(img);
+            wrapper.appendChild(removeBtn);
+            imagePreviewList.appendChild(wrapper);
+            imagePreviewList.classList.remove('d-none');
+        } catch (err) {
+            console.error(err);
+        }
+
+        imageInput.value = '';
+    });
+    
+    
+    const selectedUsers = new Map();
+
+    function addUserToSelection(userId, username) {
+        if (selectedUsers.has(userId)) return;
+
+        selectedUsers.set(userId, username);
+        renderSelectedUsers();
+    }
+
+    function removeUserFromSelection(userId) {
+        selectedUsers.delete(userId);
+        renderSelectedUsers();
+    }
+
+    function renderSelectedUsers() {
+        const list = document.getElementById('selectedUsers');
+        const hiddenInput = document.getElementById('selectedUserIds');
+
+        list.innerHTML = '';
+        const ids = [];
+
+        selectedUsers.forEach((username, id) => {
+            const li = document.createElement('li');
+            li.className = 'list-group-item d-flex justify-content-between align-items-center';
+            li.innerHTML = `
+                ${username}
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeUserFromSelection('${id}')">Remove</button>
+            `;
+            list.appendChild(li);
+            ids.push(id);
+        });
+
+        hiddenInput.value = ids.join(',');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const modal = document.getElementById('newConversationModal');
+        if (!modal) return;
+        //ON HIDING THE MODAL, WE DELETE UPLOADED MEDIA
+        modal.addEventListener('hidden.bs.modal', async () => {
+            selectedUsers.clear();
+            // Remove uploaded image if present
+            const imageFileID = document.getElementById('conversationProfilePictureFileID')?.value;
+            if (imageFileID) {
+                if(imageFileID === 'd5b4058a-345c-4ff9-9d0f-2fdca4f795f6')
+                    return; // Skip deletion for default image
+                try {
+                    const response = await fetch(`/images/${imageFileID}`, { method: 'DELETE' });
+                    if (response.ok) {
+                        console.log(`Image with ID ${imageFileID} deleted successfully.`);
+                    } else {
+                        console.error(`Failed to delete image with ID ${imageFileID}:`, response.statusText);
+                    }
+                } catch (err) {
+                    console.error('Failed to delete image:', err);
+                }
+            }
+        });
+    });
+</script>
