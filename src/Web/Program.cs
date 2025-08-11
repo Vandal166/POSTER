@@ -5,6 +5,7 @@ using Infrastructure;
 using Serilog;
 using Web;
 using Web.Endpoints;
+using Web.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +23,8 @@ builder.Host.UseSerilog((context, configuration) =>
 
 builder.Services.AddRazorPages()
     .AddRazorRuntimeCompilation();
+
+builder.Services.AddSignalR();
 
 var app = builder.Build();
 
@@ -53,6 +56,9 @@ app.MapRazorPages()
 
 
 app.MapBlobStorageEndpoints(); // used for uploading/downloading (videos/images)
+
+app.MapHub<MessageNotificationHub>("/messageHub");
+app.MapHub<ConversationNotificationHub>("/conversationHub");
 
 #if USE_SEEDING
 using (var scope = app.Services.CreateScope())

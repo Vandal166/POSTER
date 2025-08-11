@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Web.Common;
 
-namespace Web.Pages.Messages;
+namespace Web.Pages.Account.Conversations;
 
 [Authorize]
 public class ConversationList : PageModel
@@ -20,6 +20,7 @@ public class ConversationList : PageModel
     
     public IEnumerable<ConversationDto> Conversations { get; private set; } = Enumerable.Empty<ConversationDto>();
     public DateTime? LastMessageAt { get; private set; }
+    public DateTime? LastConvCreationDate { get; private set; }
     
     public const int PageSize = 8; // Default page size
     
@@ -40,24 +41,33 @@ public class ConversationList : PageModel
         if(_currentUser.IsAuthenticated && _currentUser.HasClaim("profileCompleted", "false"))
             return RedirectToPage("/Account/CompleteProfile");
 
-        await OnGetPaged(null, ct);
+        await OnGetPaged(null, null, ct);
         return Page();
     }
     
-    public async Task<IActionResult> OnGetPaged(DateTime? lastMessageAt, CancellationToken ct = default)
+    public async Task<IActionResult> OnGetPaged(DateTime? lastMessageAt,DateTime? lastConvCreationDate, CancellationToken ct = default)
     {
-        var pagedConversations = await _conversationRepo.GetAllAsync(_currentUser.ID, lastMessageAt, PageSize, ct);
+        var pagedConversations = await _conversationRepo.GetAllAsync(_currentUser.ID, lastMessageAt, lastConvCreationDate, PageSize, ct);
         bool hasMore = pagedConversations.Count == PageSize; // if the count is equal to PageSize, it means there are more conv available
         
-        string nextUrl = hasMore
-            ? $"?handler=Paged&lastMessageAt={Uri.EscapeDataString(pagedConversations.Last().LastMessageAt.ToString("o"))}"
-            : string.Empty;
+        string nextUrl = string.Empty;
+
+        if (hasMore && pagedConversations.Any())
+        {
+            var lastConv = pagedConversations.Last();
+            var nextLastMessageAt = lastConv.LastMessageAt;
+            var nextLastConvCreation = lastConv.CreatedAt;
+        
+            nextUrl = $"?handler=Paged" +
+                      $"&lastMessageAt={Uri.EscapeDataString(nextLastMessageAt.ToString("o"))}" +
+                      $"&lastConvCreationDate={Uri.EscapeDataString(nextLastConvCreation.ToString("o"))}";
+        }
         
         var conversationDtos = pagedConversations.Select(p =>
             p with
             {
                 Name = (p.ShouldTruncate(p.Name, 20) ? string.Concat(p.Name.AsSpan(0, 20), "...") : p.Name),
-                Content = (p.ShouldTruncate(p.Content) ? string.Concat(p.Content.AsSpan(0, 40), "...") : p.Content)
+                LastMessageContent = (p.ShouldTruncate(p.LastMessageContent) ? string.Concat(p.LastMessageContent.AsSpan(0, 40), "...") : p.LastMessageContent)
             }).ToList();
         
         
@@ -69,6 +79,15 @@ public class ConversationList : PageModel
         };
         
         return Partial("Shared/Account/Conversations/_ConversationLoaderPartial", vm);
+    }
+    
+    public async Task<IActionResult> OnGetNewConversationPartialAsync(Guid conversationId, CancellationToken ct = default)
+    {
+        var conversation = await _conversationRepo.GetConversationDtoAsync(conversationId, _currentUser.ID, ct);
+        if (conversation is null)
+            return new EmptyResult();
+        
+        return Partial("Shared/Account/Conversations/_ConversationListPartial", new List<ConversationDto> { conversation });
     }
     
     public async Task<PartialViewResult> OnGetUserSearchAsync(string username, CancellationToken ct = default)
@@ -97,12 +116,8 @@ public class ConversationList : PageModel
         var result = await _conversationService.CreateConversationAsync(_currentUser.ID, ids, ConversationDto, ct);
         if (result.IsFailed)
         {
-            foreach (var error in result.Errors)
-            {
-                ModelState.AddModelError(string.Empty, error.Message);
-            }
             return Partial("Shared/Account/Conversations/_CreateConversationFormPartial", ConversationDto)
-                .WithHxToast(Response.HttpContext, "Error creating conversation", "error");
+                .WithHxToast(Response.HttpContext, $"Error: {result.Errors[0].Message}", "error");
         }
         
         Response.Headers["HX-Redirect"] = Url.Page("/Account/Conversations/ConversationList");

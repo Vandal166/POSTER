@@ -82,7 +82,6 @@ public static class BlobStorageEndpoints
             await blobService.DeleteFileAsync(fileID, "images");
 
             return Results.NoContent();
-            
         }).RequireAuthorization();
         
         

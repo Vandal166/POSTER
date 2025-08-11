@@ -24,6 +24,7 @@ public static class DependencyInjection
         services.AddScoped<IPostCommentService, PostCommentService>();
 
         services.AddScoped<IConversationService, ConversationService>();
+        services.AddScoped<IConversationMessageService, ConversationMessageService>();
 
         services.AddSingleton<IBlobService, BlobService>();
         services.AddSingleton(_ => new BlobServiceClient(configuration.GetConnectionString("BlobStorage")));

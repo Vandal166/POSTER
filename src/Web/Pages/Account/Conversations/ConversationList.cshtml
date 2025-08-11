@@ -1,6 +1,6 @@
 ﻿@page
 @using Application.DTOs
-@model Web.Pages.Messages.ConversationList
+@model Web.Pages.Account.Conversations.ConversationList
 
 @{
     ViewData["Title"] = "Conversations";
@@ -19,7 +19,7 @@
     </div>
 
     <div id="loader"
-         hx-get="?handler=Paged&lastMessageAt=@(Model.LastMessageAt)"
+         hx-get="?handler=Paged&lastActivityAt=@(Model.LastMessageAt?.ToString("o"))&lastConvCreationDate=@(Model.LastConvCreationDate?.ToString("o"))"
          hx-target="this"
          hx-trigger="revealed"
          hx-swap="outerHTML"
@@ -32,3 +32,45 @@
 </div>
 
 @await Html.PartialAsync("Shared/Account/Conversations/_CreateConversationPartial", new CreateConversationDto(string.Empty, Guid.Empty))
+
+<auth-only>
+    <script>
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/conversationHub")
+            .withAutomaticReconnect({
+                nextRetryDelayInMilliseconds: retryContext => {
+                    if (retryContext.previousRetryCount < 5) {
+                        return 1000 * Math.pow(2, retryContext.previousRetryCount); // Exponential backoff
+                    }
+                    return null; // Stop retrying after 5 attempts
+                }
+            })
+            .build();
+    
+        // Listening for ConversationCreated event
+        connection.on("ConversationCreated", function (conversationId)
+        {
+            // fetching the new conv
+            fetch(`?handler=NewConversationPartial&conversationId=${conversationId}`)
+                .then(response => response.text())
+                .then(html =>
+                {
+                    const container = document.getElementById("conversations-container");
+                    // prepending the new message to the top of the container
+                    container.insertAdjacentHTML('beforeend', html);
+    
+                    // scrolling to bottom only if the user is near the bottom of the scroll
+                    if (container.scrollTop >= -160 && container.scrollTop <= 0) {
+                        container.scrollTop = container.scrollHeight;
+                    }
+                });
+        });
+    
+        // joining the conversation group
+        connection.start()
+            .then(() => {
+                console.log("Connected to conversation hub");
+            })
+            .catch(err => console.error("Error connecting to conversation hub:", err));;
+    </script>
+</auth-only>

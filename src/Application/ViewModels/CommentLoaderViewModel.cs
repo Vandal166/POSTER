@@ -3,9 +3,16 @@
 namespace Application.ViewModels;
 
 // ViewModel for loading comments in a paginated manner as well providing the next URL for HTMX
-public class CommentLoaderViewModel
+public sealed class CommentLoaderViewModel
 {
     public IEnumerable<CommentAggregateDto> Comments { get; set; }
     public string NextUrl { get; set; } //setting the url for the next page of comments
+    public bool HasMore { get; set; }
+}
+
+public sealed class MessageLoaderViewModel
+{
+    public IEnumerable<MessageDto> Messages { get; set; }
+    public string NextUrl { get; set; } //setting the url for the next page of messages
     public bool HasMore { get; set; }
 }

@@ -21,6 +21,8 @@ public static class DependencyInjection
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddScoped<IToastBuilder, ToastNotificationBuilder>();
+        services.AddScoped<IMessageNotifier, SignalRMessageNotifier>();
+        services.AddScoped<IConversationNotifier, SignalRConversationNotifier>();
         
         IConfigurationSection keycloakSettings = configuration.GetSection("Keycloak");
         services.AddAuthorizationBuilder();

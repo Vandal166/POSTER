@@ -27,7 +27,6 @@ public class CreateComment : PageModel
     // this is for creating an comment on a post
     public async Task<IActionResult> OnPostCommentOnPostAsync(Guid postId, CancellationToken ct = default)
     {
-        //TODO when is ModelState invalid? - // when the CommentDto is not valid, e.g. Content is empty or too long
         if (!ModelState.IsValid)
         {
             var viewModel = new CreateCommentViewModel

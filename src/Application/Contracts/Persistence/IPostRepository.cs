@@ -25,12 +25,32 @@ public interface IConversationRepository
 {
     Task<bool> ExistsAsync(Guid conversationId, CancellationToken ct = default);
 
-    Task<ConversationDto?> GetConversationAsync(Guid conversationId, CancellationToken ct = default);
-    Task<List<ConversationDto>> GetAllAsync(Guid currentUserID, DateTime? lastMessageAt, int pageSize, CancellationToken ct = default);
+    Task<ConversationDto?> GetConversationDtoAsync(Guid conversationId, Guid requestingUserID, CancellationToken ct = default);
+    Task<Conversation?> GetConversationAsync(Guid conversationId, Guid requestingUserID, CancellationToken ct = default);
+
+    Task<List<ConversationDto>> GetAllAsync(
+        Guid currentUserID,
+        DateTime? lastMessageAt,
+        DateTime? lastConvCreationDate,
+        int pageSize,
+        CancellationToken ct = default);
     
     
     Task AddAsync(Conversation conversation, CancellationToken ct = default);
     Task AddParticipantsAsync(ConversationUser conversationUser, CancellationToken ct = default);
     Task UpdateAsync(Conversation conversation, CancellationToken ct = default);
     Task DeleteAsync(Conversation conversation, CancellationToken ct = default);
+}
+
+public interface IConversationMessageRepository
+{
+    Task<bool> ExistsAsync(Guid conversationID, Guid messageId, CancellationToken ct = default);
+    
+    Task<List<MessageDto>> GetMessagesByConversationAsync(Guid conversationID, Guid requestingUserID, DateTime? lastMessageAt, int pageSize, CancellationToken ct = default);
+    Task<Message?> GetMessageAsync(Guid conversationID, Guid messageID, CancellationToken ct = default);
+    Task<MessageDto?> GetMessageDtoAsync(Guid conversationID, Guid messageID, CancellationToken ct = default);
+    
+    Task AddAsync(Message message, CancellationToken ct = default);
+    Task UpdateAsync(Message message, CancellationToken ct = default);
+    Task DeleteAsync(Message message, CancellationToken ct = default);
 }

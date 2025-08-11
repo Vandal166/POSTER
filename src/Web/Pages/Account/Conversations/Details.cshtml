@@ -1,0 +1,169 @@
+﻿@page "{id:guid}"
+@using Application.Contracts
+@using Application.DTOs
+@using Application.ViewModels
+@model Web.Pages.Account.Conversations.Details
+@inject ICurrentUserService CurrentUser
+@{
+    ViewData["Title"] = "Conversation Details";
+}
+
+<div class="container-fluid h-100 p-0 d-flex">
+    <div class="card shadow-sm flex-grow-1 d-flex h-100">
+
+        <!-- Header -->
+        <div class="p-3 border-bottom d-flex align-items-center justify-content-between">
+            <a href="javascript:history.back()" class="btn btn-link text-decoration-none text-dark p-0">
+                <i class="bi bi-arrow-left me-2 fs-5"></i> Back
+            </a>
+            <span class="fw-semibold">@Model.Conversation.Name</span>
+            
+            <!-- Three Dots Dropdown -->
+            <div class="dropdown">
+                <button class="btn btn-link p-0 text-muted fs-5" type="button" id="conversationOptionsDropdown-@Model.Conversation.Id"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-three-dots"></i>
+                </button>
+                
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="conversationOptionsDropdown-@Model.Conversation.Id">
+                    <auth-only>
+                        @* change name, delete, remove participant *@
+                        @if (CurrentUser.ID == Model.Conversation.CreatedByID)
+                        {
+                            <li>
+                                <button type="button" class="dropdown-item text-danger" onclick="showDeleteModal('@Model.Conversation.Id')">
+                                    Delete conversation
+                                </button>
+                            </li>
+                        }
+                        else
+                        {
+                            <li>
+                                <button type="button" class="dropdown-item text-danger">
+                                    Leave conversation
+                                </button>
+                            </li>
+                        }
+                    </auth-only>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Scrollable Messages Area -->
+        <div id="messages-container"
+             class="flex-grow-1 overflow-auto p-3"
+             style="display:flex; flex-direction:column-reverse; height: 500px; max-height: 65vh;">
+            
+            <partial name="Shared/Account/Conversations/Messages/_MessageListPartial" model="Model.Messages"/>
+            
+            @if (Model.Messages.Count() == Details.PageSize)
+            {
+                <div id="loader"
+                     hx-get="?handler=Paged&id=@Model.Conversation.Id&firstMessageAt=@(Model.FirstMessageAt?.ToString("o"))"
+                     hx-target="this"
+                     hx-trigger="intersect once delay:500ms"
+                     hx-swap="outerHTML"
+                     hx-indicator="#loading-indicator">
+                    
+                    <div id="loading-indicator">
+                        @await Html.PartialAsync("Shared/_LoadingIndicatorPartial")
+                    </div>
+                    
+                </div>
+            }
+            
+        </div>
+
+        <!-- Input Area -->
+        <auth-only>
+            <div class="border-top p-3" id="message-form-wrapper">
+                <partial name="Shared/Account/Conversations/Messages/_CreateMessageFormPartial"
+                         model="new CreateMessageViewModel { ConversationId = Model.Conversation.Id }" />
+            </div>
+        </auth-only>
+    </div>
+</div>
+
+<auth-only>
+    <partial name="Shared/Account/Conversations/_DeleteConversationFormPartial" />
+    
+    <partial name="Shared/Account/Conversations/Messages/_DeleteMessageFormPartial" />
+
+    <script src="~/js/defaultSrcImage.js"></script>
+
+    <script>
+        window.addEventListener("load", function () {
+            const container = document.getElementById("messages-container");
+            if (container) {
+                container.scrollTop = container.scrollHeight;
+            }
+        });
+        
+        function showDeleteModal(conversationId) {
+            document.getElementById('deleteConversationId').value = conversationId;
+            const deleteModal = new bootstrap.Modal(document.getElementById('deleteConversationModal'));
+            deleteModal.show();
+        }
+
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/messageHub")
+            .withAutomaticReconnect({
+                nextRetryDelayInMilliseconds: retryContext => {
+                    if (retryContext.previousRetryCount < 5) {
+                        return 1000 * Math.pow(2, retryContext.previousRetryCount); // Exponential backoff
+                    }
+                    return null; // Stop retrying after 5 attempts
+                }
+            })
+            .build();
+
+        // Listening for MessageCreated event
+        connection.on("MessageCreated", function (conversationId, messageId)
+        {
+            // Ok message received
+
+            // fetching the new message
+            fetch(`?handler=NewMessagePartial&conversationId=${conversationId}&messageId=${messageId}`)
+                .then(response => response.text())
+                .then(html =>
+                {
+                    const container = document.getElementById("messages-container");
+                    // prepending the new message to the top of the container
+                    container.insertAdjacentHTML('afterbegin', html);
+
+                    // scrolling to bottom only if the user is near the bottom of the scroll
+                    if (container.scrollTop >= -160 && container.scrollTop <= 0) {
+                        container.scrollTop = container.scrollHeight;
+                    }
+                });
+        });
+        
+        // Listening for MessageDeleted event
+        connection.on("MessageDeleted", function (conversationId, messageId)
+        {
+            // removing the message from the container
+            const messageElement = document.getElementById(`message-${messageId}`);
+            if (!messageElement) {
+                console.warn(`Message with ID ${messageId} not found in conversation ${conversationId}.`);
+                return;
+            }
+            if (messageElement) {
+                messageElement.remove();
+                console.log(`Message with ID ${messageId} deleted from conversation ${conversationId}.`);
+            }
+        });
+
+        // joining the conversation group
+        connection.start().then(function ()
+        {
+            const conversationId = "@Model.Conversation.Id";
+
+            connection.invoke("JoinGroup", conversationId)
+                .then(() => console.log("JoinGroup invoked successfully."))
+                .catch(err => console.error("Error invoking JoinGroup:", err));
+        }).catch(err =>
+        {
+            console.error("Error starting SignalR connection:", err);
+        });
+    </script>
+</auth-only>

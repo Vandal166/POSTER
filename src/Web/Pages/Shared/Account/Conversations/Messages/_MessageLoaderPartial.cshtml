@@ -1,0 +1,22 @@
+﻿@model Application.ViewModels.MessageLoaderViewModel
+
+@if (Model.Messages.Any())
+{
+    <div hx-swap-oob="beforebegin:#loader">
+        <partial name="Shared/Account/Conversations/Messages/_MessageListPartial" model="Model.Messages"/>
+    </div>
+}
+
+@if (Model.HasMore)
+{
+    <div id="loader"
+         hx-get="@Model.NextUrl"
+         hx-target="this"
+         hx-trigger="intersect once delay:500ms"
+         hx-swap="outerHTML"
+         hx-indicator="#loading-indicator">
+        <div id="loading-indicator">
+            @await Html.PartialAsync("Shared/_LoadingIndicatorPartial")
+        </div>
+    </div>
+}
