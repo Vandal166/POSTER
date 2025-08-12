@@ -13,15 +13,17 @@ public sealed class ConversationService : IConversationService
     private readonly IValidator<CreateConversationDto> _createConversationValidator;
     private readonly IUnitOfWork _uow;
     private readonly IBlobService _blobService;
+    private readonly IMessageNotifier _messageNotifier;
     private readonly IConversationNotifier _conversationNotifier;
     
-    public ConversationService(IConversationRepository conversations, IValidator<CreateConversationDto> createConversationValidator, IUnitOfWork uow, 
-        IBlobService blobService, IConversationNotifier conversationNotifier)
+    public ConversationService(IConversationRepository conversations, IValidator<CreateConversationDto> createConversationValidator, 
+        IUnitOfWork uow, IBlobService blobService, IMessageNotifier messageNotifier, IConversationNotifier conversationNotifier)
     {
         _conversations = conversations;
         _createConversationValidator = createConversationValidator;
         _uow = uow;
         _blobService = blobService;
+        _messageNotifier = messageNotifier;
         _conversationNotifier = conversationNotifier;
     }
 
@@ -40,7 +42,6 @@ public sealed class ConversationService : IConversationService
             return Result.Fail<Guid>(conversation.Errors.Select(e => e.Message));
         
         await _conversations.AddAsync(conversation.Value, ct);
-        //TODO upon creating, add an default Message impersonating the creator so that the covnersation.Message is correctly indexed via CreatedAt and shown up top
         
         var conversationUsers = participantIDs.Select(id => new ConversationUser
         {
@@ -83,13 +84,35 @@ public sealed class ConversationService : IConversationService
         if (conversation.CreatedByID != currentUserID)
             return Result.Fail<bool>("You can only delete conversations you created.");
         
-        await _blobService.DeleteFileAsync(conversation.ProfilePictureID, "images", ct);
+        if(conversation.ProfilePictureID != new Guid("4fdd2f9f-bca8-4f90-8e27-ed432cbc39e0")) // TODO hard coded default imageID placeholder
+            await _blobService.DeleteFileAsync(conversation.ProfilePictureID, "images", ct);
         
         await _conversations.DeleteAsync(conversation, ct);
         await _uow.SaveChangesAsync(ct);
         
+        await _messageNotifier.NotifyConversationDeletedAsync(conversationID, ct);
+        await _conversationNotifier.NotifyConversationDeletedAsync(conversationID, ct);
+        
         return Result.Ok(true);
     }
-    
-    //TODO LeaveConversationAsync ??
+
+    public async Task<Result<bool>> LeaveConversationAsync(Guid conversationID, Guid currentUserID, CancellationToken cancellationToken = default)
+    {
+        if (await _conversations.ExistsAsync(conversationID, cancellationToken) is false)
+            return Result.Fail<bool>("Conversation does not exist.");
+        
+        var conversation = await _conversations.GetConversationAsync(conversationID, currentUserID, cancellationToken);
+        if (conversation is null)
+            return Result.Fail<bool>("Conversation not found or you are not part of it.");
+        
+        var participant = conversation.Participants.FirstOrDefault(p => p.UserID == currentUserID);
+        if (participant is null)
+            return Result.Fail<bool>("You are not a participant in this conversation.");
+        
+        await _conversations.DeleteParticipantAsync(participant, cancellationToken);
+        await _uow.SaveChangesAsync(cancellationToken);
+        
+        
+        return Result.Ok(true);
+    }
 }

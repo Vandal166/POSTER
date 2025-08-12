@@ -1,8 +1,6 @@
 ﻿using Application.Contracts;
 using Application.Contracts.Persistence;
 using Application.DTOs;
-using Application.Services;
-using Application.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -19,6 +17,7 @@ public class ConversationList : PageModel
     private readonly IUserRepository _userRepository;
     
     public IEnumerable<ConversationDto> Conversations { get; private set; } = Enumerable.Empty<ConversationDto>();
+    public IEnumerable<Guid> ConversationsIds { get; private set; } = Enumerable.Empty<Guid>();
     
     public int CurrentPage { get; private set; }
     public int TotalPages { get; private set; }
@@ -38,12 +37,13 @@ public class ConversationList : PageModel
         _userRepository = userRepository;
     }
 
-    public async Task<IActionResult> OnGet(int pageNumber = 1 ,CancellationToken ct = default)
+    public async Task<IActionResult> OnGet(int pageNumber = 1, CancellationToken ct = default)
     {
         if(_currentUser.IsAuthenticated && _currentUser.HasClaim("profileCompleted", "false"))
             return RedirectToPage("/Account/CompleteProfile");
         
         var pagedConversations = await _conversationRepo.GetAllAsync(_currentUser.ID, pageNumber, PageSize, ct);
+        ConversationsIds = await _conversationRepo.GetConversationsIdsAsync(_currentUser.ID, ct);
         Conversations = pagedConversations.Items.Select(p =>
             p with
             {
@@ -53,37 +53,20 @@ public class ConversationList : PageModel
         
         CurrentPage = pagedConversations.Page;
         TotalPages = (int)Math.Ceiling(pagedConversations.TotalCount / (double)PageSize);
-        //await OnGetPaged(null, ct);
+        
         return Page();
     }
     
-    /*public async Task<IActionResult> OnGetPaged(DateTime? lastMessageAt, CancellationToken ct = default)
-    {
-        var pagedConversations = await _conversationRepo.GetAllAsync(_currentUser.ID, lastMessageAt, PageSize, ct);
-        bool hasMore = pagedConversations.Count == PageSize; // if the count is equal to PageSize, it means there are more conv available
-        
-        string nextUrl = hasMore
-            ? $"?handler=Paged&lastMessageAt={Uri.EscapeDataString(pagedConversations.Last().LastMessageAt.ToString("o"))}"
-            : string.Empty;
-        
-        var conversationDtos = pagedConversations.Select(p =>
-            p with
-            {
-                Name = (p.ShouldTruncate(p.Name, 20) ? string.Concat(p.Name.AsSpan(0, 20), "...") : p.Name),
-                LastMessageContent = (p.ShouldTruncate(p.LastMessageContent) ? string.Concat(p.LastMessageContent.AsSpan(0, 40), "...") : p.LastMessageContent)
-            }).ToList();
-
-        var vm = new ConversationLoaderViewModel
-        {
-            Conversations = conversationDtos,
-            HasMore = hasMore,
-            NextUrl = nextUrl
-        };
-        
-        return Partial("Shared/Account/Conversations/_ConversationLoaderPartial", vm);
-    }*/
-    
     public async Task<IActionResult> OnGetNewConversationPartialAsync(Guid conversationId, CancellationToken ct = default)
+    {
+        var conversation = await _conversationRepo.GetConversationDtoAsync(conversationId, _currentUser.ID, ct);
+        if (conversation is null)
+            return new EmptyResult();
+        
+        return Partial("Shared/Account/Conversations/_ConversationListPartial", new List<ConversationDto> { conversation });
+    }
+    
+    public async Task<IActionResult> OnGetNewMessagePartialAsync(Guid conversationId, CancellationToken ct = default)
     {
         var conversation = await _conversationRepo.GetConversationDtoAsync(conversationId, _currentUser.ID, ct);
         if (conversation is null)

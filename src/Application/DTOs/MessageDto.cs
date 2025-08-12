@@ -1,3 +1,3 @@
 ﻿namespace Application.DTOs;
 
-public record MessageDto(Guid Id, Guid ConversationID, Guid AuthorID, string AuthorUsername, string AuthorAvatarPath, string Content, DateTime CreatedAt);
+public record MessageDto(Guid Id, Guid ConversationID, Guid AuthorID, string AuthorUsername, string AuthorAvatarPath, string Content, DateTime CreatedAt, bool IsSystemMessage = false);

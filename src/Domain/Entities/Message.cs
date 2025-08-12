@@ -15,6 +15,10 @@ public sealed class Message : AuditableEntity
     public string Content { get; private set; } = null!;
     public Guid? VideoFileID { get; private set; } // Optional video file ID for the msg
     
+    public static readonly Guid SystemUserId = Guid.Empty;
+    
+    public bool IsSystemMessage => SenderID == SystemUserId;
+    
     // EF will populate this
     public IReadOnlyCollection<MessageImage> Images => _images;
     private readonly List<MessageImage> _images = new();
@@ -34,6 +38,23 @@ public sealed class Message : AuditableEntity
             Content   = content,
             CreatedAt = DateTime.UtcNow,
             VideoFileID = videoFileID
+        };
+        
+        return Result.Ok(message);
+    }
+    
+    public static Result<Message> CreateSystemMessage(Guid conversationID, string content)
+    {
+        if (conversationID == Guid.Empty)
+            return Result.Fail<Message>("Conversation ID cannot be empty.");
+        
+        var message = new Message
+        {
+            ID = Guid.NewGuid(),
+            SenderID = SystemUserId,
+            ConversationID = conversationID,
+            Content = content,
+            CreatedAt = DateTime.UtcNow
         };
         
         return Result.Ok(message);

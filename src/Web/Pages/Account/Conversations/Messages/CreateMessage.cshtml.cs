@@ -23,7 +23,6 @@ public class CreateMessage : PageModel
     }
     
     
-    
     public async Task<IActionResult> OnPostMessageOnConversationAsync(CancellationToken ct = default)
     {
         if (!ModelState.IsValid)

@@ -4,6 +4,13 @@
 
 @foreach (var message in Model)
 {
+    if (message.IsSystemMessage)
+    {
+        <div class="text-muted fst-italic small m-2" style="color: #6c757d">
+            @message.Content
+        </div>
+        continue;
+    }
     <div class="d-flex mb-3 p-2 border rounded" style="max-width: 600px;" id="message-@message.Id">
         <img src="@Url.Content("~/" + message.AuthorAvatarPath)"
              class="rounded-circle me-2"

@@ -28,7 +28,14 @@ public sealed class SignalRConversationNotifier : IConversationNotifier
 
     public async Task NotifyConversationDeletedAsync(Guid conversationID, CancellationToken ct = default)
     {
-        throw new NotImplementedException();
+        await _hubContext.Clients.Group(conversationID.ToString())
+            .SendAsync("ConversationDeleted", conversationID, ct);
+    }
+
+    public async Task NotifyMessageCreated(Guid conversationId, CancellationToken ct = default)
+    {
+        await _hubContext.Clients.Group(conversationId.ToString())
+            .SendAsync("MessageCreated", conversationId, ct);
     }
 }
 
@@ -51,5 +58,11 @@ public class SignalRMessageNotifier : IMessageNotifier
     {
         await _hubContext.Clients.Group(conversationID.ToString())
             .SendAsync("MessageDeleted", conversationID, messageId, ct);
+    }
+
+    public async Task NotifyConversationDeletedAsync(Guid conversationID, CancellationToken ct = default)
+    {
+        await _hubContext.Clients.Group(conversationID.ToString())
+            .SendAsync("ConversationDeleted", conversationID, ct);
     }
 }

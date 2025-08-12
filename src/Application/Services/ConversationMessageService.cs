@@ -13,13 +13,16 @@ public sealed class ConversationMessageService : IConversationMessageService
     private readonly IValidator<CreateMessageDto> _createMessageValidator;
     private readonly IUnitOfWork _uow;
     private readonly IMessageNotifier _messageNotifier;
+    private readonly IConversationNotifier _conversationNotifier;
     
-    public ConversationMessageService(IConversationMessageRepository conversationMessages, IValidator<CreateMessageDto> createMessageValidator, IUnitOfWork uow, IMessageNotifier messageNotifier)
+    
+    public ConversationMessageService(IConversationMessageRepository conversationMessages, IValidator<CreateMessageDto> createMessageValidator, IUnitOfWork uow, IMessageNotifier messageNotifier, IConversationNotifier conversationNotifier)
     {
         _conversationMessages = conversationMessages;
         _createMessageValidator = createMessageValidator;
         _uow = uow;
         _messageNotifier = messageNotifier;
+        _conversationNotifier = conversationNotifier;
     }
 
 
@@ -37,6 +40,22 @@ public sealed class ConversationMessageService : IConversationMessageService
         await _uow.SaveChangesAsync(ct);
 
         await _messageNotifier.NotifyMessageCreatedAsync(message.Value.ConversationID, message.Value.ID, ct);
+        await _conversationNotifier.NotifyMessageCreated(message.Value.ConversationID, ct);
+        
+        return Result.Ok(message.Value.ID);
+    }
+    
+    public async Task<Result<Guid>> CreateSystemMessageAsync(CreateMessageDto dto, CancellationToken ct = default)
+    {
+        var message = Message.CreateSystemMessage(dto.ConversationID, dto.Content);
+        if (message.IsFailed)
+            return Result.Fail<Guid>(message.Errors.Select(e => e.Message));
+        
+        await _conversationMessages.AddAsync(message.Value, ct);
+        await _uow.SaveChangesAsync(ct);
+
+        await _messageNotifier.NotifyMessageCreatedAsync(message.Value.ConversationID, message.Value.ID, ct);
+        await _conversationNotifier.NotifyMessageCreated(message.Value.ConversationID, ct);
         
         return Result.Ok(message.Value.ID);
     }

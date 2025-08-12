@@ -39,7 +39,7 @@
                         else
                         {
                             <li>
-                                <button type="button" class="dropdown-item text-danger">
+                                <button type="button" class="dropdown-item text-danger" onclick="showLeaveModal('@Model.Conversation.Id')">
                                     Leave conversation
                                 </button>
                             </li>
@@ -87,6 +87,8 @@
 <auth-only>
     <partial name="Shared/Account/Conversations/_DeleteConversationFormPartial" />
     
+    <partial name="Shared/Account/Conversations/_LeaveConversationFormPartial" />
+    
     <partial name="Shared/Account/Conversations/Messages/_DeleteMessageFormPartial" />
 
     <script src="~/js/defaultSrcImage.js"></script>
@@ -104,6 +106,11 @@
             const deleteModal = new bootstrap.Modal(document.getElementById('deleteConversationModal'));
             deleteModal.show();
         }
+        function showLeaveModal(conversationId) {
+            document.getElementById('leaveConversationId').value = conversationId;
+            const leaveModal = new bootstrap.Modal(document.getElementById('leaveConversationModal'));
+            leaveModal.show();
+        }
 
         const connection = new signalR.HubConnectionBuilder()
             .withUrl("/messageHub")
@@ -116,7 +123,7 @@
                 }
             })
             .build();
-
+        
         // Listening for MessageCreated event
         connection.on("MessageCreated", function (conversationId, messageId)
         {
@@ -151,6 +158,12 @@
                 messageElement.remove();
                 console.log(`Message with ID ${messageId} deleted from conversation ${conversationId}.`);
             }
+        });
+        
+        connection.on("ConversationDeleted", function (conversationId)
+        {
+            // just redirecting to the conversation list page
+            window.location.href = "/Account/Conversations/ConversationList";
         });
 
         // joining the conversation group

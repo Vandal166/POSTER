@@ -46,7 +46,8 @@ public sealed class ConversationMessageRepository : IConversationMessageReposito
                     m.Sender.Username,
                     m.Sender.AvatarPath,
                     m.Content,
-                    m.CreatedAt
+                    m.CreatedAt,
+                    m.IsSystemMessage
                 )
             )
             .ToListAsync(ct);
@@ -70,7 +71,8 @@ public sealed class ConversationMessageRepository : IConversationMessageReposito
                     m.Sender.Username,
                     m.Sender.AvatarPath,
                     m.Content,
-                    m.CreatedAt
+                    m.CreatedAt,
+                    m.IsSystemMessage
                 )
             )
             .FirstOrDefaultAsync(ct);

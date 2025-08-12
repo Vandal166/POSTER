@@ -5,6 +5,8 @@ public interface IMessageNotifier
     Task NotifyMessageCreatedAsync(Guid conversationID, Guid messageId, CancellationToken ct = default);
     
     Task NotifyMessageDeletedAsync(Guid conversationID, Guid messageId, CancellationToken ct = default);
+    
+    Task NotifyConversationDeletedAsync(Guid conversationID, CancellationToken ct = default);
 }
 
 public interface IConversationNotifier
@@ -14,4 +16,6 @@ public interface IConversationNotifier
     Task NotifyConversationUpdatedAsync(Guid conversationID, CancellationToken ct = default);
     
     Task NotifyConversationDeletedAsync(Guid conversationID, CancellationToken ct = default);
+
+    Task NotifyMessageCreated(Guid conversationId, CancellationToken ct = default);
 }

@@ -46,11 +46,26 @@ public sealed class ConversationRepository : IConversationRepository
             .Include(c => c.Participants)
             .FirstOrDefaultAsync(c => c.ID == conversationId && c.Participants.Any(p => p.UserID == requestingUserID), ct);
     }
-    
+
+    public async Task<UserDto?> GetConversationParticipantAsync(Guid conversationId, Guid participantId, CancellationToken ct = default)
+    {
+        return await _db.ConversationUsers
+            .AsNoTracking()
+            .Where(cu => cu.ConversationID == conversationId && cu.UserID == participantId)
+            .Select(cu => new UserDto(
+                cu.User.ID,
+                cu.User.Username,
+                cu.User.AvatarPath
+            ))
+            .FirstOrDefaultAsync(ct);
+    }
+
     public async Task<IPagedList<ConversationDto>> GetAllAsync(Guid currentUserID, int pageNumber, int pageSize, CancellationToken ct = default)
     {
         var response =  _db.Conversations
+            .Where(c => c.Participants.Any(p => p.UserID == currentUserID)) // only conversations the user is part of
             .OrderByDescending(x => x.Messages.Any()) // conversations with messages first
+            .ThenByDescending(x => x.Messages.OrderByDescending(m => m.CreatedAt).Select(m => m.CreatedAt).FirstOrDefault())
             .Select(c => new ConversationDto(
                 c.ID,
                 c.Name,
@@ -62,6 +77,14 @@ public sealed class ConversationRepository : IConversationRepository
             ));
         
         return await PagedList<ConversationDto>.CreateAsync(response, pageNumber, pageSize, ct);
+    }
+
+    public async Task<List<Guid>> GetConversationsIdsAsync(Guid requestingUserID, CancellationToken ct = default)
+    {
+        return await _db.Conversations
+            .Where(c => c.Participants.Any(p => p.UserID == requestingUserID))
+            .Select(c => c.ID)
+            .ToListAsync(ct);
     }
 
 
@@ -85,6 +108,12 @@ public sealed class ConversationRepository : IConversationRepository
     public Task DeleteAsync(Conversation conversation, CancellationToken ct = default)
     {
         _db.Conversations.Remove(conversation);
+        return Task.CompletedTask;
+    }
+
+    public Task DeleteParticipantAsync(ConversationUser conversationUser, CancellationToken ct = default)
+    {
+        _db.ConversationUsers.Remove(conversationUser);
         return Task.CompletedTask;
     }
 }

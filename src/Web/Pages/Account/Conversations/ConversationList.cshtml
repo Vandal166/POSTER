@@ -37,17 +37,6 @@
             </ul>
         </nav>
     }
-    @*<div id="loader"
-         hx-get="?handler=Paged&lastMessageAt=@(Model.LastMessageAt?.ToString("o"))"
-         hx-target="this"
-         hx-trigger="revealed"
-         hx-swap="outerHTML"
-         hx-indicator="#loading-indicator">
-
-        <div id="loading-indicator">
-            @await Html.PartialAsync("Shared/_LoadingIndicatorPartial")
-        </div>
-    </div>*@
 </div>
 
 @await Html.PartialAsync("Shared/Account/Conversations/_CreateConversationPartial", new CreateConversationDto(string.Empty, Guid.Empty))
@@ -84,12 +73,48 @@
                     }
                 });
         });
+        
+        connection.on("ConversationDeleted", function (conversationId)
+        {
+            const conversationElement = document.querySelector(`#conversation-${conversationId}`);
+            if (conversationElement) {
+                conversationElement.remove();
+            }
+        });
+        
+        connection.on("MessageCreated", function (conversationId)
+        {
+            // fetching the new message
+            fetch(`?handler=NewMessagePartial&conversationId=${conversationId}`)
+                .then(response => response.text())
+                .then(html =>
+                {
+                    const container = document.getElementById("conversations-container");
+                    const conversationElement = document.querySelector(`#conversation-${conversationId}`);
+                    // deleting the old conversation element if it exists so it doesn't duplicate
+                    if (conversationElement) {
+                        conversationElement.remove();
+                    }
+                    // prepending the new message to the top of the container
+                    container.insertAdjacentHTML('afterbegin', html);
+    
+                    // if the user is on the first page, scroll to the bottom
+                    if (@Model.CurrentPage === 1) 
+                    {
+                        container.scrollTop = 0;
+                    }
+                });
+        });
     
         // joining the conversation group
         connection.start()
             .then(() => {
-                console.log("Connected to conversation hub");
+                const userConversationIds = @Html.Raw(Json.Serialize(Model.ConversationsIds));
+                
+                connection.invoke("JoinConversationGroups", userConversationIds)
+                    .then(() => console.log("JoinGroup invoked successfully."))
+                    .catch(err => console.error("Error invoking JoinGroup:", err));
             })
-            .catch(err => console.error("Error connecting to conversation hub:", err));;
+            .catch(err => console.error("Error connecting to conversation hub:", err));
     </script>
 </auth-only>
