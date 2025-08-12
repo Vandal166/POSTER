@@ -1,6 +1,8 @@
-﻿using Application.Contracts.Persistence;
+﻿using Application.Contracts;
+using Application.Contracts.Persistence;
 using Application.DTOs;
 using Domain.Entities;
+using Infrastructure.Common;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -44,61 +46,24 @@ public sealed class ConversationRepository : IConversationRepository
             .Include(c => c.Participants)
             .FirstOrDefaultAsync(c => c.ID == conversationId && c.Participants.Any(p => p.UserID == requestingUserID), ct);
     }
-
-   // ConversationRepository.cs
-public async Task<List<ConversationDto>> GetAllAsync(
-    Guid currentUserID, 
-    DateTime? lastMessageAt, 
-    DateTime? lastConvCreationDate, 
-    int pageSize, 
-    CancellationToken ct = default)
+    
+    public async Task<IPagedList<ConversationDto>> GetAllAsync(Guid currentUserID, int pageNumber, int pageSize, CancellationToken ct = default)
     {
-        var query = _db.Conversations
-            .AsNoTracking()
-            .Where(c => c.Participants.Any(p => p.UserID == currentUserID))
-            .Select(c => new
-            {
-                Conversation = c,
-                LastMessageCreatedAt = (DateTime?)c.Messages
-                    .OrderByDescending(m => m.CreatedAt)
-                    .Select(m => m.CreatedAt)
-                    .FirstOrDefault(),
-                LastMessageContent = c.Messages
-                    .OrderByDescending(m => m.CreatedAt)
-                    .Select(m => m.Content)
-                    .FirstOrDefault()
-            });
-
-        if (lastMessageAt.HasValue && lastConvCreationDate.HasValue)
-        {
-            var utcLastMessageAt = lastMessageAt.Value.ToUniversalTime();
-            var utcLastConvCreation = lastConvCreationDate.Value.ToUniversalTime();
-            
-            query = query.Where(x => 
-                (x.LastMessageCreatedAt.HasValue && 
-                 x.LastMessageCreatedAt < utcLastMessageAt) ||
-                (x.LastMessageCreatedAt.HasValue && 
-                 x.LastMessageCreatedAt == utcLastMessageAt && 
-                 x.Conversation.CreatedAt < utcLastConvCreation) ||
-                (!x.LastMessageCreatedAt.HasValue && 
-                 x.Conversation.CreatedAt < utcLastConvCreation));
-        }
-
-        return await query
-            .OrderByDescending(x => x.LastMessageCreatedAt.HasValue)
-            .ThenByDescending(x => x.LastMessageCreatedAt ?? x.Conversation.CreatedAt)
-            .Take(pageSize)
-            .Select(x => new ConversationDto(
-                x.Conversation.ID,
-                x.Conversation.Name,
-                x.Conversation.ProfilePictureID,
-                x.LastMessageContent!,
-                x.LastMessageCreatedAt.GetValueOrDefault(),
-                x.Conversation.CreatedAt,
-                x.Conversation.CreatedByID
-            ))
-            .ToListAsync(ct);
+        var response =  _db.Conversations
+            .OrderByDescending(x => x.Messages.Any()) // conversations with messages first
+            .Select(c => new ConversationDto(
+                c.ID,
+                c.Name,
+                c.ProfilePictureID,
+                c.Messages.OrderByDescending(m => m.CreatedAt).Select(m => m.Content).FirstOrDefault()!,
+                c.Messages.OrderByDescending(m => m.CreatedAt).Select(m => m.CreatedAt).FirstOrDefault(),
+                c.CreatedAt,
+                c.CreatedByID
+            ));
+        
+        return await PagedList<ConversationDto>.CreateAsync(response, pageNumber, pageSize, ct);
     }
+
 
     public Task AddAsync(Conversation conversation, CancellationToken ct = default)
     {

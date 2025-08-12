@@ -19,10 +19,12 @@ public class ConversationList : PageModel
     private readonly IUserRepository _userRepository;
     
     public IEnumerable<ConversationDto> Conversations { get; private set; } = Enumerable.Empty<ConversationDto>();
-    public DateTime? LastMessageAt { get; private set; }
-    public DateTime? LastConvCreationDate { get; private set; }
     
+    public int CurrentPage { get; private set; }
+    public int TotalPages { get; private set; }
     public const int PageSize = 8; // Default page size
+    public bool HasNextPage => CurrentPage < TotalPages;
+    public bool HasPreviousPage => CurrentPage > 1;
     
     [BindProperty]
     public CreateConversationDto ConversationDto { get; set; }
@@ -36,32 +38,33 @@ public class ConversationList : PageModel
         _userRepository = userRepository;
     }
 
-    public async Task<IActionResult> OnGet(CancellationToken ct = default)
+    public async Task<IActionResult> OnGet(int pageNumber = 1 ,CancellationToken ct = default)
     {
         if(_currentUser.IsAuthenticated && _currentUser.HasClaim("profileCompleted", "false"))
             return RedirectToPage("/Account/CompleteProfile");
-
-        await OnGetPaged(null, null, ct);
+        
+        var pagedConversations = await _conversationRepo.GetAllAsync(_currentUser.ID, pageNumber, PageSize, ct);
+        Conversations = pagedConversations.Items.Select(p =>
+            p with
+            {
+                Name = (p.ShouldTruncate(p.Name, 20) ? string.Concat(p.Name.AsSpan(0, 20), "...") : p.Name),
+                LastMessageContent = (p.ShouldTruncate(p.LastMessageContent) ? string.Concat(p.LastMessageContent.AsSpan(0, 40), "...") : p.LastMessageContent)
+            }).ToList();
+        
+        CurrentPage = pagedConversations.Page;
+        TotalPages = (int)Math.Ceiling(pagedConversations.TotalCount / (double)PageSize);
+        //await OnGetPaged(null, ct);
         return Page();
     }
     
-    public async Task<IActionResult> OnGetPaged(DateTime? lastMessageAt,DateTime? lastConvCreationDate, CancellationToken ct = default)
+    /*public async Task<IActionResult> OnGetPaged(DateTime? lastMessageAt, CancellationToken ct = default)
     {
-        var pagedConversations = await _conversationRepo.GetAllAsync(_currentUser.ID, lastMessageAt, lastConvCreationDate, PageSize, ct);
+        var pagedConversations = await _conversationRepo.GetAllAsync(_currentUser.ID, lastMessageAt, PageSize, ct);
         bool hasMore = pagedConversations.Count == PageSize; // if the count is equal to PageSize, it means there are more conv available
         
-        string nextUrl = string.Empty;
-
-        if (hasMore && pagedConversations.Any())
-        {
-            var lastConv = pagedConversations.Last();
-            var nextLastMessageAt = lastConv.LastMessageAt;
-            var nextLastConvCreation = lastConv.CreatedAt;
-        
-            nextUrl = $"?handler=Paged" +
-                      $"&lastMessageAt={Uri.EscapeDataString(nextLastMessageAt.ToString("o"))}" +
-                      $"&lastConvCreationDate={Uri.EscapeDataString(nextLastConvCreation.ToString("o"))}";
-        }
+        string nextUrl = hasMore
+            ? $"?handler=Paged&lastMessageAt={Uri.EscapeDataString(pagedConversations.Last().LastMessageAt.ToString("o"))}"
+            : string.Empty;
         
         var conversationDtos = pagedConversations.Select(p =>
             p with
@@ -69,8 +72,7 @@ public class ConversationList : PageModel
                 Name = (p.ShouldTruncate(p.Name, 20) ? string.Concat(p.Name.AsSpan(0, 20), "...") : p.Name),
                 LastMessageContent = (p.ShouldTruncate(p.LastMessageContent) ? string.Concat(p.LastMessageContent.AsSpan(0, 40), "...") : p.LastMessageContent)
             }).ToList();
-        
-        
+
         var vm = new ConversationLoaderViewModel
         {
             Conversations = conversationDtos,
@@ -79,7 +81,7 @@ public class ConversationList : PageModel
         };
         
         return Partial("Shared/Account/Conversations/_ConversationLoaderPartial", vm);
-    }
+    }*/
     
     public async Task<IActionResult> OnGetNewConversationPartialAsync(Guid conversationId, CancellationToken ct = default)
     {

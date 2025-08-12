@@ -17,9 +17,28 @@
     <div id="conversations-container">
         <partial name="Shared/Account/Conversations/_ConversationListPartial" model="Model.Conversations"/>
     </div>
-
-    <div id="loader"
-         hx-get="?handler=Paged&lastActivityAt=@(Model.LastMessageAt?.ToString("o"))&lastConvCreationDate=@(Model.LastConvCreationDate?.ToString("o"))"
+    @if (Model.Conversations.Any())
+    {
+        <!-- Pagination -->
+        <nav aria-label="Conversations pagination">
+            <ul class="pagination justify-content-center">
+                <li class="page-item @(Model.HasPreviousPage ? "" : "disabled")">
+                    <a class="page-link" asp-route-pageNumber="@(Model.CurrentPage - 1)">Previous</a>
+                </li>
+                @for (var i = 1; i <= Model.TotalPages; i++)
+                {
+                    <li class="page-item @(Model.CurrentPage == i ? "active" : "")">
+                        <a class="page-link" asp-route-pageNumber="@i">@i</a>
+                    </li>
+                }
+                <li class="page-item @(Model.HasNextPage ? "" : "disabled")">
+                    <a class="page-link" asp-route-pageNumber="@(Model.CurrentPage + 1)">Next</a>
+                </li>
+            </ul>
+        </nav>
+    }
+    @*<div id="loader"
+         hx-get="?handler=Paged&lastMessageAt=@(Model.LastMessageAt?.ToString("o"))"
          hx-target="this"
          hx-trigger="revealed"
          hx-swap="outerHTML"
@@ -28,7 +47,7 @@
         <div id="loading-indicator">
             @await Html.PartialAsync("Shared/_LoadingIndicatorPartial")
         </div>
-    </div>
+    </div>*@
 </div>
 
 @await Html.PartialAsync("Shared/Account/Conversations/_CreateConversationPartial", new CreateConversationDto(string.Empty, Guid.Empty))

@@ -37,7 +37,6 @@ public sealed class Conversation : AuditableEntity
             ProfilePictureID = profilePictureID,
             CreatedByID = createdByID
         };
-
         return Result.Ok(conversation);
     }
 }

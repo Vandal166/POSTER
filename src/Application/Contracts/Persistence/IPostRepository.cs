@@ -28,12 +28,7 @@ public interface IConversationRepository
     Task<ConversationDto?> GetConversationDtoAsync(Guid conversationId, Guid requestingUserID, CancellationToken ct = default);
     Task<Conversation?> GetConversationAsync(Guid conversationId, Guid requestingUserID, CancellationToken ct = default);
 
-    Task<List<ConversationDto>> GetAllAsync(
-        Guid currentUserID,
-        DateTime? lastMessageAt,
-        DateTime? lastConvCreationDate,
-        int pageSize,
-        CancellationToken ct = default);
+    Task<IPagedList<ConversationDto>> GetAllAsync(Guid currentUserID, int pageNumber, int pageSize, CancellationToken ct = default);
     
     
     Task AddAsync(Conversation conversation, CancellationToken ct = default);
