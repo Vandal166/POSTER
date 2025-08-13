@@ -1,6 +1,7 @@
 ﻿using Application.Contracts;
 using Application.Contracts.Persistence;
 using Application.DTOs;
+using Application.ViewModels;
 using Domain.Entities;
 using Infrastructure.Common;
 using Infrastructure.Data;
@@ -43,8 +44,34 @@ public sealed class ConversationRepository : IConversationRepository
     public async Task<Conversation?> GetConversationAsync(Guid conversationId, Guid requestingUserID, CancellationToken ct = default)
     {
         return await _db.Conversations
-            .Include(c => c.Participants)
+            .Include(c => c.Participants).ThenInclude(p => p.User)
             .FirstOrDefaultAsync(c => c.ID == conversationId && c.Participants.Any(p => p.UserID == requestingUserID), ct);
+    }
+    
+    public async Task<ConversationViewModel?> GetConversationViewModelAsync(Guid conversationId, Guid requestingUserID, CancellationToken ct = default)
+    {
+        var conversation = await GetConversationAsync(conversationId, requestingUserID, ct);
+        if (conversation is null)
+            return null;
+
+        return new ConversationViewModel
+        {
+            Conversation = new ConversationDto(
+                conversation.ID,
+                conversation.Name,
+                conversation.ProfilePictureID,
+                conversation.Messages.OrderByDescending(m => m.CreatedAt).Select(m => m.Content).FirstOrDefault(),
+                conversation.Messages.OrderByDescending(m => m.CreatedAt).Select(m => m.CreatedAt).FirstOrDefault(),
+                conversation.CreatedAt,
+                conversation.CreatedByID),
+            
+            Participants = conversation.Participants
+                .Select(p => new UserDto(
+                    p.User.ID,
+                    p.User.Username,
+                    p.User.AvatarPath
+                )).ToList()
+        };
     }
 
     public async Task<UserDto?> GetConversationParticipantAsync(Guid conversationId, Guid participantId, CancellationToken ct = default)
@@ -100,9 +127,10 @@ public sealed class ConversationRepository : IConversationRepository
         return Task.CompletedTask;
     }
 
-    public async Task UpdateAsync(Conversation conversation, CancellationToken ct = default)
+    public Task UpdateAsync(Conversation conversation, CancellationToken ct = default)
     {
-        throw new NotImplementedException();
+        _db.Conversations.Update(conversation);
+        return Task.CompletedTask;
     }
 
     public Task DeleteAsync(Conversation conversation, CancellationToken ct = default)

@@ -1,4 +1,5 @@
 ﻿using Application.DTOs;
+using Application.ViewModels;
 using Domain.Entities;
 
 namespace Application.Contracts.Persistence;
@@ -27,6 +28,7 @@ public interface IConversationRepository
 
     Task<ConversationDto?> GetConversationDtoAsync(Guid conversationId, Guid requestingUserID, CancellationToken ct = default);
     Task<Conversation?> GetConversationAsync(Guid conversationId, Guid requestingUserID, CancellationToken ct = default);
+    Task<ConversationViewModel?> GetConversationViewModelAsync(Guid conversationId, Guid requestingUserID, CancellationToken ct = default);
     Task<UserDto?> GetConversationParticipantAsync(Guid conversationId, Guid participantId, CancellationToken ct = default);
 
     Task<IPagedList<ConversationDto>> GetAllAsync(Guid currentUserID, int pageNumber, int pageSize, CancellationToken ct = default);

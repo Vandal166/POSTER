@@ -15,7 +15,7 @@ public class Details : PageModel
     private readonly IConversationRepository _conversationRepo;
     private readonly IConversationMessageRepository _conversationMessageRepo;
     
-    public ConversationDto Conversation { get; private set; } = null!;
+    public ConversationViewModel Conversation { get; private set; } = null!;
     public IEnumerable<MessageDto> Messages { get; private set; } = Enumerable.Empty<MessageDto>();
     
     public DateTime? FirstMessageAt { get; private set; }
@@ -31,7 +31,7 @@ public class Details : PageModel
     
     public async Task<IActionResult> OnGetAsync(Guid id, CancellationToken ct = default)
     {
-        var conversation = await _conversationRepo.GetConversationDtoAsync(id, _currentUser.ID, ct);
+        var conversation = await _conversationRepo.GetConversationViewModelAsync(id, _currentUser.ID, ct);
         if (conversation is null)
             return NotFound();
         

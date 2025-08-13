@@ -1,0 +1,24 @@
+﻿
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="removeParticipantModal" tabindex="-1" aria-labelledby="removeParticipantModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="removeParticipantModalLabel">Remove Participant</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to remove <span id="removeParticipantDisplayName"></span> from this conversation?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteConversationForm" method="post" asp-page="/Account/Conversations/RemoveParticipant" asp-antiforgery="true">
+                    <input type="hidden" name="ParticipantId" id="removeParticipantId" value="" />
+                    <input type="hidden" name="ConversationId" id="conversationId" value="" />
+                    <input type="hidden" name="ParticipantName" id="removeParticipantName" value=""/>
+                    <button type="submit" class="btn btn-danger">OK</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,6 +1,7 @@
 ﻿using Application.Contracts;
 using Application.Contracts.Persistence;
 using Application.DTOs;
+using Application.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -8,7 +9,7 @@ using Web.Common;
 
 namespace Web.Pages.Account.Conversations;
 
-[Authorize]
+[Authorize, RedirectIncompleteUserProfile]
 public class ConversationList : PageModel
 {
     private readonly ICurrentUserService _currentUser;
@@ -16,7 +17,7 @@ public class ConversationList : PageModel
     private readonly IConversationService _conversationService;
     private readonly IUserRepository _userRepository;
     
-    public IEnumerable<ConversationDto> Conversations { get; private set; } = Enumerable.Empty<ConversationDto>();
+    public IEnumerable<ConversationViewModel> Conversations { get; private set; } = Enumerable.Empty<ConversationViewModel>();
     public IEnumerable<Guid> ConversationsIds { get; private set; } = Enumerable.Empty<Guid>();
     
     public int CurrentPage { get; private set; }
@@ -39,17 +40,16 @@ public class ConversationList : PageModel
 
     public async Task<IActionResult> OnGet(int pageNumber = 1, CancellationToken ct = default)
     {
-        if(_currentUser.IsAuthenticated && _currentUser.HasClaim("profileCompleted", "false"))
-            return RedirectToPage("/Account/CompleteProfile");
-        
         var pagedConversations = await _conversationRepo.GetAllAsync(_currentUser.ID, pageNumber, PageSize, ct);
         ConversationsIds = await _conversationRepo.GetConversationsIdsAsync(_currentUser.ID, ct);
-        Conversations = pagedConversations.Items.Select(p =>
-            p with
+        Conversations = pagedConversations.Items.Select(dto => new ConversationViewModel
+        {
+            Conversation = dto with
             {
-                Name = (p.ShouldTruncate(p.Name, 20) ? string.Concat(p.Name.AsSpan(0, 20), "...") : p.Name),
-                LastMessageContent = (p.ShouldTruncate(p.LastMessageContent) ? string.Concat(p.LastMessageContent.AsSpan(0, 40), "...") : p.LastMessageContent)
-            }).ToList();
+                Name = (dto.ShouldTruncate(dto.Name, 20) ? string.Concat(dto.Name.AsSpan(0, 20), "...") : dto.Name),
+                LastMessageContent = (dto.ShouldTruncate(dto.LastMessageContent) ? string.Concat(dto.LastMessageContent.AsSpan(0, 40), "...") : dto.LastMessageContent)
+            }
+        }).ToList();
         
         CurrentPage = pagedConversations.Page;
         TotalPages = (int)Math.Ceiling(pagedConversations.TotalCount / (double)PageSize);
@@ -63,7 +63,7 @@ public class ConversationList : PageModel
         if (conversation is null)
             return new EmptyResult();
         
-        return Partial("Shared/Account/Conversations/_ConversationListPartial", new List<ConversationDto> { conversation });
+        return Partial("Shared/Account/Conversations/_ConversationListPartial", new List<ConversationViewModel> { new ConversationViewModel { Conversation = conversation } });
     }
     
     public async Task<IActionResult> OnGetNewMessagePartialAsync(Guid conversationId, CancellationToken ct = default)
@@ -72,7 +72,7 @@ public class ConversationList : PageModel
         if (conversation is null)
             return new EmptyResult();
         
-        return Partial("Shared/Account/Conversations/_ConversationListPartial", new List<ConversationDto> { conversation });
+        return Partial("Shared/Account/Conversations/_ConversationListPartial", new List<ConversationViewModel> { new ConversationViewModel { Conversation = conversation } });
     }
     
     public async Task<PartialViewResult> OnGetUserSearchAsync(string username, CancellationToken ct = default)

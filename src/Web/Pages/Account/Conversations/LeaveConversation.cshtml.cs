@@ -34,8 +34,12 @@ public class LeaveConversation : PageModel
         _toastBuilder.SetToast(result)
             .OnSuccess("Successfully left the conversation").Build(TempData);
 
-        await _conversationMessageService.CreateSystemMessageAsync
-            (new CreateMessageDto(conversationId, $"{_currentUser.Username} has left the conversation."), ct);
+        if (result.IsSuccess)
+        {
+            await _conversationMessageService.CreateSystemMessageAsync
+                (new CreateMessageDto(conversationId, $"{_currentUser.Username} has left the conversation."), ct);
+        }
+
         
         return RedirectToPage("/Account/Conversations/ConversationList");
     }

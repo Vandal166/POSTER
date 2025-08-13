@@ -39,4 +39,18 @@ public sealed class Conversation : AuditableEntity
         };
         return Result.Ok(conversation);
     }
+    
+    public static Result<Conversation> Update(Conversation conversation, string name, Guid profilePictureID)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            return Result.Fail<Conversation>("Conversation name cannot be empty.");
+        
+        if (profilePictureID == Guid.Empty)
+            return Result.Fail<Conversation>("Profile picture path cannot be empty.");
+        
+        conversation.Name = name;
+        conversation.ProfilePictureID = profilePictureID;
+        conversation.UpdatedAt = DateTime.UtcNow;
+        return Result.Ok(conversation);
+    }
 }

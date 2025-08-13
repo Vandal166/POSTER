@@ -16,22 +16,27 @@
             <a href="javascript:history.back()" class="btn btn-link text-decoration-none text-dark p-0">
                 <i class="bi bi-arrow-left me-2 fs-5"></i> Back
             </a>
-            <span class="fw-semibold">@Model.Conversation.Name</span>
+            <span class="fw-semibold">@Model.Conversation.Conversation.Name</span>
             
             <!-- Three Dots Dropdown -->
             <div class="dropdown">
-                <button class="btn btn-link p-0 text-muted fs-5" type="button" id="conversationOptionsDropdown-@Model.Conversation.Id"
+                <button class="btn btn-link p-0 text-muted fs-5" type="button" id="conversationOptionsDropdown-@Model.Conversation.Conversation.Id"
                         data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-three-dots"></i>
                 </button>
                 
-                <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="conversationOptionsDropdown-@Model.Conversation.Id">
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="conversationOptionsDropdown-@Model.Conversation.Conversation.Id">
                     <auth-only>
                         @* change name, delete, remove participant *@
-                        @if (CurrentUser.ID == Model.Conversation.CreatedByID)
+                        @if (CurrentUser.ID == Model.Conversation.Conversation.CreatedByID)
                         {
                             <li>
-                                <button type="button" class="dropdown-item text-danger" onclick="showDeleteModal('@Model.Conversation.Id')">
+                                <button type="button" class="dropdown-item" onclick="showEditModal('@Model.Conversation.Conversation.Id')">
+                                    Manage conversation
+                                </button>
+                            </li>
+                            <li>
+                                <button type="button" class="dropdown-item text-danger" onclick="showDeleteModal('@Model.Conversation.Conversation.Id')">
                                     Delete conversation
                                 </button>
                             </li>
@@ -39,7 +44,7 @@
                         else
                         {
                             <li>
-                                <button type="button" class="dropdown-item text-danger" onclick="showLeaveModal('@Model.Conversation.Id')">
+                                <button type="button" class="dropdown-item text-danger" onclick="showLeaveModal('@Model.Conversation.Conversation.Id')">
                                     Leave conversation
                                 </button>
                             </li>
@@ -59,7 +64,7 @@
             @if (Model.Messages.Count() == Details.PageSize)
             {
                 <div id="loader"
-                     hx-get="?handler=Paged&id=@Model.Conversation.Id&firstMessageAt=@(Model.FirstMessageAt?.ToString("o"))"
+                     hx-get="?handler=Paged&id=@Model.Conversation.Conversation.Id&firstMessageAt=@(Model.FirstMessageAt?.ToString("o"))"
                      hx-target="this"
                      hx-trigger="intersect once delay:500ms"
                      hx-swap="outerHTML"
@@ -78,18 +83,20 @@
         <auth-only>
             <div class="border-top p-3" id="message-form-wrapper">
                 <partial name="Shared/Account/Conversations/Messages/_CreateMessageFormPartial"
-                         model="new CreateMessageViewModel { ConversationId = Model.Conversation.Id }" />
+                         model="new CreateMessageViewModel { ConversationId = Model.Conversation.Conversation.Id }" />
             </div>
         </auth-only>
     </div>
 </div>
 
 <auth-only>
-    <partial name="Shared/Account/Conversations/_DeleteConversationFormPartial" />
+    <partial name="Shared/Account/Conversations/_EditConversationPartial" model="Model.Conversation" />
     
-    <partial name="Shared/Account/Conversations/_LeaveConversationFormPartial" />
-    
-    <partial name="Shared/Account/Conversations/Messages/_DeleteMessageFormPartial" />
+    <partial name="Shared/Account/Conversations/_DeleteConversationFormPartial"/>
+
+    <partial name="Shared/Account/Conversations/_LeaveConversationFormPartial"/>
+
+    <partial name="Shared/Account/Conversations/Messages/_DeleteMessageFormPartial"/>
 
     <script src="~/js/defaultSrcImage.js"></script>
 
@@ -100,6 +107,12 @@
                 container.scrollTop = container.scrollHeight;
             }
         });
+        
+        function showEditModal(conversationId) {
+            document.getElementById('editConversationId').value = conversationId;
+            const editModal = new bootstrap.Modal(document.getElementById('editConversationModal'));
+            editModal.show();
+        }
         
         function showDeleteModal(conversationId) {
             document.getElementById('deleteConversationId').value = conversationId;
@@ -165,11 +178,20 @@
             // just redirecting to the conversation list page
             window.location.href = "/Account/Conversations/ConversationList";
         });
+        connection.on("ParticipantRemoved", function (conversationId, participantId)
+        {
+            //TODO with toast notif :P ??
+            // just redirecting to the conversation list page if we are the participant that was removed
+            if (participantId === "@CurrentUser.ID.ToString()") {
+                window.location.href = "/Account/Conversations/ConversationList";
+            }
+        });
+        
 
         // joining the conversation group
         connection.start().then(function ()
         {
-            const conversationId = "@Model.Conversation.Id";
+            const conversationId = "@Model.Conversation.Conversation.Id";
 
             connection.invoke("JoinGroup", conversationId)
                 .then(() => console.log("JoinGroup invoked successfully."))

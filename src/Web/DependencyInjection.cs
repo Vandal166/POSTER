@@ -70,7 +70,7 @@ public static class DependencyInjection
                             {
                                 // signing them out immediately
                                 context.RejectPrincipal();
-                                await context.HttpContext.SignOutAsync(); //TODO with message
+                                await context.HttpContext.SignOutAsync();
                                 return;
                             }
                             if (!string.IsNullOrEmpty(token))

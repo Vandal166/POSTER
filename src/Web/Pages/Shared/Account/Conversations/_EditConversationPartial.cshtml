@@ -1,0 +1,37 @@
+﻿@model Application.ViewModels.ConversationViewModel
+
+<div class="modal fade" id="editConversationModal" tabindex="-1" aria-labelledby="editConversationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editConversationModalLabel">Manage Conversation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <partial name="Shared/Account/Conversations/_EditConversationFormPartial" model="Model" />
+            
+        </div>
+    </div>
+</div>
+
+<script>
+    /*Clearing the modal on access*/
+    document.getElementById('editConversationModal').addEventListener('show.bs.modal', function () {
+
+        const hiddenInput = document.getElementById('conversationProfilePictureFileID');
+        const imagePreviewList = document.getElementById('conversationImagePreviewList');
+        const originalFileID = hiddenInput?.dataset.original;
+        
+        // If there's no existing value, set the default
+        if (hiddenInput && imagePreviewList) {
+            hiddenInput.value = originalFileID || '';
+            imagePreviewList.innerHTML = `
+            <div class="d-inline-block position-relative m-1">
+                <img src="/images/${originalFileID}" class="rounded shadow-sm" style="width:90px;height:90px;object-fit:cover;">
+            </div>
+        `;
+            imagePreviewList.classList.remove('d-none');
+        }
+       
+});
+</script>

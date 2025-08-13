@@ -2,11 +2,14 @@
 using Application.Contracts.Persistence;
 using Application.DTOs;
 using Application.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Web.Common;
 
 namespace Web.Pages.Posts;
 
+[AllowAnonymous, RedirectIncompleteUserProfile]
 public class Details : PageModel
 {
     private readonly ICurrentUserService _currentUser;
@@ -36,9 +39,6 @@ public class Details : PageModel
     // id is postID
     public async Task<IActionResult> OnGetAsync(Guid id, int pageNumber = 1, CancellationToken ct = default)
     {
-        if(_currentUser.IsAuthenticated && _currentUser.HasClaim("profileCompleted", "false"))
-            return RedirectToPage("/Account/CompleteProfile");
-
         var post = await _postRepository.GetPostAsync(id, ct);
         if (post is null)
             return NotFound();

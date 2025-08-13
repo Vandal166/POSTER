@@ -11,16 +11,20 @@ public sealed class ConversationService : IConversationService
 {
     private readonly IConversationRepository _conversations;
     private readonly IValidator<CreateConversationDto> _createConversationValidator;
+    private readonly IValidator<UpdateConversationDto> _updateConversationValidator;
     private readonly IUnitOfWork _uow;
     private readonly IBlobService _blobService;
     private readonly IMessageNotifier _messageNotifier;
     private readonly IConversationNotifier _conversationNotifier;
     
-    public ConversationService(IConversationRepository conversations, IValidator<CreateConversationDto> createConversationValidator, 
+    public ConversationService(IConversationRepository conversations,
+        IValidator<CreateConversationDto> createConversationValidator,
+        IValidator<UpdateConversationDto> updateConversationValidator,
         IUnitOfWork uow, IBlobService blobService, IMessageNotifier messageNotifier, IConversationNotifier conversationNotifier)
     {
         _conversations = conversations;
         _createConversationValidator = createConversationValidator;
+        _updateConversationValidator = updateConversationValidator;
         _uow = uow;
         _blobService = blobService;
         _messageNotifier = messageNotifier;
@@ -72,6 +76,40 @@ public sealed class ConversationService : IConversationService
         throw new NotImplementedException();
     }
 
+    public async Task<Result<bool>> UpdateConversationAsync(UpdateConversationDto dto, Guid currentUserID, CancellationToken cancellationToken = default)
+    {
+        var validation = await _updateConversationValidator.ValidateAsync(dto, cancellationToken);
+        if (!validation.IsValid)
+            return Result.Fail<bool>(validation.Errors.Select(e => e.ErrorMessage));
+        
+        var conversation = await _conversations.GetConversationAsync(dto.Id, currentUserID, cancellationToken);
+        if (conversation is null)
+            return Result.Fail<bool>("Conversation not found or you are not part of it.");
+        
+        if (conversation.CreatedByID != currentUserID)
+            return Result.Fail<bool>("You can only update conversations you created.");
+        
+        if(dto.ProfilePictureID is not null && dto.ProfilePictureID != conversation.ProfilePictureID)
+        {
+            // delete the old profile picture if it is not the default one
+            if (conversation.ProfilePictureID != new Guid("4fdd2f9f-bca8-4f90-8e27-ed432cbc39e0")) // TODO hard coded default imageID placeholder
+                await _blobService.DeleteFileAsync(conversation.ProfilePictureID, "images", cancellationToken);
+        }
+        
+        // if the ProfilePictureFileID is null then no new profile picture has been uploaded meaning we use the existing one
+        var updatedConversation = Conversation.Update(conversation, dto.Name.Trim(), dto.ProfilePictureID ?? conversation.ProfilePictureID);
+        if (updatedConversation.IsFailed)
+            return Result.Fail<bool>(updatedConversation.Errors.Select(e => e.Message));
+        
+        await _conversations.UpdateAsync(updatedConversation.Value, cancellationToken);
+        await _uow.SaveChangesAsync(cancellationToken);
+        
+        //await _messageNotifier.NotifyConversationUpdatedAsync(updatedConversation.Value.ID, dto.Name, pfpResult, cancellationToken);
+        //await _conversationNotifier.NotifyConversationUpdatedAsync(updatedConversation.Value.ID, dto.Name, pfpResult, cancellationToken);
+        
+        return Result.Ok(true);
+    }
+
     public async Task<Result<bool>> DeleteConversationAsync(Guid conversationID, Guid currentUserID, CancellationToken ct = default)
     {
         if (await _conversations.ExistsAsync(conversationID, ct) is false)
@@ -112,6 +150,30 @@ public sealed class ConversationService : IConversationService
         await _conversations.DeleteParticipantAsync(participant, cancellationToken);
         await _uow.SaveChangesAsync(cancellationToken);
         
+        return Result.Ok(true);
+    }
+
+    public async Task<Result<bool>> RemoveParticipantAsync(Guid conversationID, Guid participantID, Guid currentUserID, CancellationToken ct = default)
+    {
+        if (await _conversations.ExistsAsync(conversationID, ct) is false)
+            return Result.Fail<bool>("Conversation does not exist.");
+        
+        var conversation = await _conversations.GetConversationAsync(conversationID, currentUserID, ct);
+        if (conversation is null)
+            return Result.Fail<bool>("Conversation not found or you are not part of it.");
+        
+        if (conversation.CreatedByID != currentUserID)
+            return Result.Fail<bool>("You can only remove participants from conversations you created.");
+        
+        var participant = conversation.Participants.FirstOrDefault(p => p.UserID == participantID);
+        if (participant is null)
+            return Result.Fail<bool>("Participant not found in this conversation.");
+        
+        await _conversations.DeleteParticipantAsync(participant, ct);
+        await _uow.SaveChangesAsync(ct);
+        
+        await _messageNotifier.NotifyParticipantRemovedAsync(conversationID, participantID, ct);
+        await _conversationNotifier.NotifyParticipantRemovedAsync(conversationID, participantID, ct);
         
         return Result.Ok(true);
     }

@@ -1,0 +1,177 @@
+﻿@model Application.ViewModels.ConversationViewModel
+
+<!-- Edit Conversation Modal -->
+<form id="editConversationForm"
+      method="post"
+      enctype="multipart/form-data"
+      hx-post="/Account/Conversations/EditConversation?handler=Edit"
+      hx-target="#editConversationModal .modal-content"
+      hx-swap="innerHTML"
+      asp-antiforgery="true">
+        
+    <div class="modal-body">
+        <input type="hidden" name="Conversation.Id" id="editConversationId" value="@Model.Conversation.Id"/>
+
+        <!-- Conversation Name -->
+        <div class="mb-3">
+            <label asp-for="Conversation.Name" class="form-label"></label>
+            <input asp-for="Conversation.Name" class="form-control" />
+            <span asp-validation-for="Conversation.Name" class="text-danger"></span>
+        </div>
+
+        <!-- Profile Picture -->
+        <div class="mb-3">
+            <label asp-for="Conversation.ProfilePictureID" class="form-label">Profile Picture</label>
+            <button type="button" class="btn btn-outline-secondary" id="uploadConversationImageBtn">
+                <i class="bi bi-image"></i>
+            </button>
+            <input type="file" id="conversationImageInput" accept="image/*" style="display: none;"/>
+            <input type="hidden" name="Conversation.ProfilePictureID" id="conversationProfilePictureFileID" value="@Model.Conversation.ProfilePictureID" data-original="@Model.Conversation.ProfilePictureID"/>
+            <div id="conversationImagePreviewList" class="position-relative">
+                <img src="@Url.Content("/images/" + Model.Conversation.ProfilePictureID)" alt="Profile Picture" class="rounded shadow-sm" style="width: 90px; height: 90px; object-fit: cover;"/>
+            </div>
+            <span asp-validation-for="Conversation.ProfilePictureID" class="text-danger"></span>
+            
+        </div>
+        
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+        
+        <!-- Participants List -->
+        <div class="mb-3">
+            <label class="form-label">Participants</label>
+            <ul class="list-group">
+                @foreach (var participant in Model.Participants)
+                {
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>
+                            <img src="@Url.Content("~/" + participant.AvatarPath)" alt="Avatar" class="rounded-circle me-2" style="width:32px; height:32px; object-fit:cover;"/>
+                            @participant.Username
+                            @if (participant.Id == Model.Conversation.CreatedByID)
+                            {
+                                <span class="badge bg-primary ms-2">Admin</span>
+                            }
+                        </span>
+                        @if (participant.Id != Model.Conversation.CreatedByID)
+                        {
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-danger"
+                                    onclick="showRemoveParticipantModal('@participant.Id', '@participant.Username')">
+                                Remove
+                            </button>
+                        }
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+    </div>
+</form>
+
+<partial name="Shared/Account/Conversations/_RemoveParticipantFormPartial" />
+
+<script>
+    const imageBtn = document.getElementById('uploadConversationImageBtn');
+    const imageInput = document.getElementById('conversationImageInput');
+    const imagePreviewList = document.getElementById('conversationImagePreviewList');
+    const hiddenInput = document.getElementById('conversationProfilePictureFileID');
+
+    imageBtn.addEventListener('click', () => imageInput.click());
+    imageInput.addEventListener('change', async () => {
+        const files = Array.from(imageInput.files);
+        if (!files.length) return;
+
+        const file = files[0];
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+            const res = await fetch('/images', {
+                method: 'POST',
+                body: formData,
+                headers: { 'RequestVerificationToken': token }
+            });
+
+            if (!res.ok) {
+                const errorText = await res.text();
+                alert("Image upload failed: " + errorText);
+                return;
+            }
+
+            const { fileID } = await res.json();
+            hiddenInput.value = fileID;
+
+            // Show preview
+            imagePreviewList.innerHTML = '';
+            const wrapper = document.createElement('div');
+            wrapper.className = 'd-inline-block position-relative m-1';
+
+            const img = document.createElement('img');
+            img.src = `/images/${fileID}`;
+            img.className = 'rounded shadow-sm';
+            img.style.width = '90px';
+            img.style.height = '90px';
+            img.style.objectFit = 'cover';
+
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.className = 'btn btn-sm btn-outline-danger position-absolute';
+            removeBtn.style.top = '0px';
+            removeBtn.style.right = '0px';
+            removeBtn.innerHTML = '<i class="bi bi-x"></i>';
+            removeBtn.onclick = async () => {
+                await fetch(`/images/${fileID}`, { method: 'DELETE' });
+                wrapper.remove();
+                hiddenInput.value = '';
+                imagePreviewList.classList.add('d-none');
+            };
+
+            wrapper.appendChild(img);
+            wrapper.appendChild(removeBtn);
+            imagePreviewList.appendChild(wrapper);
+            imagePreviewList.classList.remove('d-none');
+        } catch (err) {
+            console.error(err);
+        }
+
+        imageInput.value = '';
+    });
+    
+    function showRemoveParticipantModal(participantId, participantName) {
+        document.getElementById('removeParticipantId').value = participantId;
+        document.getElementById('conversationId').value = '@Model.Conversation.Id';
+        document.getElementById('removeParticipantName').value = participantName;
+        document.getElementById('removeParticipantDisplayName').textContent = participantName;
+        const deleteModal = new bootstrap.Modal(document.getElementById('removeParticipantModal'));
+        deleteModal.show();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const modal = document.getElementById('editConversationModal');
+        if (!modal) return;
+        modal.addEventListener('hidden.bs.modal', async () => {
+            const hiddenInput = document.getElementById('conversationProfilePictureFileID');
+            const imageFileID = hiddenInput?.value;
+            const originalFileID = hiddenInput?.dataset.original;
+            if (
+                imageFileID &&
+                imageFileID !== '4fdd2f9f-bca8-4f90-8e27-ed432cbc39e0' &&
+                imageFileID !== originalFileID
+            ) {
+                try {
+                    const response = await fetch(`/images/${imageFileID}`, { method: 'DELETE' });
+                    if (response.ok) {
+                        console.log(`Image with ID ${imageFileID} deleted successfully.`);
+                    } else {
+                        console.error(`Failed to delete image with ID ${imageFileID}:`, response.statusText);
+                    }
+                } catch (err) {
+                    console.error('Failed to delete image:', err);
+                }
+            }
+        });
+    });
+</script>

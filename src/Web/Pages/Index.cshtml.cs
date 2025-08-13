@@ -5,10 +5,11 @@ using Application.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Web.Common;
 
 namespace Web.Pages;
 
-[AllowAnonymous]
+[AllowAnonymous, RedirectIncompleteUserProfile]
 public class IndexModel : PageModel
 {
     private readonly ICurrentUserService _currentUser;
@@ -32,12 +33,8 @@ public class IndexModel : PageModel
         _postViewRepo = postViewRepo;
     }
 
-
     public async Task<IActionResult> OnGet(CancellationToken ct = default)
     {
-        if(_currentUser.IsAuthenticated && _currentUser.HasClaim("profileCompleted", "false"))
-            return RedirectToPage("/Account/CompleteProfile");
-
         await OnGetPaged(null, ct);
         return Page();
     }

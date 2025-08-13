@@ -1,28 +1,28 @@
-﻿@model IEnumerable<Application.DTOs.ConversationDto>
+﻿@model IEnumerable<Application.ViewModels.ConversationViewModel>
     
     @foreach (var conversation in Model)
     {
-        <a asp-page="/Account/Conversations/Details" asp-route-id="@conversation.Id" class="text-decoration-none text-dark">
-            <div class="card shadow-sm mb-3 conversation-card" id="conversation-@conversation.Id" style="cursor: pointer;">
+        <a asp-page="/Account/Conversations/Details" asp-route-id="@conversation.Conversation.Id" class="text-decoration-none text-dark">
+            <div class="card shadow-sm mb-3 conversation-card" id="conversation-@conversation.Conversation.Id" style="cursor: pointer;">
                 <div class="card-body d-flex align-items-start">
-                    <img src="@Url.Content("/images/" + conversation.ProfilePictureID)"
+                    <img src="@Url.Content("/images/" + conversation.Conversation.ProfilePictureID)"
                          class="rounded-circle me-3" width="48" height="48" alt="Avatar" />
                     <div class="flex-grow-1">
                         <div class="d-flex justify-content-between align-items-center mb-1">
-                            <span class="fw-semibold">@conversation.Name</span>
+                            <span class="fw-semibold">@conversation.Conversation.Name</span>
                             <small class="text-muted">
-                                @if(conversation.LastMessageAt == DateTime.MinValue)
+                                @if(conversation.Conversation.LastMessageAt == DateTime.MinValue)
                                 {
                                     <span class="text-muted">No messages yet</span>
                                 }
                                 else
                                 {
-                                    @conversation.LastMessageAt.ToString("MMM d, yyyy 'at' h:mm tt")
+                                    @conversation.Conversation.LastMessageAt.ToString("MMM d, yyyy 'at' h:mm tt")
                                 }
                             </small>
                         </div>
                         <div class="text-muted">
-                            @conversation.LastMessageContent
+                            @conversation.Conversation.LastMessageContent
                         </div>
                     </div>
                 </div>
