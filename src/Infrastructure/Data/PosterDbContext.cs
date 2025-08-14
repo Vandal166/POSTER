@@ -22,6 +22,9 @@ public class PosterDbContext : DbContext
     public DbSet<MessageImage> MessageImages => Set<MessageImage>();
     
     
+    public DbSet<UserFollow> UserFollows => Set<UserFollow>();
+    public DbSet<UserBlock> UserBlocks => Set<UserBlock>();
+    
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder
@@ -206,6 +209,42 @@ public class PosterDbContext : DbContext
                 .OnDelete(DeleteBehavior.Cascade); // removing a message removes its images
             b.Property(mi => mi.ImageFileID).IsRequired();
             b.Property(p => p.CreatedAt).HasDefaultValueSql("now()");
+        });
+        
+        // ------ UserFollow ------
+        modelBuilder.Entity<UserFollow>(b =>
+        {
+            b.HasKey(uf => new { uf.FollowerID, uf.FollowedID });
+            
+            b.HasOne(uf => uf.Follower)
+                .WithMany(uf => uf.Following)
+                .HasForeignKey(uf => uf.FollowerID)
+                .OnDelete(DeleteBehavior.Cascade); // delete follower -> remove their following relationships
+            
+            b.HasOne(uf => uf.Followed)
+                .WithMany(uf => uf.Followers)
+                .HasForeignKey(uf => uf.FollowedID)
+                .OnDelete(DeleteBehavior.Cascade); // delete followed -> remove their followers
+            
+            b.Property(uf => uf.FollowedAt).HasDefaultValueSql("now()");
+        });
+        
+        // ------ UserBlock ------
+        modelBuilder.Entity<UserBlock>(b =>
+        {
+            b.HasKey(ub => new { ub.BlockerID, ub.BlockedID });
+            
+            b.HasOne(ub => ub.Blocker)
+                .WithMany()
+                .HasForeignKey(ub => ub.BlockerID)
+                .OnDelete(DeleteBehavior.Cascade); // delete blocker -> remove their blocks
+            
+            b.HasOne(ub => ub.Blocked)
+                .WithMany()
+                .HasForeignKey(ub => ub.BlockedID)
+                .OnDelete(DeleteBehavior.Cascade); // delete blocked -> remove their blockers
+            
+            b.Property(ub => ub.BlockedAt).HasDefaultValueSql("now()");
         });
     }
 }

@@ -33,7 +33,7 @@
             </div>
 
             <!-- Post Content -->   
-            <p class="mb-2">@Model.Post.Post.Content</p>
+            <p class="mb-2" style="white-space: pre-wrap;">@Model.Post.Post.Content</p>
             
             @if (Model.Post.Post.VideoFileID is not null || (Model.Post.Post.ImageFileIDs is not null && Model.Post.Post.ImageFileIDs.Any())) // prevent rendering if no media
             {

@@ -1,0 +1,26 @@
+﻿@page
+@model Web.Pages.EditProfile
+@*TODO this will be an modal for editing the profile*@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Profile</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+</head>
+<body>
+<div class="container mt-5">
+    <h2>Your Profile</h2>
+    <img src="@Url.Content("~/" + Model.AvatarPath)" alt="Avatar" class="img-thumbnail mb-3" style="width: 120px; height: 120px;" />
+    <form method="post" enctype="multipart/form-data" asp-page-handler="Avatar" asp-antiforgery="true">
+        <div class="mb-3">
+            <label for="AvatarFile" class="form-label">Change Avatar</label>
+            <input type="file" class="form-control" id="AvatarFile" name="avatar" accept="image/*" />
+        </div>
+        <button type="submit" class="btn btn-secondary">Upload New Avatar</button>
+    </form>
+    <div asp-validation-summary="ModelOnly" class="text-danger mt-2"></div>
+</div>
+</body>
+</html>
+
+@*TODo option to delete account*@

@@ -21,18 +21,18 @@
             </div>
 
             <!-- Post Content (clickable only if clicked, but text selectable) -->
-            <p class="mb-2">
-                <a asp-page="/Posts/Details" asp-route-id="@post.Post.Id" 
-                   class="text-decoration-none text-dark post-content-link" 
-                   style="white-space: pre-wrap; user-select: text;"
-                   draggable="false">@post.Post.Content</a>
+            <a asp-page="/Posts/Details" asp-route-id="@post.Post.Id"
+               class="text-decoration-none text-dark post-content-link"
+               style="user-select: text;"
+               draggable="false">
+                
+                <p class="mb-2" style="white-space: pre-wrap; user-select: text">@post.Post.Content</p>
                 
                 @if (post.Post.IsTruncated)
                 {
-                    <br/>
-                    <a asp-page="/Posts/Details" asp-route-id="@post.Post.Id"
-                       class="text-primary text-decoration-none fw-semibold">Show more</a>
+                    <span class="text-primary fw-semibold">Show more</span>
                 }
+            </a>
             
                 @if (post.Post.VideoFileID is not null || (post.Post.ImageFileIDs is not null && post.Post.ImageFileIDs.Any())) // prevent rendering if no media
                 {
@@ -83,7 +83,6 @@
                         }
                     </div>
                 }
-            </p>
             
             <hr/>
             

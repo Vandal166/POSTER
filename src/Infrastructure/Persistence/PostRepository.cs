@@ -1,8 +1,6 @@
-﻿using Application.Contracts;
-using Application.Contracts.Persistence;
+﻿using Application.Contracts.Persistence;
 using Application.DTOs;
 using Domain.Entities;
-using Infrastructure.Common;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -36,7 +34,7 @@ public sealed class PostRepository : IPostRepository
                     p.Content,
                     p.CreatedAt,
                     p.VideoFileID,
-                    p.Images.Select(pi => pi.ID).ToArray()
+                    p.Images.Select(pi => pi.ImageFileID).ToArray()
                 )
             )
             .FirstOrDefaultAsync(ct);
@@ -68,6 +66,33 @@ public sealed class PostRepository : IPostRepository
                 )
             )
             .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    public async Task<List<PostDto>> GetUserFeedAsync(Guid userId, DateTime? lastCreatedAt, int pageSize, CancellationToken ct = default)
+    {
+        IQueryable<Post> query = _db.Posts
+            .AsNoTracking()
+            .Where(p => p.AuthorID == userId)
+            .OrderByDescending(p => p.CreatedAt);
+
+        if (lastCreatedAt.HasValue)
+        {
+            var utcCreatedAt = DateTime.SpecifyKind(lastCreatedAt.Value, DateTimeKind.Utc);
+            query = query.Where(p => p.CreatedAt < utcCreatedAt);
+        }
+
+        return await query
+            .Take(pageSize)
+            .Select(p => new PostDto(
+                p.ID,
+                p.Author.Username,
+                p.Author.AvatarPath,
+                p.Content,
+                p.CreatedAt,
+                p.VideoFileID,
+                p.Images.Select(pi => pi.ImageFileID).ToArray()
+            ))
+            .ToListAsync(ct);
     }
 
     public async Task<List<Post>> GetUserFeedAsync(Guid userId, CancellationToken cancellationToken = default)
@@ -122,8 +147,6 @@ public sealed class PostRepository : IPostRepository
 
     public Task DeleteAsync(Post post, CancellationToken cancellationToken = default)
     {
-       // await _db.Posts.Where(p => p.ID == post.ID).ExecuteDeleteAsync(cancellationToken);
-        
         _db.Posts.Remove(post);
         return Task.CompletedTask;
     }

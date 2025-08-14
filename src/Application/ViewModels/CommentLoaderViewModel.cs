@@ -9,10 +9,3 @@ public sealed class CommentLoaderViewModel
     public string NextUrl { get; set; } //setting the url for the next page of comments
     public bool HasMore { get; set; }
 }
-
-public sealed class MessageLoaderViewModel
-{
-    public IEnumerable<MessageDto> Messages { get; set; }
-    public string NextUrl { get; set; } //setting the url for the next page of messages
-    public bool HasMore { get; set; }
-}
