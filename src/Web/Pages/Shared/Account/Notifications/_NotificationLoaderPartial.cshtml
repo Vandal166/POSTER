@@ -1,0 +1,30 @@
+﻿@model Application.ViewModels.NotificationLoaderViewModel
+
+@if (Model.HasMore)
+{
+    <div id="loader"
+         hx-get="@Model.NextUrl"
+         hx-target="this"
+         hx-trigger="revealed"
+         hx-swap="outerHTML"
+         hx-indicator="#loading-indicator">
+        
+        <div id="loading-indicator">
+            @await Html.PartialAsync("Shared/_LoadingIndicatorPartial")
+        </div>
+        
+    </div>
+    
+}
+@if(!Model.Notifications.Any())
+{
+    <div class="alert alert-info">No available notifications to show.</div>
+}
+else
+{
+    <div hx-swap-oob="beforeend:#notifications-container">
+        
+        <partial name="Shared/Account/Notifications/_NotificationListPartial" model="Model.Notifications"/>
+
+    </div>
+}

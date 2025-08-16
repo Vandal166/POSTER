@@ -25,6 +25,8 @@ public class PosterDbContext : DbContext
     public DbSet<UserFollow> UserFollows => Set<UserFollow>();
     public DbSet<UserBlock> UserBlocks => Set<UserBlock>();
     
+    public DbSet<Notification> Notifications => Set<Notification>();
+    
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder
@@ -245,6 +247,21 @@ public class PosterDbContext : DbContext
                 .OnDelete(DeleteBehavior.Cascade); // delete blocked -> remove their blockers
             
             b.Property(ub => ub.BlockedAt).HasDefaultValueSql("now()");
+        });
+        
+        // ------ Notification ------
+        modelBuilder.Entity<Notification>(b =>
+        {
+            b.HasKey(n => n.ID);
+            b.HasOne(n => n.User)
+                .WithMany(u => u.Notifications)
+                .HasForeignKey(n => n.UserID)
+                .OnDelete(DeleteBehavior.Cascade); // removing a user removes their notifications
+            
+            b.Property(n => n.Message).IsRequired();
+            b.Property(n => n.WithRedirectUrl).HasMaxLength(256);
+            b.Property(n => n.IsRead).HasDefaultValue(false);
+            b.Property(n => n.CreatedAt).HasDefaultValueSql("now()");
         });
     }
 }

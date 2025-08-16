@@ -13,6 +13,9 @@ public class User : AuditableEntity
     public IReadOnlyCollection<UserFollow> Following => _following.AsReadOnly(); // Users this user is following
     private readonly List<UserFollow> _following = new();
     
+    public IReadOnlyCollection<Notification> Notifications => _notifications.AsReadOnly(); // Notifications for this user
+    private readonly List<Notification> _notifications = new();
+    
     private User() { }
     
     public static Result<User> Create(Guid keycloakID, string username)

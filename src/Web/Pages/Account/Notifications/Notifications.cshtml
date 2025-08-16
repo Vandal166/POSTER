@@ -1,0 +1,28 @@
+﻿@page
+@model Web.Pages.Notifications
+@{
+    ViewData["Title"] = "Notifications";
+}
+
+<div class="container py-4" style="max-width: 600px;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="fw-bold mb-0">Notifications</h4>
+    </div>
+    
+    <div id="notifications-container">
+        <partial name="Shared/Account/Notifications/_NotificationListPartial" model="Model.NotificationsList"/>
+    </div>
+         
+    <div id="loader"
+         hx-get="?handler=Paged&lastCreatedAt=@(Model.LastCreatedAt)"
+         hx-target="this"
+         hx-trigger="revealed"
+         hx-swap="outerHTML"
+         hx-indicator="#loading-indicator">
+        
+        <div id="loading-indicator">
+            @await Html.PartialAsync("Shared/_LoadingIndicatorPartial")
+        </div>
+        
+    </div>
+</div>

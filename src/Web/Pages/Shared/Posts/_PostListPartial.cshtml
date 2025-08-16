@@ -6,18 +6,18 @@
         <div class="card-body">
             <!-- Post Header -->
             <div class="d-flex align-items-center mb-2">
-                <a asp-page="/User/Details" asp-route-id="@post.Post.AuthorAvatarPath">
-                    <img src="@Url.Content("~/" + post.Post.AuthorAvatarPath)" 
+                <a asp-page="/Account/Profile" asp-route-identifier="@post.Post.AuthorUsername" class="d-flex align-items-center text-decoration-none user-profile-link"
+                   style="color: inherit">
+                    <img src="@Url.Content("~/" + post.Post.AuthorAvatarPath)"
                          class="rounded-circle me-2" width="40" height="40" alt="Avatar" />
+
+                    <span class="d-flex flex-column">
+                        <span class="fw-semibold text-decoration-none text-dark">
+                            @post.Post.AuthorUsername
+                        </span>
+                        <small class="text-muted">@post.Post.CreatedAt.ToString("MMM d, yyyy 'at' h:mm tt")</small>
+                    </span>
                 </a>
-                <div>
-                    <a asp-page="/User/Details" asp-route-id="@post.Post.AuthorUsername" 
-                       class="fw-semibold text-decoration-none text-dark">
-                        @post.Post.AuthorUsername
-                    </a>
-                    <br />
-                    <small class="text-muted">@post.Post.CreatedAt.ToString("MMM d, yyyy 'at' h:mm tt")</small>
-                </div>
             </div>
 
             <!-- Post Content (clickable only if clicked, but text selectable) -->

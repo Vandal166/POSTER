@@ -17,15 +17,19 @@ public class EditConversation : PageModel
     private readonly IConversationRepository _conversationRepo;
     private readonly IConversationService _conversationService;
     private readonly IConversationMessageService _conversationMessageService;
-
+    private readonly IMessageNotifier _messageNotifier;
+    private readonly IConversationNotifier _conversationNotifier;
+    
     public EditConversation(ICurrentUserService currentUser, IConversationRepository conversationRepo, 
         IConversationService conversationService, IConversationMessageService conversationMessageService, 
-        IToastBuilder toastBuilder)
+        IToastBuilder toastBuilder, IMessageNotifier messageNotifier, IConversationNotifier conversationNotifier)
     {
         _currentUser = currentUser;
         _conversationRepo = conversationRepo;
         _conversationService = conversationService;
         _conversationMessageService = conversationMessageService;
+        _messageNotifier = messageNotifier;
+        _conversationNotifier = conversationNotifier;
     }
 
     public IActionResult OnGet() => RedirectToPage("/Index");
@@ -58,12 +62,16 @@ public class EditConversation : PageModel
             {
                 ModelState.AddModelError(string.Empty, error.Message);
             }
-            return Partial("Shared/Account/Conversations/_EditConversationFormPartial", model).WithHxToast(Response.HttpContext, $"Error: {result.Errors[0].Message}", "error");
+            return Partial("Shared/Account/Conversations/_EditConversationFormPartial", model)
+                .WithHxToast(Response.HttpContext, $"Error: {result.Errors[0].Message}", "error");
         }
         
-        await _conversationMessageService.CreateSystemMessageAsync(
+        var r = await _conversationMessageService.CreateSystemMessageAsync(
             new CreateMessageDto(c.Conversation.Id, $"{_currentUser.Username} has updated the conversation."), ct);
        
+        await _messageNotifier.NotifyMessageCreatedAsync(conversation.Id, r.Value, ct);
+        await _conversationNotifier.NotifyMessageCreated(conversation.Id, ct);
+        
         Response.Headers["HX-Redirect"] = Url.Page("/Account/Conversations/Details", new { id = c.Conversation.Id });
         return new EmptyResult();
     }

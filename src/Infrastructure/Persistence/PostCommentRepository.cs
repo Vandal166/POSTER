@@ -23,7 +23,14 @@ public class PostCommentRepository : IPostCommentRepository
             .AnyAsync(c => c.ID == commentID, cancellationToken);
     }
 
-    public async Task<CommentDto?> GetCommentAsync(Guid commentID, CancellationToken cancellationToken = default)
+    public async Task<Comment?> GetCommentAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _db.Comments
+            .Include(c => c.Author)
+            .FirstOrDefaultAsync(c => c.ID == id, cancellationToken);
+    }
+
+    public async Task<CommentDto?> GetCommentDtoAsync(Guid commentID, CancellationToken cancellationToken = default)
     {
         return await _db.Comments
             .AsNoTracking()

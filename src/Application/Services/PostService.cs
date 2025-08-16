@@ -50,8 +50,7 @@ public sealed class PostService : IPostService
     
     public async Task<Post?> GetPostAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        //return await _posts.GetPostAsync(id, cancellationToken);
-        return null;
+        return await _posts.GetPostByIDAsync(id, cancellationToken);
     }
     
     public async Task<IPagedList<PostDto>> GetAllAsync(int page, int pageSize, CancellationToken cancellationToken = default)

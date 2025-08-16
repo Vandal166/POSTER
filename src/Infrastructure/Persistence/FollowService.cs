@@ -41,8 +41,6 @@ public sealed class FollowService : IFollowService
         await _followRepository.AddAsync(followerUser, ct);
         await _uow.SaveChangesAsync(ct);
         
-        //notify user followed?
-        
         return true;
     }
 
@@ -65,8 +63,6 @@ public sealed class FollowService : IFollowService
 
         await _followRepository.DeleteAsync(userFollow, ct);
         await _uow.SaveChangesAsync(ct);
-        
-        //notify user unfollowed?
         
         return true;
     }

@@ -11,6 +11,7 @@ public interface IUserRepository
     Task<User?> GetUserAsync(Guid userID, CancellationToken cancellationToken = default);
     Task<UserDto?> GetUserDtoAsync(Guid userID, CancellationToken cancellationToken = default);
     Task<UserProfileDto?> GetUserProfileDtoAsync(Guid userID, CancellationToken cancellationToken = default);
+    Task<UserProfileDto?> GetUserProfileDtoByNameAsync(string username, CancellationToken cancellationToken = default);
     
     Task<IReadOnlyCollection<UserDto>> GetUserFollowersAsync(Guid userID, CancellationToken ct = default);
     Task<IReadOnlyCollection<UserDto>> GetUserFollowingAsync(Guid userID, CancellationToken ct = default);

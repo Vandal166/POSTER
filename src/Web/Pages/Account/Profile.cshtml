@@ -1,4 +1,4 @@
-﻿@page "{id:guid}"
+﻿@page "{identifier}"
 @using Application.Contracts
 @model Web.Pages.Profile
 @inject ICurrentUserService CurrentUser
@@ -30,9 +30,13 @@
                     <i class="bi bi-calendar3 me-1"></i>Joined at @Model.UserProfileLoader.User.JoinedAt.ToString("MMMM yyyy")
                 </small>
                 <div class="mt-1">
-                    <strong>@Model.UserProfileLoader.Followers.Count()</strong> Followers
+                    <a asp-page="/Account/UserFollowers" asp-route-identifier="@Model.UserProfileLoader.User.Username" class="fw-semibold text-decoration-none user-profile-link" style="color: inherit">
+                        <span>@Model.UserProfileLoader.Followers.Count() Followers</span> 
+                    </a>
                     ·
-                    <strong>@Model.UserProfileLoader.Following.Count()</strong> Following
+                    <a asp-page="/Account/UserFollowings" asp-route-identifier="@Model.UserProfileLoader.User.Username" class="fw-semibold text-decoration-none user-profile-link" style="color: inherit">
+                        <span>@Model.UserProfileLoader.Following.Count() Following</span> 
+                    </a>
                 </div>
             </div>
 

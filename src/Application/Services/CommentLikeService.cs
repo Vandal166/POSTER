@@ -20,7 +20,7 @@ public class CommentLikeService : ICommentLikeService
 
     public async Task<CommentLikesDto> ToggleLikeAsync(Guid commentID, Guid userID, CancellationToken ct = default)
     {
-        if(await _comments.GetCommentAsync(commentID, ct) is null)
+        if(await _comments.GetCommentDtoAsync(commentID, ct) is null)
             throw new KeyNotFoundException("Comment not found");
         
         var alreadyLiked = await _commentLikes.IsCommentLikedByUserAsync(commentID, userID, ct);
@@ -49,7 +49,7 @@ public class CommentLikeService : ICommentLikeService
 
     public async Task<Result> LikeCommentAsync(Guid commentID, Guid userID, CancellationToken ct = default)
     {
-        if(await _comments.GetCommentAsync(commentID, ct) is null)
+        if(await _comments.GetCommentDtoAsync(commentID, ct) is null)
             return Result.Fail("Comment not found");
         
         var alreadyLiked = await _commentLikes.IsCommentLikedByUserAsync(commentID, userID, ct);

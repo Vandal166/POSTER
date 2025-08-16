@@ -131,6 +131,19 @@ public class UserRepository : IUserRepository
             .FirstOrDefaultAsync(cancellationToken);
     }
 
+    public async Task<UserProfileDto?> GetUserProfileDtoByNameAsync(string username, CancellationToken cancellationToken = default)
+    {
+        return await _db.Users
+            .Where(u => u.Username == username)
+            .Select(u => new UserProfileDto(
+                u.ID,
+                u.Username,
+                u.AvatarPath,
+                u.CreatedAt
+            ))
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
     public async Task<IReadOnlyCollection<UserDto>> GetUserFollowersAsync(Guid userID, CancellationToken ct = default)
     {
         return await _db.UserFollows

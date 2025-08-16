@@ -12,14 +12,18 @@ public class CreateMessage : PageModel
 {
     private readonly ICurrentUserService _currentUser;
     private readonly IConversationMessageService _conversationMessageService;
+    private readonly IMessageNotifier _messageNotifier;
+    private readonly IConversationNotifier _conversationNotifier;
     
     [BindProperty]
     public CreateMessageDto MessageDto { get; set; }
     
-    public CreateMessage(ICurrentUserService currentUser, IConversationMessageService conversationMessageService)
+    public CreateMessage(ICurrentUserService currentUser, IConversationMessageService conversationMessageService, IMessageNotifier messageNotifier, IConversationNotifier conversationNotifier)
     {
         _currentUser = currentUser;
         _conversationMessageService = conversationMessageService;
+        _messageNotifier = messageNotifier;
+        _conversationNotifier = conversationNotifier;
     }
     
     
@@ -50,6 +54,9 @@ public class CreateMessage : PageModel
             };
             return Partial("Shared/Account/Conversations/Messages/_CreateMessageFormPartial", viewModel);
         }
+
+        await _messageNotifier.NotifyMessageCreatedAsync(MessageDto.ConversationID, result.Value, ct);
+        await _conversationNotifier.NotifyMessageCreated(MessageDto.ConversationID, ct);
 
         Response.Headers["HX-Redirect"] = Url.Page("/Account/Conversations/Details", new { id = MessageDto.ConversationID });
         return new EmptyResult();

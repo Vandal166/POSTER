@@ -3,6 +3,23 @@
 @{
     ViewData["Title"] = "Error";
 }
-
-<h1 class="text-danger">Error.</h1>
-<h2 class="text-danger">An error occurred while processing your request.</h2>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h1 class="mb-0">Error @Model.ErrorStatusCode</h1>
+                </div>
+                <div class="card-body">
+                    <h4 class="text-danger">@Model.ErrorMessage</h4>
+                    @if (Model.ShowRequestId)
+                    {
+                        <p class="text-muted">
+                            <strong>Request ID:</strong> @Model.RequestId
+                        </p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

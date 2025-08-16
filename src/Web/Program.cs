@@ -43,7 +43,7 @@ app.UseSerilogRequestLogging();
 app.UseHttpsRedirection();
 app.UseStaticFiles(); // Serve static files like CSS, JS, images, etc.
 app.UseRouting(); // Enable routing for endpoints
-app.UseStatusCodePagesWithReExecute("/Error"); // Custom error pages for status codes
+app.UseStatusCodePagesWithReExecute("/Error", "?code={0}"); // Custom error pages for status codes
 
 app.UseAuthentication(); // Authentication - login, token validation, etc.
 app.UseAuthorization(); // Authorization - access control based on policies/roles
@@ -59,6 +59,7 @@ app.MapBlobStorageEndpoints(); // used for uploading/downloading (videos/images)
 
 app.MapHub<MessageNotificationHub>("/messageHub");
 app.MapHub<ConversationNotificationHub>("/conversationHub");
+app.MapHub<FollowNotificationHub>("/followHub");
 
 #if USE_SEEDING
 using (var scope = app.Services.CreateScope())

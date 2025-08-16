@@ -15,14 +15,18 @@ public class LeaveConversation : PageModel
     private readonly IConversationService _conversationService;
     private readonly IConversationMessageService _conversationMessageService;
     private readonly IToastBuilder _toastBuilder;
+    private readonly IMessageNotifier _messageNotifier;
+    private readonly IConversationNotifier _conversationNotifier;
     
     public LeaveConversation(ICurrentUserService currentUser, IConversationService conversationService,
-        IConversationMessageService conversationMessageService, IToastBuilder toastBuilder)
+        IConversationMessageService conversationMessageService, IToastBuilder toastBuilder, IMessageNotifier messageNotifier, IConversationNotifier conversationNotifier)
     {
         _currentUser = currentUser;
         _conversationService = conversationService;
         _conversationMessageService = conversationMessageService;
         _toastBuilder = toastBuilder;
+        _messageNotifier = messageNotifier;
+        _conversationNotifier = conversationNotifier;
     }
 
     public IActionResult OnGet() => RedirectToPage("/Index");
@@ -36,8 +40,11 @@ public class LeaveConversation : PageModel
 
         if (result.IsSuccess)
         {
-            await _conversationMessageService.CreateSystemMessageAsync
+            var r = await _conversationMessageService.CreateSystemMessageAsync
                 (new CreateMessageDto(conversationId, $"{_currentUser.Username} has left the conversation."), ct);
+            
+            await _messageNotifier.NotifyMessageCreatedAsync(conversationId, r.Value, ct);
+            await _conversationNotifier.NotifyMessageCreated(conversationId, ct);
         }
 
         

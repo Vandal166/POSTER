@@ -1,6 +1,7 @@
 ﻿using Application.Contracts;
 using Application.Contracts.Persistence;
 using Application.DTOs;
+using Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -14,12 +15,14 @@ public class CompleteProfile : PageModel
     private readonly ICurrentUserService _currentUser;
     private readonly IUserService _userService;
     private readonly IToastBuilder _toastBuilder;
+    private readonly INotificationRepository _notificationRepo;
 
-    public CompleteProfile(ICurrentUserService currentUser, IUserService userService, IToastBuilder toastBuilder)
+    public CompleteProfile(ICurrentUserService currentUser, IUserService userService, IToastBuilder toastBuilder, INotificationRepository notificationRepo)
     {
         _currentUser = currentUser;
         _userService = userService;
         _toastBuilder = toastBuilder;
+        _notificationRepo = notificationRepo;
     }
 
     [BindProperty]
@@ -48,6 +51,9 @@ public class CompleteProfile : PageModel
         
         _toastBuilder.SetToast("Profile updated successfully", ToastType.Success)
             .Build(TempData);
+        
+        await _notificationRepo.AddAndSaveAsync(Notification.Create(_currentUser.ID, 
+            "Your profile is complete! You can now start using all features of the web app.").Value, ct);
         
         return RedirectToPage("/Index");
     }

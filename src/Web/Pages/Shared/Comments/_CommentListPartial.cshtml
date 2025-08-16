@@ -6,15 +6,18 @@
     <div class="card shadow-sm mb-2">
         <div class="card-body">
             <div class="d-flex align-items-center mb-2">
-                <a asp-page="/User/Details" asp-route-id="@comment.Comment.AuthorAvatarPath">
+                <a asp-page="/Account/Profile" asp-route-identifier="@comment.Comment.AuthorAvatarPath">
                     <img src="@Url.Content("~/" + comment.Comment.AuthorAvatarPath)" 
                          class="rounded-circle me-2" width="40" height="40" alt="Avatar" />
                 </a>
-                <a asp-page="/User/Details" asp-route-id="@comment.Comment.AuthorUsername" 
-                   class="fw-semibold text-decoration-none text-dark">
-                    @comment.Comment.AuthorUsername
+                <a asp-page="/Account/Profile" asp-route-identifier="@comment.Comment.AuthorUsername"
+                   class="text-decoration-none text-dark user-profile-link"
+                   style="color: inherit">
+                    <span class="d-flex flex-column">
+                        <span class="fw-semibold text-dark">@comment.Comment.AuthorUsername</span>
+                        <small class="text-muted">@comment.Comment.CreatedAt.ToString("MMM d, yyyy 'at' h:mm tt")</small>
+                    </span>
                 </a>
-                <small class="text-muted ms-2">@comment.Comment.CreatedAt.ToString("MMM d, yyyy 'at' h:mm tt")</small>
             </div>
             
             
@@ -62,12 +65,10 @@
                         <auth-only>
                             @if (CurrentUser.Username == comment.Comment.AuthorUsername)
                             {
-                                /*TODO implement deleting*/
                                 <li>
-                                    <form method="post" asp-page-handler="DeleteComment" asp-antiforgery="true" onsubmit="return confirm('Are you sure you want to delete this comment?');">
-                                        <input type="hidden" name="CommentId" value="@comment.Comment.Id"/>
-                                        <button type="submit" class="dropdown-item text-danger">Delete Comment</button>
-                                    </form>
+                                    <button type="button" class="dropdown-item text-danger" onclick="showCommentDeleteModal('@comment.Comment.Id')">
+                                        Delete Comment
+                                    </button>
                                 </li>
                             }
                             else
@@ -78,10 +79,27 @@
                         <anon-only>
                             <li><a asp-page="/Account/Login" asp-route-returnUrl="@Context.Request.Path" class="dropdown-item">Log in to report</a></li>
                         </anon-only>
-                        <li><button class="dropdown-item">Copy Link</button></li> @*TODO copy the actual link of the comment*@
+                        <li>
+                            <button class="dropdown-item" onclick="navigator.clipboard.writeText(window.location.href)">
+                                Copy Link
+                            </button>
+                        </li>
                     </ul>
                 </div>
             </div>
         </div>
     </div>
 }
+
+<auth-only>
+    <partial name="Shared/Comments/_DeleteCommentFormPartial" />
+
+    <script>
+      function showCommentDeleteModal(commentId) {
+        document.getElementById('deleteCommentId').value = commentId;
+        var modal = new bootstrap.Modal(document.getElementById('deleteCommentModal'));
+        modal.show();
+      }
+    </script>
+    
+</auth-only>

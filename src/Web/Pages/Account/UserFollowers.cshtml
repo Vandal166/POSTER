@@ -1,0 +1,120 @@
+﻿@page "{identifier}"
+@using Application.Contracts
+@model Web.Pages.UserFollowers
+@inject ICurrentUserService CurrentUser
+
+@{
+    ViewData["Title"] = $"{Model.UserProfileLoader.User.Username}'s Profile";
+}
+
+<div class="d-flex align-items-center p-3 border-bottom bg-white sticky-top" style="z-index: 10; top: 50px !important;">
+    <a href="javascript:history.back()" class="btn btn-link text-decoration-none text-dark p-0 me-3">
+        <i class="bi bi-arrow-left fs-4"></i>
+    </a>
+    <h5 class="mb-0">@Model.UserProfileLoader.User.Username</h5>
+</div>
+
+<div class="container mt-4">
+    <!-- Profile Card -->
+    <div class="card shadow-sm position-relative">
+        <div class="card-body d-flex align-items-center">
+
+            <!-- User Info -->
+            <div class="d-flex flex-column me-3">
+                <h4 class="mb-2">@Model.UserProfileLoader.User.Username</h4>
+                <img src="@Url.Content("~/" + Model.UserProfileLoader.User.AvatarPath)"
+                     alt="@Model.UserProfileLoader.User.Username's avatar"
+                     class="rounded-circle"
+                     style="width:80px; height:80px; object-fit:cover;">
+                <small class="text-muted mt-2">
+                    <i class="bi bi-calendar3 me-1"></i>Joined at @Model.UserProfileLoader.User.JoinedAt.ToString("MMMM yyyy")
+                </small>
+                <div class="mt-1">
+                    <a asp-page="/Account/UserFollowers" asp-route-identifier="@Model.UserProfileLoader.User.Username" class="fw-semibold text-decoration-none user-profile-link" style="color: inherit">
+                        <span>@Model.UserProfileLoader.Followers.Count() Followers</span> 
+                    </a>
+                    ·
+                    <a asp-page="/Account/UserFollowings" asp-route-identifier="@Model.UserProfileLoader.User.Username" class="fw-semibold text-decoration-none user-profile-link" style="color: inherit">
+                        <span>@Model.UserProfileLoader.Following.Count() Following</span> 
+                    </a>
+                </div>
+            </div>
+
+            <auth-only>
+                <div class="position-absolute" style="top: 1rem; right: 1rem;">
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" id="profileActions" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-gear"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileActions">
+                            @if (CurrentUser.ID == Model.UserProfileLoader.User.Id)
+                            {
+                                <li>
+                                    <a asp-page="/Account/EditProfile" class="dropdown-item">
+                                        <i class="bi bi-pencil"></i> Edit Profile
+                                    </a>
+                                </li>
+                            }
+                            else
+                            {
+                                <li>
+                                    <button type="submit" class="dropdown-item text-warning">
+                                        <i class="bi bi-flag"></i> Report User
+                                    </button>
+                                </li>
+                                <li>
+                                    <button type="submit" class="dropdown-item text-danger">
+                                        <i class="bi bi-slash-circle"></i> Block User
+                                    </button>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            </auth-only>
+            
+            <!-- Actions -->
+            @if (CurrentUser.ID != Model.UserProfileLoader.User.Id)
+            {
+                <div class="position-absolute" style="top: 3.5rem; right: 1rem;">
+                    @if(Model.UserProfileLoader.IsFollowing)
+                    {
+                        <form method="post" asp-page="/Account/RemoveFollow">
+                            <input type="hidden" name="userId" value="@Model.UserProfileLoader.User.Id" />
+                            <button type="submit" class="btn btn-outline-danger btn-sm mt-2">
+                                <i class="bi bi-x"></i> Unfollow
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        <form method="post" asp-page="/Account/AddFollow">
+                            <input type="hidden" name="userId" value="@Model.UserProfileLoader.User.Id" />
+                            <button type="submit" class="btn btn-outline-primary btn-sm mt-2">
+                                <i class="bi bi-plus"></i> Follow
+                            </button>
+                        </form>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+    
+<!-- User Followers -->
+<div class="container py-4" style="max-width: 600px;">
+    <h4 class="fw-bold mb-4">@Model.UserProfileLoader.User.Username's followers</h4>
+
+    <div id="followers-container">
+        @if (!Model.UserProfileLoader.Followers.Any())
+        {
+            <div class="alert alert-info text-center">
+                <i class="bi bi-people-fill"></i> This user has no followers yet.
+            </div>
+        }
+        else
+        {
+            <partial name="Shared/Account/_UserFollowersPartial" model="Model.UserProfileLoader"/>
+        }
+    </div>
+</div>

@@ -35,7 +35,7 @@ public class Details : PageModel
     // id is commentID
     public async Task<IActionResult> OnGetAsync(Guid id, int pageNumber = 1, CancellationToken ct = default)
     {
-        var comment = await _commentRepo.GetCommentAsync(id, ct);
+        var comment = await _commentRepo.GetCommentDtoAsync(id, ct);
         if (comment is null)
             return NotFound();
         

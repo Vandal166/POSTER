@@ -64,9 +64,14 @@ public class PostCommentService : IPostCommentService
         return Result.Ok();
     }
     
-    public async Task<CommentDto?> GetCommentAsync(Guid commentID, CancellationToken cancellationToken = default)
+    public async Task<Comment?> GetCommentAsync(Guid commentID, CancellationToken cancellationToken = default)
     {
         return await _postComments.GetCommentAsync(commentID, cancellationToken);
+    }
+    
+    public async Task<CommentDto?> GetCommentDtoAsync(Guid commentID, CancellationToken cancellationToken = default)
+    {
+        return await _postComments.GetCommentDtoAsync(commentID, cancellationToken);
     }
 
     public async Task<IPagedList<CommentDto>> GetAllCommentsAsync(Guid postID, int page, int pageSize, CancellationToken cancellationToken = default)
@@ -75,6 +80,22 @@ public class PostCommentService : IPostCommentService
             throw new KeyNotFoundException("Post not found");
 
         return await _postComments.GetCommentsByPostAsync(postID, page, pageSize, cancellationToken);
+    }
+
+    public async Task<Result<bool>> DeleteCommentAsync(Guid id, Guid currentUserID, CancellationToken ct = default)
+    {
+        var comment = await _postComments.GetCommentAsync(id, ct);
+        
+        if (comment is null)
+            return Result.Fail<bool>("Comment not found");
+
+        if (comment.AuthorID != currentUserID)
+            return Result.Fail<bool>("You can only delete your own comments");
+        
+        await _postComments.DeleteAsync(comment, ct);
+        await _uow.SaveChangesAsync(ct);
+
+        return Result.Ok(true);
     }
 
     public async Task<Result> DeleteCommentAsync(Guid postID, Comment comment, CancellationToken cancellationToken = default)

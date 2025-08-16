@@ -14,21 +14,15 @@ public sealed class ConversationService : IConversationService
     private readonly IValidator<UpdateConversationDto> _updateConversationValidator;
     private readonly IUnitOfWork _uow;
     private readonly IBlobService _blobService;
-    private readonly IMessageNotifier _messageNotifier;
-    private readonly IConversationNotifier _conversationNotifier;
     
-    public ConversationService(IConversationRepository conversations,
-        IValidator<CreateConversationDto> createConversationValidator,
-        IValidator<UpdateConversationDto> updateConversationValidator,
-        IUnitOfWork uow, IBlobService blobService, IMessageNotifier messageNotifier, IConversationNotifier conversationNotifier)
+    public ConversationService(IConversationRepository conversations, IValidator<CreateConversationDto> createConversationValidator,
+        IValidator<UpdateConversationDto> updateConversationValidator, IUnitOfWork uow, IBlobService blobService)
     {
         _conversations = conversations;
         _createConversationValidator = createConversationValidator;
         _updateConversationValidator = updateConversationValidator;
         _uow = uow;
         _blobService = blobService;
-        _messageNotifier = messageNotifier;
-        _conversationNotifier = conversationNotifier;
     }
 
     
@@ -59,8 +53,6 @@ public sealed class ConversationService : IConversationService
             await _conversations.AddParticipantsAsync(user, ct);
         }
         await _uow.SaveChangesAsync(ct);
-        
-        await _conversationNotifier.NotifyConversationCreatedAsync(conversation.Value.ID, participantIDs, ct);
         
         return Result.Ok(conversation.Value.ID);
     }
@@ -104,9 +96,6 @@ public sealed class ConversationService : IConversationService
         await _conversations.UpdateAsync(updatedConversation.Value, cancellationToken);
         await _uow.SaveChangesAsync(cancellationToken);
         
-        //await _messageNotifier.NotifyConversationUpdatedAsync(updatedConversation.Value.ID, dto.Name, pfpResult, cancellationToken);
-        //await _conversationNotifier.NotifyConversationUpdatedAsync(updatedConversation.Value.ID, dto.Name, pfpResult, cancellationToken);
-        
         return Result.Ok(true);
     }
 
@@ -127,9 +116,6 @@ public sealed class ConversationService : IConversationService
         
         await _conversations.DeleteAsync(conversation, ct);
         await _uow.SaveChangesAsync(ct);
-        
-        await _messageNotifier.NotifyConversationDeletedAsync(conversationID, ct);
-        await _conversationNotifier.NotifyConversationDeletedAsync(conversationID, ct);
         
         return Result.Ok(true);
     }
@@ -171,9 +157,6 @@ public sealed class ConversationService : IConversationService
         
         await _conversations.DeleteParticipantAsync(participant, ct);
         await _uow.SaveChangesAsync(ct);
-        
-        await _messageNotifier.NotifyParticipantRemovedAsync(conversationID, participantID, ct);
-        await _conversationNotifier.NotifyParticipantRemovedAsync(conversationID, participantID, ct);
         
         return Result.Ok(true);
     }

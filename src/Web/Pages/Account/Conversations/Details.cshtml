@@ -180,7 +180,6 @@
         });
         connection.on("ParticipantRemoved", function (conversationId, participantId)
         {
-            //TODO with toast notif :P ??
             // just redirecting to the conversation list page if we are the participant that was removed
             if (participantId === "@CurrentUser.ID.ToString()") {
                 window.location.href = "/Account/Conversations/ConversationList";

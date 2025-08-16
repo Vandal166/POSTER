@@ -2,6 +2,7 @@
 using Application.Contracts.Persistence;
 using Application.DTOs;
 using Application.ViewModels;
+using Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -16,6 +17,8 @@ public class ConversationList : PageModel
     private readonly IConversationRepository _conversationRepo;
     private readonly IConversationService _conversationService;
     private readonly IUserRepository _userRepository;
+    private readonly IConversationNotifier _conversationNotifier;
+    private readonly INotificationRepository _notificationRepo;
     
     public IEnumerable<ConversationViewModel> Conversations { get; private set; } = Enumerable.Empty<ConversationViewModel>();
     public IEnumerable<Guid> ConversationsIds { get; private set; } = Enumerable.Empty<Guid>();
@@ -30,12 +33,14 @@ public class ConversationList : PageModel
     public CreateConversationDto ConversationDto { get; set; }
     
     public ConversationList(ICurrentUserService currentUser, IConversationRepository conversationRepo, 
-        IConversationService conversationService, IUserRepository userRepository)
+        IConversationService conversationService, IUserRepository userRepository, IConversationNotifier conversationNotifier, INotificationRepository notificationRepo)
     {
         _currentUser = currentUser;
         _conversationRepo = conversationRepo;
         _conversationService = conversationService;
         _userRepository = userRepository;
+        _conversationNotifier = conversationNotifier;
+        _notificationRepo = notificationRepo;
     }
 
     public async Task<IActionResult> OnGet(int pageNumber = 1, CancellationToken ct = default)
@@ -104,6 +109,11 @@ public class ConversationList : PageModel
             return Partial("Shared/Account/Conversations/_CreateConversationFormPartial", ConversationDto)
                 .WithHxToast(Response.HttpContext, $"Error: {result.Errors[0].Message}", "error");
         }
+        
+        var participants = ids!.Where(id => id != _currentUser.ID).ToList();
+        await _conversationNotifier.NotifyConversationCreatedAsync(result.Value, participants, ct);
+        await _notificationRepo.AddRangeAndSaveAsync(participants!.Select(id => Notification.Create(id, $"{_currentUser.Username} has added you to a conversation",
+                $"/Account/Conversations/Details/{result.Value}").Value), ct);
         
         Response.Headers["HX-Redirect"] = Url.Page("/Account/Conversations/ConversationList");
         return new EmptyResult();

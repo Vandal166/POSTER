@@ -18,14 +18,15 @@
                 </a>
                 <div class="d-flex align-items-center text-end">
                     <div>
-                        <a asp-page="/User/Details" asp-route-id="@Model.Post.Post.AuthorUsername"
-                           class="fw-semibold text-decoration-none text-dark">
-                            @Model.Post.Post.AuthorUsername
+                        <a asp-page="/Account/Profile" asp-route-identifier="@Model.Post.Post.AuthorUsername"
+                           class="fw-semibold text-decoration-none text-dark user-profile-link"
+                           style="color: inherit">
+                            <span class="text-dark">@Model.Post.Post.AuthorUsername</span>
                         </a>
                         <br/>
                         <small class="text-muted">@Model.Post.Post.CreatedAt.ToString("MMM d, yyyy 'at' h:mm tt")</small>
                     </div>
-                    <a asp-page="/User/Details" asp-route-id="@Model.Post.Post.AuthorUsername">
+                    <a asp-page="/Account/Profile" asp-route-identifier="@Model.Post.Post.AuthorUsername">
                         <img src="@Url.Content("~/" + Model.Post.Post.AuthorAvatarPath)"
                              class="rounded-circle ms-2" width="40" height="40" alt="Avatar"/>
                     </a>

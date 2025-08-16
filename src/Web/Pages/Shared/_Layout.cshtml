@@ -34,8 +34,10 @@
         <div class="ms-auto d-flex align-items-center">
             <auth-only>
                 <div asp-authenticated="true" class="d-flex align-items-center me-3">
-                    <img src="@Url.Content("~/" + CurrentUser.AvatarPath)" alt="Avatar" class="rounded-circle" width="32" height="32" />
-                    <span class="ms-2 fw-semibold">@CurrentUser.Username</span>
+                    <a asp-page="/Account/Profile" asp-route-identifier="@CurrentUser.Username" class="d-flex align-items-center text-decoration-none user-profile-link" style="color: inherit">
+                        <img src="@Url.Content("~/" + CurrentUser.AvatarPath)" alt="Avatar" class="rounded-circle" width="32" height="32" />
+                        <span class="ms-2 fw-semibold">@CurrentUser.Username</span>
+                    </a>
                     <form method="post" asp-page="/Account/Logout" class="mb-0">
                         <button type="submit" class="btn btn-outline-danger btn-sm ms-2">Logout</button>
                     </form>
@@ -69,10 +71,10 @@
                     <i class="bi bi-chat-dots me-2"></i> Conversations
                 </a>
                     
-                <a asp-page="/Notifications" class="btn btn-light text-start mb-2">
+                <a  asp-page="/Account/Notifications/Notifications" class="btn btn-light text-start mb-2" id="notification-link">
                     <i class="bi bi-bell me-2"></i> Notifications
                 </a>
-                <a asp-page="/Account/Profile" asp-route-id="@CurrentUser.ID" class="btn btn-light text-start">
+                <a asp-page="/Account/Profile" asp-route-identifier="@CurrentUser.Username" class="btn btn-light text-start">
                     <i class="bi bi-person me-2"></i> Profile
                 </a>
             </div>
@@ -125,3 +127,135 @@
 </body>
 </html>
 
+<auth-only>
+    <script>
+        const followHubConnection = new signalR.HubConnectionBuilder()
+            .withUrl("/followHub")
+            .withAutomaticReconnect({
+                nextRetryDelayInMilliseconds: retryContext => {
+                    if (retryContext.previousRetryCount < 5) {
+                        return 1000 * Math.pow(2, retryContext.previousRetryCount); // Exponential backoff
+                    }
+                    return null; // Stop retrying after 5 attempts
+                }
+            })
+            .build();
+        
+        const conversationHubConnection = new signalR.HubConnectionBuilder()
+            .withUrl("/conversationHub")
+            .withAutomaticReconnect({
+                nextRetryDelayInMilliseconds: retryContext => {
+                    if (retryContext.previousRetryCount < 5) {
+                        return 1000 * Math.pow(2, retryContext.previousRetryCount); // Exponential backoff
+                    }
+                    return null; // Stop retrying after 5 attempts
+                }
+            })
+            .build();
+
+        document.addEventListener("DOMContentLoaded", function () {
+            fetch(`/Account/Notifications/Notifications?handler=UserNotificationCount`)
+                .then(response => response.json())
+                .then(data => {
+                    if(data.count > 0) {
+                        showNotificationDotIfUnread();
+                    }
+                });
+        });
+        
+        followHubConnection.on("Followed", function (followerId, followingId) {
+            console.log(`New follow: ${followerId} followed ${followingId}`);
+            if (followingId === '@CurrentUser.ID.ToString()') {
+                console.log(`You have a new follower: ${followerId}`);
+                showNotificationDotIfUnread();
+            }
+        });
+        
+        followHubConnection.on("PostCreated", function (postId, followerId) {
+            console.log(`New post created by follower: ${followerId}`);
+            if (followerId === '@CurrentUser.ID.ToString()') {
+                // fetching the new message
+                console.log(`You have a new post from follower: ${followerId}`);
+                fetch(`/Account/Notifications/Notifications?handler=UserNotificationCount`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.count > 0) {
+                            console.log(`You have ${data.count} unread notifications.`);
+                            showNotificationDotIfUnread();
+                        }
+                    });
+            }
+        });
+        
+        followHubConnection.on("CommentOnPostReceived", function (authorOfPostID) {
+            if (authorOfPostID === '@CurrentUser.ID.ToString()') {
+                // fetching the new message
+                fetch(`/Account/Notifications/Notifications?handler=UserNotificationCount`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.count > 0) {
+                            console.log(`You have ${data.count} unread notifications.`);
+                            showNotificationDotIfUnread();
+                        }
+                    });
+            }
+        });
+        
+        followHubConnection.on("CommentOnCommentReceived", function (authorOfParentCommentId) {
+            if (authorOfParentCommentId === '@CurrentUser.ID.ToString()') {
+                // fetching the new message
+                fetch(`/Account/Notifications/Notifications?handler=UserNotificationCount`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.count > 0) {
+                            console.log(`You have ${data.count} unread notifications.`);
+                            showNotificationDotIfUnread();
+                        }
+                    });
+            }
+        });
+
+        conversationHubConnection.on("ConversationCreated", function (conversationId) {
+            console.log(`New conversation created: ${conversationId}`);
+            fetch(`/Account/Notifications/Notifications?handler=UserNotificationCount`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.count > 0) {
+                        console.log(`You have ${data.count} unread notifications.`);
+                        showNotificationDotIfUnread();
+                    }
+                });
+        });
+
+        function showNotificationDotIfUnread() {
+            const notificationLink = document.getElementById('notification-link');
+            if (notificationLink) {
+                // adding blue dot only if not already present
+                if (!notificationLink.querySelector('.notif-dot')) {
+                    const dot = document.createElement('span');
+                    dot.className = 'notif-dot';
+                    dot.style.cssText = 'display:inline-block;width:10px;height:10px;background:#0d6efd;border-radius:50%;margin-left:6px;vertical-align:middle;';
+                    notificationLink.appendChild(dot);
+                }
+            }
+        }
+        followHubConnection.start()
+            .then(() => {
+                fetch(`/Account/Notifications/Notifications?handler=UserFollowIds`)
+                    .then(response => response.json())
+                    .then(userFollowersIds => {
+                        followHubConnection.invoke("JoinFollowGroups", userFollowersIds)
+                            .then(() => {
+                                console.log("JoinGroup invoked successfully.");
+                                console.log("userFollowersIds:", userFollowersIds);
+                            })
+                            .catch(err => console.error("Error invoking JoinGroup:", err));
+                    })
+                    .catch(err => console.error("Error fetching follow IDs:", err));
+            })
+            .catch(err => console.error("Error connecting to conversation hub:", err));
+        
+        conversationHubConnection.start().catch(err => console.error("Error connecting to conversation hub:", err));
+        
+    </script>
+</auth-only>

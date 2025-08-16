@@ -39,22 +39,29 @@ public class Profile : PageModel
     }
 
     // id is userID
-    public async Task<IActionResult> OnGetAsync(Guid id, CancellationToken ct = default)
+    public async Task<IActionResult> OnGetAsync(string identifier, CancellationToken ct = default)
     {
-        var user = await _userRepo.GetUserProfileDtoAsync(id, ct);
-        if(user is null)
+        UserProfileDto? user;
+        if (Guid.TryParse(identifier, out var userId))
+        {
+            user = await _userRepo.GetUserProfileDtoAsync(userId, ct);
+        }
+        else
+        {
+            user = await _userRepo.GetUserProfileDtoByNameAsync(identifier, ct);
+        }
+        if(user is null || user.Id == Guid.Empty)
             return NotFound();
 
         UserProfileLoader = new UserProfileLoaderViewModel
         {
             User = user,
-            Followers = await _followService.GetFollowersAsync(id, ct),
-            Following = await _followService.GetFollowingAsync(id, ct),
-            IsFollowing = await _followService.IsFollowingAsync(_currentUser.ID, id, ct),
+            Followers = await _followService.GetFollowersAsync(user.Id, ct),
+            Following = await _followService.GetFollowingAsync(user.Id, ct),
+            IsFollowing = await _followService.IsFollowingAsync(_currentUser.ID, user.Id, ct),
         };
-        await OnGetPagedAsync(id, null, ct);
+        await OnGetPagedAsync(user.Id, null, ct);
         
-        //returning the partial view?
         return Page();
     }
     
@@ -64,7 +71,7 @@ public class Profile : PageModel
         bool hasMore = pagedPosts.Count == PageSize; // if the count is equal to PageSize, it means there are more posts available
         
         string nextUrl = hasMore
-            ? $"?handler=Paged&lastCreatedAt={Uri.EscapeDataString(pagedPosts.Last().CreatedAt.ToString("o"))}"
+            ? $"?handler=Paged&id={id}&lastCreatedAt={Uri.EscapeDataString(pagedPosts.Last().CreatedAt.ToString("o"))}"
             : string.Empty;
         
         var postDtos = pagedPosts.Select(p =>

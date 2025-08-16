@@ -23,6 +23,7 @@ public static class DependencyInjection
         services.AddScoped<IToastBuilder, ToastNotificationBuilder>();
         services.AddScoped<IMessageNotifier, SignalRMessageNotifier>();
         services.AddScoped<IConversationNotifier, SignalRConversationNotifier>();
+        services.AddScoped<IFollowNotifier, SignalRFollowNotifier>();
         
         IConfigurationSection keycloakSettings = configuration.GetSection("Keycloak");
         services.AddAuthorizationBuilder();

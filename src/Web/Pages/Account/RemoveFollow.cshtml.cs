@@ -22,6 +22,6 @@ public class RemoveFollow : PageModel
     public async Task<IActionResult> OnPostAsync(Guid userId, CancellationToken ct = default)
     { 
         await _followService.UnfollowUserAsync(_currentUser.ID, userId, ct);
-        return RedirectToPage("/Account/Profile", new { id = userId });
+        return RedirectToPage("/Account/Profile", new { identifier = userId });
     }
 }

@@ -34,6 +34,8 @@ public static class DependencyInjection
         services.AddScoped<IFollowRepository, FollowRepository>();
         services.AddScoped<IFollowService, FollowService>();
         
+        services.AddScoped<INotificationRepository, NotificationRepository>();
+        
         services.AddScoped<IPostRepository, PostRepository>();
         services.AddScoped<IPostImageRepository, PostImagesRepository>();
         services.AddScoped<IPostLikeRepository, PostLikeRepository>();

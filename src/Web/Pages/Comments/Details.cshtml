@@ -11,28 +11,29 @@
     <div class="card shadow-sm mb-3">
         <div class="card-body">
             
-           <!-- Back Button and Comment Header -->
-           <div class="d-flex align-items-center mb-3 justify-content-between">
-               <a href="@returnUrl"
-                  class="btn btn-link text-decoration-none text-dark d-flex align-items-center p-0">
-                   <i class="bi bi-arrow-left me-2 fs-5"></i>
-                   <span class="fw-bold fs-5">Comment</span>
-               </a>
-               <div class="d-flex align-items-center text-end">
-                   <div>
-                       <a asp-page="/User/Details" asp-route-id="@Model.Comment.Comment.AuthorUsername"
-                          class="fw-semibold text-decoration-none text-dark">
-                           @Model.Comment.Comment.AuthorUsername
-                       </a>
-                       <br/>
-                       <small class="text-muted">@Model.Comment.Comment.CreatedAt.ToString("MMM d, yyyy 'at' h:mm tt")</small>
-                   </div>
-                   <a asp-page="/User/Details" asp-route-id="@Model.Comment.Comment.AuthorUsername">
-                       <img src="@Url.Content("~/" + Model.Comment.Comment.AuthorAvatarPath)"
-                            class="rounded-circle ms-2" width="40" height="40" alt="Avatar"/>
-                   </a>
-               </div>
-           </div>
+            <!-- Back Button and Comment Header -->
+            <div class="d-flex align-items-center mb-3 justify-content-between">
+                <a href="@returnUrl"
+                   class="btn btn-link text-decoration-none text-dark d-flex align-items-center p-0">
+                    <i class="bi bi-arrow-left me-2 fs-5"></i>
+                    <span class="fw-bold fs-5">Comment</span>
+                </a>
+                <div class="d-flex align-items-center text-end">
+                    <div>
+                        <a asp-page="/Account/Profile" asp-route-identifier="@Model.Comment.Comment.AuthorUsername"
+                           class="fw-semibold text-decoration-none text-dark user-profile-link"
+                           style="color: inherit">
+                            <span class="text-dark">@Model.Comment.Comment.AuthorUsername</span>
+                        </a>
+                        <br/>
+                        <small class="text-muted">@Model.Comment.Comment.CreatedAt.ToString("MMM d, yyyy 'at' h:mm tt")</small>
+                    </div>
+                    <a asp-page="/Account/Profile" asp-route-identifier="@Model.Comment.Comment.AuthorUsername">
+                        <img src="@Url.Content("~/" + Model.Comment.Comment.AuthorAvatarPath)"
+                             class="rounded-circle ms-2" width="40" height="40" alt="Avatar"/>
+                    </a>
+                </div>
+            </div>
 
 
             <!-- Comment Content -->   
@@ -81,10 +82,9 @@
                             @if (CurrentUser.Username == Model.Comment.Comment.AuthorUsername)
                             {
                                 <li>
-                                    <form method="post" asp-page-handler="DeleteComment" asp-antiforgery="true" onsubmit="return confirm('Are you sure you want to delete this comment?');">
-                                        <input type="hidden" name="CommentId" value="@Model.Comment.Comment.Id"/>
-                                        <button type="submit" class="dropdown-item text-danger">Delete Comment</button>
-                                    </form>
+                                    <button type="button" class="dropdown-item text-danger" onclick="showCommentDeleteModal('@Model.Comment.Comment.Id')">
+                                        Delete Comment
+                                    </button>
                                 </li>
                             }
                             else
@@ -95,7 +95,9 @@
                         <anon-only>
                             <li><a asp-page="/Account/Login" asp-route-returnUrl="@HttpContext.Request.Path" class="dropdown-item">Log in to report</a></li>
                         </anon-only>
-                        <li><button class="dropdown-item">Copy Link</button></li>
+                        <li>
+                            <button class="dropdown-item" onclick="navigator.clipboard.writeText(window.location.href)">Copy Link</button>
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -104,7 +106,7 @@
 
     <auth-only>
         <div id="comment-form-wrapper">
-            <partial name="Shared/Comments/_CommentOnCommentForm" model="new Application.DTOs.CreateCommentViewModel { EntityId = Model.Comment.PostId, ParentCommentId = Model.Comment.Comment.Id }" /> @*TODO this wont work*@
+            <partial name="Shared/Comments/_CommentOnCommentForm" model="new Application.DTOs.CreateCommentViewModel { EntityId = Model.Comment.PostId, ParentCommentId = Model.Comment.Comment.Id }" />
         </div>
     </auth-only>
     
@@ -137,3 +139,16 @@
     </div>
     
 </div>
+
+<auth-only>
+    <partial name="Shared/Comments/_DeleteCommentFormPartial" />
+
+    <script>
+      function showCommentDeleteModal(commentId) {
+        document.getElementById('deleteCommentId').value = commentId;
+        var modal = new bootstrap.Modal(document.getElementById('deleteCommentModal'));
+        modal.show();
+      }
+    </script>
+    
+</auth-only>

@@ -13,12 +13,14 @@ public class DeleteMessage : PageModel
     private readonly ICurrentUserService _currentUser;
     private readonly IConversationMessageService _conversationMessageService;
     private readonly IToastBuilder _toastBuilder;
+    private readonly IMessageNotifier _messageNotifier;
     
-    public DeleteMessage(ICurrentUserService currentUser, IConversationMessageService conversationMessageService, IToastBuilder toastBuilder)
+    public DeleteMessage(ICurrentUserService currentUser, IConversationMessageService conversationMessageService, IToastBuilder toastBuilder, IMessageNotifier messageNotifier)
     {
         _currentUser = currentUser;
         _conversationMessageService = conversationMessageService;
         _toastBuilder = toastBuilder;
+        _messageNotifier = messageNotifier;
     }
     
     public IActionResult OnGet() => RedirectToPage("/Index");
@@ -26,10 +28,14 @@ public class DeleteMessage : PageModel
     public async Task<IActionResult> OnPostAsync(Guid conversationId, Guid messageId, CancellationToken ct = default)
     {
         var result = await _conversationMessageService.DeleteMessageAsync(conversationId, messageId, _currentUser.ID, ct);
-        
+
         _toastBuilder.SetToast(result)
             .OnSuccess("Message deleted successfully").Build(TempData);
-
+        if (result.IsSuccess)
+        {
+            await _messageNotifier.NotifyMessageDeletedAsync(conversationId, messageId, ct);
+        }
+        
         return RedirectToPage("/Account/Conversations/Details", new { id = conversationId });
     }
 }

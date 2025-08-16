@@ -51,7 +51,6 @@
                         <button type="button" class="dropdown-item text-danger" onclick="showDeleteModal('@Model.Post.Id')">
                             Delete post
                         </button>
-                        
                     </li>
                 }
                 else
@@ -62,7 +61,9 @@
             <anon-only>
                 <li><a asp-page="/Account/Login" asp-route-returnUrl="@Context.Request.Path" class="dropdown-item">Log in to report</a></li>
             </anon-only>
-            <li><button class="dropdown-item">Copy Link</button></li>
+            <li>
+                <button class="dropdown-item" onclick="navigator.clipboard.writeText(window.location.href)">Copy Link</button>
+            </li>
         </ul>
     </div>
 </div>

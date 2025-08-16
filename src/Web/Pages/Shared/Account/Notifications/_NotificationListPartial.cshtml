@@ -1,0 +1,48 @@
+﻿@model IEnumerable<Application.DTOs.NotificationDto>
+    
+    @foreach (var notification in Model)
+    {
+        <div class="card shadow-sm mb-3 conversation-card" id="notification-@notification.Id" style="cursor: pointer;"
+             data-notification-id="@notification.Id"
+             onclick="handleNotificationRedirect('@notification.RedirectUrl', '@notification.Id')">
+            <div class="card-body d-flex align-items-center">
+                <span class="me-3">
+                    <i class="bi bi-info-circle fs-2 text-primary"></i>
+                </span>
+                <div class="flex-grow-1">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="fw-semibold">@notification.Message</span>
+                        <small class="text-muted">
+                            @notification.CreatedAt.ToString("MMM d, yyyy 'at' h:mm tt")
+                        </small>
+                    </div>
+                </div>
+                <form asp-page="/Account/Notifications/Notifications" asp-page-handler="DeleteNotification" method="post" asp-route-notificationId="@notification.Id" class="ms-3" asp-antiforgery="true">
+                    <button type="submit" class="btn btn-link p-0 text-danger" title="Delete notification" onclick="event.stopPropagation();">
+                        <i class="bi bi-x-lg fs-4"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    }
+
+    <script>
+        function handleNotificationRedirect(url, notificationId) {
+            fetch(`/Account/Notifications/Notifications?handler=DeleteNotification`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: `notificationId=${notificationId}`
+            })
+                .then(response => {
+                    if (url && url !== 'null') {
+                        window.location.href = url;
+                    } else {
+                        // Optionally remove the card from the DOM
+                        document.getElementById(`notification-${notificationId}`).remove();
+                    }
+                });
+        }
+    </script>
