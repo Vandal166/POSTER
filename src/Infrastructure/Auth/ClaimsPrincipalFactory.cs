@@ -23,5 +23,4 @@ public static class ClaimsPrincipalFactory
         var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
         return new ClaimsPrincipal(identity);
     }
-
 }

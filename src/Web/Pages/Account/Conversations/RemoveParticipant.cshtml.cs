@@ -1,6 +1,7 @@
 ﻿using Application.Contracts;
 using Application.Contracts.Persistence;
 using Application.DTOs;
+using Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -17,10 +18,11 @@ public class RemoveParticipant : PageModel
     private readonly IConversationMessageService _conversationMessageService;
     private readonly IMessageNotifier _messageNotifier;
     private readonly IConversationNotifier _conversationNotifier;
+    private readonly INotificationRepository _notificationRepo;
     
     public RemoveParticipant(ICurrentUserService currentUser, IConversationService conversationService, 
         IToastBuilder toastBuilder, IConversationMessageService conversationMessageService, 
-        IMessageNotifier messageNotifier, IConversationNotifier conversationNotifier)
+        IMessageNotifier messageNotifier, IConversationNotifier conversationNotifier, INotificationRepository notificationRepo)
     {
         _currentUser = currentUser;
         _conversationService = conversationService;
@@ -28,6 +30,7 @@ public class RemoveParticipant : PageModel
         _conversationMessageService = conversationMessageService;
         _messageNotifier = messageNotifier;
         _conversationNotifier = conversationNotifier;
+        _notificationRepo = notificationRepo;
     }
 
     public IActionResult OnGet() => RedirectToPage("/Index");
@@ -43,6 +46,8 @@ public class RemoveParticipant : PageModel
         {
             await _messageNotifier.NotifyParticipantRemovedAsync(conversationId, participantId, ct);
             await _conversationNotifier.NotifyParticipantRemovedAsync(conversationId, participantId, ct);
+            
+            await _notificationRepo.AddAndSaveAsync(Notification.Create(participantId, $"{_currentUser.Username} has removed you from the conversation").Value, ct);
             
             await _conversationMessageService.CreateSystemMessageAsync
                 (new CreateMessageDto(conversationId, $"{participantName} has been removed from the conversation."), ct);

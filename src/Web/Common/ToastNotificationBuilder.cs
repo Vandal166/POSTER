@@ -5,7 +5,7 @@ using Web.Contracts;
 
 namespace Web.Common;
 
-public class ToastNotificationBuilder : IToastBuilder
+internal sealed class ToastNotificationBuilder : IToastBuilder
 {
     private ToastMessage _toastMessage = new ToastMessage();
 

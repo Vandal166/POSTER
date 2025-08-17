@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 namespace Web.Services;
 
 // Used to get the current user ID from the HTTP context(currently logged in user).
-public sealed class CurrentUserService : ICurrentUserService
+internal sealed class CurrentUserService : ICurrentUserService
 {
     private readonly IHttpContextAccessor _http;
 
@@ -19,17 +19,11 @@ public sealed class CurrentUserService : ICurrentUserService
     //--- USER PROPERTIES ---//
     public Guid ID => GetUserId();
     
-    public bool Enabled =>
-        bool.TryParse(User.FindFirst("enabled")?.Value, out var enabled) && enabled;
-
     public bool IsAuthenticated =>
         User.Identity?.IsAuthenticated ?? false;
     
     public string Username =>
         User.Identity?.Name ?? User.FindFirst(ClaimTypes.Name)?.Value ?? string.Empty;
-    
-    public string Email =>
-        User.FindFirst(ClaimTypes.Email)?.Value ?? string.Empty;
 
     public string AvatarPath =>
         User.FindFirst("avatarPath")?.Value ?? "uploads/avatars/default.png";

@@ -4,7 +4,6 @@ using Application.Contracts.Persistence;
 using Infrastructure.Auth;
 using Infrastructure.Data;
 using Infrastructure.Persistence;
-using Infrastructure.Security;
 using Infrastructure.Seeding;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -47,7 +46,6 @@ public static class DependencyInjection
         services.AddScoped<IConversationMessageRepository, ConversationMessageRepository>();
         
         services.AddScoped<IUnitOfWork, UnitOfWork>();
-        services.AddSingleton<IPasswordHasher, BcryptHasher>();
         services.AddScoped<ITokenGenerator<HttpResponseMessage>, ROPTokenGeneratorService>();
         
         services.AddScoped<IDataSeeder, DataSeeder>();

@@ -1,5 +1,6 @@
 ﻿namespace Domain.Entities;
 
+// an base entity that can be used to track creation, update, and soft deletion
 public abstract class AuditableEntity
 {
     public Guid ID { get; protected set; } // TODO an Snowflake ID would be better

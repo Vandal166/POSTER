@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.SignalR;
 namespace Web.Hubs;
 
 [Authorize]
-public sealed class FollowNotificationHub : Hub
+internal sealed class FollowNotificationHub : Hub
 {
     public async Task JoinFollowGroups(IEnumerable<Guid> userIds)
     {

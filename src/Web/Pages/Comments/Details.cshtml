@@ -106,7 +106,7 @@
 
     <auth-only>
         <div id="comment-form-wrapper">
-            <partial name="Shared/Comments/_CommentOnCommentForm" model="new Application.DTOs.CreateCommentViewModel { EntityId = Model.Comment.PostId, ParentCommentId = Model.Comment.Comment.Id }" />
+            <partial name="Shared/Comments/_CommentOnCommentForm" model="new Application.ViewModels.CreateCommentViewModel { EntityId = Model.Comment.PostId, ParentCommentId = Model.Comment.Comment.Id }" />
         </div>
     </auth-only>
     

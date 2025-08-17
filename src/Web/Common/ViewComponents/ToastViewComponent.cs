@@ -2,7 +2,7 @@
 
 namespace Web.Common.ViewComponents;
 
-public class ToastViewComponent : ViewComponent
+public sealed class ToastViewComponent : ViewComponent
 {
     public IViewComponentResult Invoke()
     {

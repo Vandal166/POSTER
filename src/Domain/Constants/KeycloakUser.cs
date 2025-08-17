@@ -1,6 +1,6 @@
 ﻿namespace Domain.Constants;
 
-public class KeycloakUser
+public sealed class KeycloakUser
 {
     public Guid ID { get; set; }
     public bool Enabled { get; set; }

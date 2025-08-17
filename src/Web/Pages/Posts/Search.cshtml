@@ -1,0 +1,28 @@
+﻿@page
+@model Web.Pages.Posts.Search
+
+@{
+    ViewData["Title"] = "Search Results";
+}
+
+<div class="container py-4" style="max-width: 600px;">
+    @if (string.IsNullOrEmpty(Model.SearchQuery))
+    {
+        <h4 class="fw-bold mb-4">Enter a search term</h4>
+    }
+    else
+    {
+        <h4 class="fw-bold mb-4">Search results for: "@Model.SearchQuery"</h4>
+        
+        @if (!Model.SearchResults.Any())
+        {
+            <div class="alert alert-info">
+                No posts found matching your search.
+            </div>
+        }
+        else
+        {
+            <partial name="Shared/Posts/_PostListPartial" model="Model.SearchResults" />
+        }
+    }
+</div>

@@ -11,7 +11,7 @@ namespace Infrastructure.Auth;
 /// <summary>
 /// This service will sync the Keycloak user to the local database at the end of each operation.
 /// </summary>
-public class AuthService : IAuthService
+internal sealed class AuthService : IAuthService
 {
     private readonly IAdminTokenProvider _tokenProv;
     private readonly IKeycloakUserService _kcUserService;

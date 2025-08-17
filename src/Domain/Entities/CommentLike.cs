@@ -2,7 +2,7 @@
 
 namespace Domain.Entities;
 
-public class CommentLike : AuditableEntity
+public sealed class CommentLike : AuditableEntity
 {
     public Guid CommentID { get; private set; }
     public Comment Comment { get; private set; } = null!; // the comment that was liked

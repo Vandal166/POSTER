@@ -86,7 +86,6 @@ public class PosterDbContext : DbContext
                 .OnDelete(DeleteBehavior.Cascade); // removing a parent comment will remove its replies
             b.Property(p => p.CreatedAt).HasDefaultValueSql("now()");
             
-            /*b.HasQueryFilter(c => c.ParentCommentID == null); // filter to only show top-level comments by default*/
         });
        
         // ------ PostLike ------

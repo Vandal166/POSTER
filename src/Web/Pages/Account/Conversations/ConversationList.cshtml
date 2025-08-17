@@ -113,7 +113,7 @@
 
         connection.on("ParticipantRemoved", function (conversationId, participantId)
         {
-            // just redirecting to the conversation list page if we are the participant that was removed
+            // just removing the conversation element if the participant is the user that was removed
             if (participantId === "@CurrentUser.ID.ToString()") {
                 const conversationElement = document.querySelector(`#conversation-${conversationId}`);
                 if (conversationElement) {

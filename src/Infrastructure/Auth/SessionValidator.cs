@@ -4,7 +4,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace Infrastructure.Auth;
 
-public class SessionValidator : ISessionValidator
+internal sealed class SessionValidator : ISessionValidator
 {
     private readonly IHttpClientFactory _http;
     private readonly IConfiguration _config;

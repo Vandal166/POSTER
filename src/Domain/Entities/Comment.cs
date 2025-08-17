@@ -1,12 +1,7 @@
 ﻿using FluentResults;
 
 namespace Domain.Entities;
-/*
- *<Avatar><Username of the author> <Date of comment>
- * <Content>
- * <Likes> <Comments> <Views>-count
- * <Even more Comments upon expanding>
- */
+
 public sealed class Comment : AuditableEntity
 {
     public Guid PostID { get; private set; }

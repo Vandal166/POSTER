@@ -31,6 +31,11 @@
                         @if (CurrentUser.ID == Model.Conversation.Conversation.CreatedByID)
                         {
                             <li>
+                                <button type="button" class="dropdown-item" onclick="showAddUserModal('@Model.Conversation.Conversation.Id')">
+                                    Add user to conversation
+                                </button>
+                            </li>
+                            <li>
                                 <button type="button" class="dropdown-item" onclick="showEditModal('@Model.Conversation.Conversation.Id')">
                                     Manage conversation
                                 </button>
@@ -90,6 +95,8 @@
 </div>
 
 <auth-only>
+    <partial name="Shared/Account/Conversations/_AddUserToConversationFormPartial" model="Model.Conversation.Conversation" />
+    
     <partial name="Shared/Account/Conversations/_EditConversationPartial" model="Model.Conversation" />
     
     <partial name="Shared/Account/Conversations/_DeleteConversationFormPartial"/>
@@ -108,6 +115,11 @@
             }
         });
         
+        function showAddUserModal(conversationId) {
+            document.getElementById('addUserToConversationId').value = conversationId;
+            const addModal = new bootstrap.Modal(document.getElementById('addUserToConversationModal'));
+            addModal.show();
+        }
         function showEditModal(conversationId) {
             document.getElementById('editConversationId').value = conversationId;
             const editModal = new bootstrap.Modal(document.getElementById('editConversationModal'));
@@ -177,6 +189,10 @@
         {
             // just redirecting to the conversation list page
             window.location.href = "/Account/Conversations/ConversationList";
+        });
+        connection.on("ParticipantAdded", function (conversationId, participantId)
+        {
+            // no-op
         });
         connection.on("ParticipantRemoved", function (conversationId, participantId)
         {

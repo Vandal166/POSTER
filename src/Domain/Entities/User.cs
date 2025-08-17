@@ -2,7 +2,7 @@
 
 namespace Domain.Entities;
 
-public class User : AuditableEntity
+public sealed class User : AuditableEntity
 {
     public string AvatarPath { get; set; } = string.Empty; // '/wwwroot/uploads/avatars/12345.png'
     public string Username { get; set; } = null!;

@@ -2,7 +2,7 @@
 
 namespace Domain.Entities;
 
-public class PostView : AuditableEntity
+public sealed class PostView : AuditableEntity
 {
     public Guid PostID { get; private set; }
     public Post Post { get; private set; } = null!; // the post that was viewed

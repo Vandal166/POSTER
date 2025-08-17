@@ -1,9 +1,7 @@
-﻿using Application.Contracts;
-using Application.Contracts.Persistence;
+﻿using Application.Contracts.Persistence;
 using Application.Services;
 using Azure.Storage.Blobs;
 using FluentValidation;
-using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 

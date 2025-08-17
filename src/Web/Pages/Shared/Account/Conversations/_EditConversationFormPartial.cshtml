@@ -73,14 +73,14 @@
 <partial name="Shared/Account/Conversations/_RemoveParticipantFormPartial" />
 
 <script>
-    const imageBtn = document.getElementById('uploadConversationImageBtn');
-    const imageInput = document.getElementById('conversationImageInput');
-    const imagePreviewList = document.getElementById('conversationImagePreviewList');
-    const hiddenInput = document.getElementById('conversationProfilePictureFileID');
+    const editConvImageBtn = document.getElementById('uploadConversationImageBtn');
+    const editConvImageInput = document.getElementById('conversationImageInput');
+    const editConvImagePreviewList = document.getElementById('conversationImagePreviewList');
+    const editConvHiddenInput = document.getElementById('conversationProfilePictureFileID');
 
-    imageBtn.addEventListener('click', () => imageInput.click());
-    imageInput.addEventListener('change', async () => {
-        const files = Array.from(imageInput.files);
+    editConvImageBtn.addEventListener('click', () => editConvImageInput.click());
+    editConvImageInput.addEventListener('change', async () => {
+        const files = Array.from(editConvImageInput.files);
         if (!files.length) return;
 
         const file = files[0];
@@ -102,10 +102,10 @@
             }
 
             const { fileID } = await res.json();
-            hiddenInput.value = fileID;
+            editConvHiddenInput.value = fileID;
 
             // Show preview
-            imagePreviewList.innerHTML = '';
+            editConvImagePreviewList.innerHTML = '';
             const wrapper = document.createElement('div');
             wrapper.className = 'd-inline-block position-relative m-1';
 
@@ -125,19 +125,19 @@
             removeBtn.onclick = async () => {
                 await fetch(`/images/${fileID}`, { method: 'DELETE' });
                 wrapper.remove();
-                hiddenInput.value = '';
-                imagePreviewList.classList.add('d-none');
+                editConvHiddenInput.value = '';
+                editConvImagePreviewList.classList.add('d-none');
             };
 
             wrapper.appendChild(img);
             wrapper.appendChild(removeBtn);
-            imagePreviewList.appendChild(wrapper);
-            imagePreviewList.classList.remove('d-none');
+            editConvImagePreviewList.appendChild(wrapper);
+            editConvImagePreviewList.classList.remove('d-none');
         } catch (err) {
             console.error(err);
         }
 
-        imageInput.value = '';
+        editConvImageInput.value = '';
     });
     
     function showRemoveParticipantModal(participantId, participantName) {

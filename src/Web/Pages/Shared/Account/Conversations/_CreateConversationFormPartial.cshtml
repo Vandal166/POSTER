@@ -80,12 +80,12 @@
         
 
 <script>    
-    const imageBtn = document.getElementById('uploadConversationImageBtn');
-    const imageInput = document.getElementById('conversationImageInput');
-    const imagePreviewList = document.getElementById('conversationImagePreviewList');
-    const hiddenInput = document.getElementById('conversationProfilePictureFileID');
+    const createConvImageBtn = document.getElementById('uploadConversationImageBtn');
+    const createConvImageInput = document.getElementById('conversationImageInput');
+    const createConvImagePreviewList = document.getElementById('conversationImagePreviewList');
+    const createConvHiddenInput = document.getElementById('conversationProfilePictureFileID');
 
-    imageBtn.addEventListener('click', () => imageInput.click());
+    createConvImageBtn.addEventListener('click', () => createConvImageInput.click());
     
     const form = document.querySelector('#newConversationModal form');
     const selectedUserIdsInput = document.getElementById('selectedUserIds');
@@ -101,8 +101,8 @@
             selectedUserIdsInput.classList.remove('is-invalid');
         }
     });
-    imageInput.addEventListener('change', async () => {
-        const files = Array.from(imageInput.files);
+    createConvImageInput.addEventListener('change', async () => {
+        const files = Array.from(createConvImageInput.files);
         if (!files.length) return;
 
         // Only allow one profile picture
@@ -124,10 +124,10 @@
             }
 
             const { fileID } = await res.json();
-            hiddenInput.value = fileID;
+            createConvHiddenInput.value = fileID;
 
             // Show preview
-            imagePreviewList.innerHTML = '';
+            createConvImagePreviewList.innerHTML = '';
             const wrapper = document.createElement('div');
             wrapper.className = 'd-inline-block position-relative m-1';
 
@@ -147,19 +147,19 @@
             removeBtn.onclick = async () => {
                 await fetch(`/images/${fileID}`, { method: 'DELETE' });
                 wrapper.remove();
-                hiddenInput.value = '';
-                imagePreviewList.classList.add('d-none');
+                createConvHiddenInput.value = '';
+                createConvImagePreviewList.classList.add('d-none');
             };
 
             wrapper.appendChild(img);
             wrapper.appendChild(removeBtn);
-            imagePreviewList.appendChild(wrapper);
-            imagePreviewList.classList.remove('d-none');
+            createConvImagePreviewList.appendChild(wrapper);
+            createConvImagePreviewList.classList.remove('d-none');
         } catch (err) {
             console.error(err);
         }
 
-        imageInput.value = '';
+        createConvImageInput.value = '';
     });
     
     

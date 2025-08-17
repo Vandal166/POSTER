@@ -4,7 +4,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace Infrastructure.Auth;
 
-public class AdminTokenProvider : IAdminTokenProvider
+internal sealed class AdminTokenProvider : IAdminTokenProvider
 {
     private readonly IHttpClientFactory _http;
     private readonly ITokenGenerator<HttpResponseMessage> _tokenGen;

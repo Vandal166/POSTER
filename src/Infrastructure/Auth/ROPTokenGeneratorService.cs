@@ -1,10 +1,10 @@
 ﻿using System.Text.Json;
-using Application.Contracts;
 using Application.Contracts.Auth;
 
 namespace Infrastructure.Auth;
 
-public class ROPTokenGeneratorService : ITokenGenerator<HttpResponseMessage>
+// An Resource Owner Password Credentials (ROP) token generator service.
+internal sealed class ROPTokenGeneratorService : ITokenGenerator<HttpResponseMessage>
 {
     public static FormUrlEncodedContent CreateFormContent(Dictionary<string, string> parameters)
     {

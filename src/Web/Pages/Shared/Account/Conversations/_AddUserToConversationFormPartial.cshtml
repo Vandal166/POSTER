@@ -1,0 +1,140 @@
+﻿@model Application.DTOs.ConversationDto
+
+<!-- Add user to conv Modal -->
+<div class="modal fade" id="addUserToConversationModal" tabindex="-1" aria-labelledby="addUserToConversationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-md">
+        <div class="modal-content">
+            
+            <div class="modal-header">
+                <h5 class="modal-title" id="addUserToConversationModalLabel">Add users to Conversation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <form
+                method="post"
+                enctype="multipart/form-data"
+                hx-post="?handler=AddUsers"
+                hx-target="body"
+                hx-swap="none">
+
+                <div class="modal-body">
+                    <input type="hidden" name="conversationId" id="addUserToConversationId" value="@Model.Id"/>
+                    <!-- Search by username -->
+                    <div>
+                        <label for="addUserSearchInput" class="form-label">Search Users</label>
+
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="addUserSearchInput"
+                            placeholder="Enter username"
+                            name="username"
+                            autocomplete="off"
+                            hx-get="?handler=UserSearch"
+                            hx-target="#userSearchResults"
+                            hx-trigger="keyup changed delay:300ms"
+                            hx-swap="innerHTML"/>
+
+                    </div>
+
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div id="userSearchResults">
+                        <!-- Search results rendered here -->
+                    </div>
+
+                    <div class="mt-3">
+                        <h6>Selected Users</h6>
+                        <ul id="selectedUsers" class="list-group mb-2"></ul>
+
+                        <!-- Hidden input to collect selected user IDs -->
+                        <input type="hidden" name="selectedUserIds" id="selectedUserIds" required/>
+                        <span id="selectedUserIdsFeedback" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>    
+    const addUserForm = document.querySelector('#addUserToConversationModal form');
+    const selectedUserIdsInput = document.getElementById('selectedUserIds');
+
+    addUserForm.addEventListener('submit', function (e) {
+        const feedback = document.getElementById('selectedUserIdsFeedback');
+        if (!selectedUserIdsInput.value) {
+            feedback.textContent = 'Select at least one user.';
+            selectedUserIdsInput.classList.add('is-invalid');
+            e.preventDefault();
+        } else {
+            feedback.textContent = '';
+            selectedUserIdsInput.classList.remove('is-invalid');
+        }
+    });    
+    
+    const selectedUsers = new Map();
+
+    function addUserToSelection(userId, username) {
+        if (selectedUsers.has(userId)) return;
+
+        selectedUsers.set(userId, username);
+        renderSelectedUsers();
+    }
+
+    function removeUserFromSelection(userId) {
+        selectedUsers.delete(userId);
+        renderSelectedUsers();
+    }
+
+    function renderSelectedUsers() {
+        const list = document.getElementById('selectedUsers');
+        const hiddenInput = document.getElementById('selectedUserIds');
+
+        list.innerHTML = '';
+        const ids = [];
+
+        selectedUsers.forEach((username, id) => {
+            const li = document.createElement('li');
+            li.className = 'list-group-item d-flex justify-content-between align-items-center';
+            li.innerHTML = `
+                ${username}
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeUserFromSelection('${id}')">Remove</button>
+            `;
+            list.appendChild(li);
+            ids.push(id);
+        });
+
+        hiddenInput.value = ids.join(',');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const modal = document.getElementById('addUserToConversationModal');
+        if (!modal) return;
+        //ON HIDING THE MODAL, WE DELETE UPLOADED MEDIA
+        modal.addEventListener('hidden.bs.modal', async () => {
+            selectedUsers.clear();
+            
+            // Clear user search input
+            const addUserSearchInput = document.getElementById('addUserSearchInput');
+            if (addUserSearchInput) addUserSearchInput.value = '';
+    
+            // Clear user search results
+            const userSearchResults = document.getElementById('userSearchResults');
+            if (userSearchResults) userSearchResults.innerHTML = '';
+    
+            // Clear selected users
+            const selectedUsersList = document.getElementById('selectedUsers');
+            if (selectedUsersList) selectedUsersList.innerHTML = '';
+            const selectedUserIdsInput = document.getElementById('selectedUserIds');
+            if (selectedUserIdsInput) selectedUserIdsInput.value = '';
+            const feedback = document.getElementById('selectedUserIdsFeedback');
+            if (feedback) feedback.textContent = '';
+        });
+    });
+</script>

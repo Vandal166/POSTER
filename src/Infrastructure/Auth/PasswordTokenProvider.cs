@@ -1,6 +1,5 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Text.Json;
-using Application.Contracts;
 using Application.Contracts.Auth;
 using Application.DTOs;
 using FluentResults;
@@ -8,7 +7,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace Infrastructure.Auth;
 
-public class PasswordTokenProvider : IPasswordTokenProvider
+internal sealed class PasswordTokenProvider : IPasswordTokenProvider
 {
     private readonly IHttpClientFactory _http;
     private readonly ITokenGenerator<HttpResponseMessage> _tokenGen;

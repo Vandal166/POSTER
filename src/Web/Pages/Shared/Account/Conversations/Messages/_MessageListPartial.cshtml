@@ -13,15 +13,19 @@
         continue;
     }
     <div class="d-flex mb-3 p-2 border rounded" style="max-width: 600px;" id="message-@message.Id">
-        <img src="@Url.Content("~/" + message.AuthorAvatarPath)"
-             class="rounded-circle me-2"
-             style="width: 40px; height: 40px; object-fit: cover;" />
+        <a asp-page="/Account/Profile" asp-route-identifier="@message.AuthorUsername" class="d-flex text-decoration-none user-profile-link" style="color: inherit">
+            <img src="@Url.Content("~/" + message.AuthorAvatarPath)"
+                 class="rounded-circle me-2"
+                 style="width: 40px; height: 40px; object-fit: cover;" />
+        </a>
 
         <div class="flex-grow-1">
             <div class="d-flex align-items-center justify-content-between mb-1">
-                <span class="fw-semibold me-2">@message.AuthorUsername</span>
+                <a asp-page="/Account/Profile" asp-route-identifier="@message.AuthorUsername" class="d-flex align-items-center text-decoration-none user-profile-link" style="color: inherit">
+                    <span class="fw-semibold me-2">@message.AuthorUsername</span>
+                </a>
                 <small class="text-muted">@message.CreatedAt.ToString("g")</small>
-                
+
                 <!-- Three Dots Dropdown -->
                 <div class="dropdown ms-auto">
                     <button class="btn btn-link p-0 text-muted text-decoration-none fs-5 ms-1" type="button" id="messageOptionsDropdown-@message.Id"
@@ -39,11 +43,11 @@
                                 </li>
                             }
                         </auth-only>
-                            <li>
-                                <button type="button" class="dropdown-item" onclick="navigator.clipboard.writeText('@message.Content')">
-                                    Copy message
-                                </button>
-                            </li>
+                        <li>
+                            <button type="button" class="dropdown-item" onclick="navigator.clipboard.writeText('@message.Content')">
+                                Copy message
+                            </button>
+                        </li>
                     </ul>
                 </div>
             </div>

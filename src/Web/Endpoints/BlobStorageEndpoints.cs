@@ -6,9 +6,6 @@ public static class BlobStorageEndpoints
 {
     public static IEndpointRouteBuilder MapBlobStorageEndpoints(this IEndpointRouteBuilder app)
     {
-        //TODO can upload any file type by just changing the content type in Windows File Dialog to All
-        // can upload inifnite amount of files by just uploading one by one or many at once in the Windows File Dialog
-        
         app.MapPost("videos", async (IFormFile file, IBlobService blobService) =>
         {
             // Limit size to 50MB

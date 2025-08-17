@@ -11,7 +11,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace Infrastructure.Auth;
 
-public class KeycloakUserService : IKeycloakUserService
+internal sealed class KeycloakUserService : IKeycloakUserService
 {
     private readonly IHttpClientFactory _http;
     private readonly ICurrentUserService _currentUser;

@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.SignalR;
 namespace Web.Hubs;
 
 [Authorize]
-public sealed class ConversationNotificationHub : Hub
+internal sealed class ConversationNotificationHub : Hub
 {
     public async Task JoinConversationGroups(IEnumerable<Guid> conversationIds)
     {

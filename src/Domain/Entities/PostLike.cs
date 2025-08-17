@@ -2,7 +2,7 @@
 
 namespace Domain.Entities;
 
-public class PostLike : AuditableEntity
+public sealed class PostLike : AuditableEntity
 {
     public Guid PostID { get; private set; }
     public Post Post { get; private set; } = null!; // the post that was liked

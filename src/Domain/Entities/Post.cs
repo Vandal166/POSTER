@@ -1,17 +1,7 @@
 ﻿using FluentResults;
 
 namespace Domain.Entities;
-/*
- * <Avatar><Username of the sender> <Date of message>
- * <Content>
- */
 
-/*
- *<Avatar><Username of the author> <Date of post>
- * <Content>
- * <Likes> <Comments> <Views>-count
- * <Comments upon expanding>
- */
 public sealed class Post : AuditableEntity
 {
     public Guid AuthorID { get; private set; } // Keycloak ID of the author

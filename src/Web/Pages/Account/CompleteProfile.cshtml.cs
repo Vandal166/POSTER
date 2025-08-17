@@ -30,9 +30,6 @@ public class CompleteProfile : PageModel
 
     public IActionResult OnGet()
     {
-        _toastBuilder.SetToast("Complete your profile to continue", ToastType.Error) //TODO create Warning type
-            .Build(TempData);
-        
         return Page();
     }
     

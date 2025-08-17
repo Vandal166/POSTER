@@ -4,7 +4,7 @@ using Domain.Entities;
 
 namespace Infrastructure.Auth;
 
-public class UserSynchronizer : IUserSynchronizer
+internal sealed class UserSynchronizer : IUserSynchronizer
 {
     private readonly IKeycloakUserService _kc;
     private readonly IUserRepository _users;
