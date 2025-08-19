@@ -11,7 +11,7 @@ public interface IConversationRepository
     Task<ConversationDto?> GetConversationDtoAsync(Guid conversationId, Guid requestingUserID, CancellationToken ct = default);
     Task<Conversation?> GetConversationAsync(Guid conversationId, Guid requestingUserID, CancellationToken ct = default);
     Task<ConversationViewModel?> GetConversationViewModelAsync(Guid conversationId, Guid requestingUserID, CancellationToken ct = default);
-    Task<UserDto?> GetConversationParticipantAsync(Guid conversationId, Guid participantId, CancellationToken ct = default);
+    Task<ConversationUser?> GetConversationParticipantAsync(Guid conversationId, Guid participantId, CancellationToken ct = default);
 
     Task<IPagedList<ConversationDto>> GetAllAsync(Guid currentUserID, int pageNumber, int pageSize, CancellationToken ct = default);
     // this is just returning the IDs of all conversations the user is part of for SignalR messages notifications

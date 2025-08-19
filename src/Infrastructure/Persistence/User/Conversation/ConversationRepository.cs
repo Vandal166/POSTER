@@ -74,16 +74,11 @@ internal sealed class ConversationRepository : IConversationRepository
         };
     }
 
-    public async Task<UserDto?> GetConversationParticipantAsync(Guid conversationId, Guid participantId, CancellationToken ct = default)
+    public async Task<ConversationUser?> GetConversationParticipantAsync(Guid conversationId, Guid participantId, CancellationToken ct = default)
     {
         return await _db.ConversationUsers
             .AsNoTracking()
             .Where(cu => cu.ConversationID == conversationId && cu.UserID == participantId)
-            .Select(cu => new UserDto(
-                cu.User.ID,
-                cu.User.Username,
-                cu.User.AvatarPath
-            ))
             .FirstOrDefaultAsync(ct);
     }
 

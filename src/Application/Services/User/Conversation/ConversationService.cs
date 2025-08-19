@@ -152,7 +152,8 @@ internal sealed class ConversationService : IConversationService
         if (conversation is null)
             return Result.Fail<bool>("Conversation not found or you are not part of it.");
         
-        var participant = conversation.Participants.FirstOrDefault(p => p.UserID == currentUserID);
+        //var participant = conversation.Participants.FirstOrDefault(p => p.UserID == currentUserID);
+        var participant = await _conversations.GetConversationParticipantAsync(conversationID, currentUserID, cancellationToken);
         if (participant is null)
             return Result.Fail<bool>("You are not a participant in this conversation.");
         
@@ -174,7 +175,8 @@ internal sealed class ConversationService : IConversationService
         if (conversation.CreatedByID != currentUserID)
             return Result.Fail<bool>("You can only remove participants from conversations you created.");
         
-        var participant = conversation.Participants.FirstOrDefault(p => p.UserID == participantID);
+        //var participant = conversation.Participants.FirstOrDefault(p => p.UserID == participantID);
+        var participant = await _conversations.GetConversationParticipantAsync(conversationID, participantID, ct);
         if (participant is null)
             return Result.Fail<bool>("Participant not found in this conversation.");
         

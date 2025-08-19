@@ -74,3 +74,5 @@ using (var scope = app.Services.CreateScope())
 #endif
 
 app.Run();
+
+public partial class Program { } // This is needed for the integration tests to work properly
