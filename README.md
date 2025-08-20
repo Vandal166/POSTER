@@ -16,3 +16,8 @@ dotnet user-secrets set "ConnectionStrings:Poster_DB" "Host=localhost;Port=5432;
 
 
 <a href="https://www.flaticon.com/free-icons/profile-image" title="profile-image icons">Profile-image icons created by Md Tanvirul Haque - Flaticon</a>
+
+
+Configrue Playwright:
+cd .\tests\Web.FunctionalTests\
+powershell bin/Debug/net9.0/playwright.ps1 install
