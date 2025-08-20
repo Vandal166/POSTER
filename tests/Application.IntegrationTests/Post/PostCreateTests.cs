@@ -42,4 +42,18 @@ public class PostCreateTests : BaseIntegrationTest
         Assert.Equal(createPostDto.VideoFileID, createdPost.VideoFileID);
         Assert.Equal(createPostDto.ImageFileIDs.Length, createdPost.Images.Count);
     }
+    
+    [Fact]
+    public async Task CreatePost_ShouldReturn_ForeignKeyViolation_WhenUserDoesNotExist()
+    {
+        // Arrange
+        using var scope = _serviceScope.ServiceProvider.CreateScope();  
+        var postService = scope.ServiceProvider.GetRequiredService<IPostService>();
+        
+        var createPostDto = new CreatePostDto("Test content", null, Array.Empty<Guid>());
+        
+        // Act & Assert
+        await Assert.ThrowsAsync<DbUpdateException>(() =>
+            postService.CreatePostAsync(createPostDto, Guid.NewGuid(), CancellationToken.None));
+    }
 }

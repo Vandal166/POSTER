@@ -7,7 +7,7 @@ using Web.Contracts;
 
 namespace Web.Pages;
 
-[RedirectAuthenticated] // allow only unauthenticated users to access this page
+[RedirectAuthenticated] // only unauthenticated users to access this page
 public class Register : PageModel
 {
     private readonly IAuthService _auth;
@@ -22,7 +22,7 @@ public class Register : PageModel
     [BindProperty]
     public RegisterUserDto Dto { get; set; }
 
-    public async Task<IActionResult> OnPostAsync(CancellationToken ct)
+    public async Task<IActionResult> OnPostAsync(CancellationToken ct = default)
     {
         if (!ModelState.IsValid)
             return Page();

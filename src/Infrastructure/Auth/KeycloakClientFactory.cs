@@ -8,7 +8,7 @@ public static class KeycloakClientFactory
     {
         return new 
         {
-            username = dto.Email,
+            username = dto.Email.Split('@')[0], // using the part before '@' as username
             email    = dto.Email,
             enabled  = true,
             attributes = new {

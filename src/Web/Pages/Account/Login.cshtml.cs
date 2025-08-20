@@ -9,7 +9,7 @@ using Web.Common;
 
 namespace Web.Pages;
 
-[RedirectAuthenticated]
+[RedirectAuthenticated] // only unauthenticated users to access this page
 public class Login : PageModel
 {
     private readonly IAuthService _auth;
@@ -19,7 +19,7 @@ public class Login : PageModel
     [BindProperty]
     public LoginUserDto Dto { get; set; }
     
-    public async Task<IActionResult> OnPostAsync(CancellationToken ct)
+    public async Task<IActionResult> OnPostAsync(CancellationToken ct = default)
     {
         if (!ModelState.IsValid)
             return Page();

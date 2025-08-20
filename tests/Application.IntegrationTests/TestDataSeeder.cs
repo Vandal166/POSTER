@@ -50,8 +50,8 @@ public class TestDataSeeder
                 _posts.Add(post);
                 await _context.Posts.AddAsync(post);
                 
-                // Optionally add images to the post
-                for (int j = 0; j < _faker.Random.Int(0, 3); j++)
+                // adding rnd amount of images to the post
+                for (int j = 0; j < _faker.Random.Int(1, 3); j++)
                 {
                     var imageID = Guid.NewGuid();
                     var postImage = PostImage.Create(post.ID, imageID).Value;

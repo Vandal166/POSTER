@@ -4,7 +4,6 @@ using Application.Contracts.Persistence;
 using Infrastructure.Auth;
 using Infrastructure.Data;
 using Infrastructure.Persistence;
-using Infrastructure.Seeding;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -47,8 +46,6 @@ public static class DependencyInjection
         
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<ITokenGenerator<HttpResponseMessage>, ROPTokenGeneratorService>();
-        
-        services.AddScoped<IDataSeeder, DataSeeder>();
 
         services.AddScoped<IKeycloakUserService, KeycloakUserService>();
         
