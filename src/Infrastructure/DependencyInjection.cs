@@ -48,6 +48,8 @@ public static class DependencyInjection
         services.AddScoped<ITokenGenerator<HttpResponseMessage>, ROPTokenGeneratorService>();
 
         services.AddScoped<IKeycloakUserService, KeycloakUserService>();
+
+        //services.AddScoped<IDataSeeder, DataSeeder>();
         
         return services;
     }

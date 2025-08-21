@@ -29,9 +29,9 @@ public class PosterDbContext : DbContext
     
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder
+        /*optionsBuilder
             .LogTo(Console.WriteLine, Microsoft.Extensions.Logging.LogLevel.Information)
-            .EnableSensitiveDataLogging();
+            .EnableSensitiveDataLogging();*/
     }
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -44,13 +44,9 @@ public class PosterDbContext : DbContext
             b.HasKey(u => u.ID);
             b.Property(u => u.Username).IsRequired();
             b.Property(u => u.AvatarPath).HasMaxLength(256).IsRequired();
-            //b.Property(u => u.Email).IsRequired();
-           // b.OwnsOne(u => u.Username, x => x.Property(p => p.Value).HasColumnName("Username").IsRequired());
-           // b.OwnsOne(u => u.Email,    x => x.Property(p => p.Value).HasColumnName("Email").IsRequired());
-           // b.Property(u => u.PasswordHash).HasMaxLength(256).IsRequired();
             b.Property(p => p.CreatedAt).HasDefaultValueSql("now()");
             
-            b.HasQueryFilter(u => u.DeletedAt == null); // soft delete filter
+            //b.HasQueryFilter(u => u.DeletedAt == null); // soft delete filter
         });
 
         // ------ Post ------

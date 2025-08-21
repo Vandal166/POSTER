@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 using Application.Contracts;
 using Application.Contracts.Auth;
+using Application.Contracts.Persistence;
 using Infrastructure.Auth;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -10,6 +11,7 @@ using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Web.Common;
 using Web.Contracts;
+using Web.Seeder;
 using Web.Services;
 
 namespace Web;
@@ -24,6 +26,7 @@ public static class DependencyInjection
         services.AddScoped<IMessageNotifier, SignalRMessageNotifier>();
         services.AddScoped<IConversationNotifier, SignalRConversationNotifier>();
         services.AddScoped<IFollowNotifier, SignalRFollowNotifier>();
+        services.AddScoped<IDataSeeder, DataSeeder>();
         
         IConfigurationSection keycloakSettings = configuration.GetSection("Keycloak");
         services.AddAuthorizationBuilder();

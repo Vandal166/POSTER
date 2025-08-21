@@ -64,11 +64,9 @@ app.MapHub<FollowNotificationHub>("/followHub");
 #if USE_SEEDING
 using (var scope = app.Services.CreateScope())
 {
-    var seeder = scope.ServiceProvider.GetRequiredService<IDataSeeder>();
+    var seeder = scope.ServiceProvider.GetRequiredService<Application.Contracts.Persistence.IDataSeeder>();
     await seeder.SeedAsync(
-        userCount:        50,
-        postsPerUser:     20,
-        commentsPerPost:  10, CancellationToken.None
+        userCount:        50, CancellationToken.None
     );
 }
 #endif

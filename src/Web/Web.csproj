@@ -41,6 +41,7 @@
 
     <ItemGroup>
       <Folder Include="wwwroot\uploads\avatars\" />
+      <Folder Include="wwwroot\uploads\defaults\" />
       <Folder Include="wwwroot\uploads\images\" />
     </ItemGroup>
 
