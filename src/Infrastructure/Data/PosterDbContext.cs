@@ -29,6 +29,9 @@ public class PosterDbContext : DbContext
     
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
+        optionsBuilder
+            .ConfigureWarnings(warnings =>
+                warnings.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
         /*optionsBuilder
             .LogTo(Console.WriteLine, Microsoft.Extensions.Logging.LogLevel.Information)
             .EnableSensitiveDataLogging();*/
@@ -44,8 +47,8 @@ public class PosterDbContext : DbContext
             b.HasKey(u => u.ID);
             b.Property(u => u.Username).IsRequired();
             b.Property(u => u.AvatarPath).HasMaxLength(256).IsRequired();
-            b.Property(p => p.CreatedAt).HasDefaultValueSql("now()");
             
+            b.Property(p => p.CreatedAt).HasDefaultValueSql("now()");
         });
         modelBuilder.Entity<User>().HasData(User.Create
         (
