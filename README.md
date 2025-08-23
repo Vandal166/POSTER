@@ -14,7 +14,9 @@ Regenerate 'Client secret' -> copy to the application.Developement.json 'AdminCl
 For Client 'Poster-frontend':
 Into Credentials tab:
 Regenerate 'Client secret' -> copy to the application.Developement.json 'ClientSecret' section.
-9. Run the web app and done!
+9. using Storage Explorer(link):
+navigate to Emulator & Attached -> Emulator(Default Ports) -> Blob Containers and create 'images' and 'videos' containers
+10. Run the web app and done!
 
 
 <a href="https://www.flaticon.com/free-icons/profile-image" title="profile-image icons">Profile-image icons created by Md Tanvirul Haque - Flaticon</a>
