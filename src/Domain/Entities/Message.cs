@@ -15,7 +15,7 @@ public sealed class Message : AuditableEntity
     public string Content { get; private set; } = null!;
     public Guid? VideoFileID { get; private set; } // Optional video file ID for the msg
     
-    public static readonly Guid SystemUserId = Guid.Empty;
+    public static readonly Guid SystemUserId = new Guid("11111111-1111-1111-1111-111111111111");
     
     public bool IsSystemMessage => SenderID == SystemUserId;
     

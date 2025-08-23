@@ -49,7 +49,7 @@ public class PosterDbContext : DbContext
         });
         modelBuilder.Entity<User>().HasData(User.Create
         (
-            Guid.Empty,
+            Message.SystemUserId,
             "System"
         ).Value);
         
