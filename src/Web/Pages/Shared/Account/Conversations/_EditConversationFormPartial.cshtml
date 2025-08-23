@@ -28,7 +28,12 @@
             <input type="file" id="conversationImageInput" accept="image/*" style="display: none;"/>
             <input type="hidden" name="Conversation.ProfilePictureID" id="conversationProfilePictureFileID" value="@Model.Conversation.ProfilePictureID" data-original="@Model.Conversation.ProfilePictureID"/>
             <div id="conversationImagePreviewList" class="position-relative">
-                <img src="@Url.Content("/images/" + Model.Conversation.ProfilePictureID)" alt="Profile Picture" class="rounded shadow-sm" style="width: 90px; height: 90px; object-fit: cover;"/>
+                <img src="@(string.IsNullOrWhiteSpace(Model.Conversation.ProfilePictureID.ToString()) ? "/uploads/images/default-conversation.png" : Url.Content("/images/" + Model.Conversation.ProfilePictureID))"
+                     data-default="/uploads/images/default-conversation.png"
+                     onerror="this.src=this.getAttribute('data-default');"
+                     alt="Profile Picture" 
+                     class="rounded shadow-sm"
+                     style="width: 90px; height: 90px; object-fit: cover;"/>
             </div>
             <span asp-validation-for="Conversation.ProfilePictureID" class="text-danger"></span>
             
@@ -148,7 +153,13 @@
         const deleteModal = new bootstrap.Modal(document.getElementById('removeParticipantModal'));
         deleteModal.show();
     }
-
+    
+    document.querySelectorAll('img[data-default]').forEach(img => {
+        img.addEventListener('error', function() {
+            this.src = this.getAttribute('data-default');
+        });
+    });
+    
     document.addEventListener('DOMContentLoaded', () => {
         const modal = document.getElementById('editConversationModal');
         if (!modal) return;
@@ -158,7 +169,6 @@
             const originalFileID = hiddenInput?.dataset.original;
             if (
                 imageFileID &&
-                imageFileID !== '4fdd2f9f-bca8-4f90-8e27-ed432cbc39e0' &&
                 imageFileID !== originalFileID
             ) {
                 try {

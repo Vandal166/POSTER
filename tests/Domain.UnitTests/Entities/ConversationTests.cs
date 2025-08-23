@@ -38,19 +38,20 @@ public class ConversationTests
     }
 
     [Fact]
-    public void CreateConversationUser_WithEmptyProfilePictureID_ShouldReturnFailResult()
+    public void CreateConversationUser_WithEmptyProfilePictureID_ShouldReturnOkResult()
     {
         // Arrange
         var conversationName = "Test Conversation";
-        var conversationProfilePictureID = Guid.Empty; // Invalid profile picture ID
+        var conversationProfilePictureID = Guid.Empty; // Optional profile picture ID
         var createdByID = Guid.NewGuid();
-
+    
         // Act
         var result = Conversation.Create(conversationName, conversationProfilePictureID, createdByID);
-
+    
         // Assert
-        Assert.False(result.IsSuccess, "Conversation creation should fail with empty profile picture ID.");
-        Assert.Equal("Profile picture path cannot be empty.", result.Errors[0].Message);
+        Assert.True(result.IsSuccess, "Conversation creation should succeed with empty profile picture ID.");
+        Assert.NotNull(result.Value);
+        Assert.Equal(conversationProfilePictureID, result.Value.ProfilePictureID);
     }
 
     [Fact]

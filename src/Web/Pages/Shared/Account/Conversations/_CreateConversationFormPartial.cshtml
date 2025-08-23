@@ -207,8 +207,6 @@
             // Remove uploaded image if present
             const imageFileID = document.getElementById('conversationProfilePictureFileID')?.value;
             if (imageFileID) {
-                if(imageFileID === '4fdd2f9f-bca8-4f90-8e27-ed432cbc39e0')
-                    return; // Skip deletion for default image
                 try {
                     const response = await fetch(`/images/${imageFileID}`, { method: 'DELETE' });
                     if (response.ok) {

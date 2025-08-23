@@ -66,7 +66,7 @@ using (var scope = app.Services.CreateScope())
 {
     var seeder = scope.ServiceProvider.GetRequiredService<Application.Contracts.Persistence.IDataSeeder>();
     await seeder.SeedAsync(
-        userCount:        50, CancellationToken.None
+        userCount:        10, CancellationToken.None
     );
 }
 #endif

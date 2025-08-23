@@ -25,10 +25,19 @@
         // If there's no existing value, set the default
         if (hiddenInput && imagePreviewList) {
             hiddenInput.value = originalFileID || '';
+
+            // Check if the ID exists before using it in the image path
+            const imageSrc = originalFileID
+                ? `/images/${originalFileID}`
+                : '/uploads/images/default-conversation.png';
+
             imagePreviewList.innerHTML = `
-            <div class="d-inline-block position-relative m-1">
-                <img src="/images/${originalFileID}" class="rounded shadow-sm" style="width:90px;height:90px;object-fit:cover;">
-            </div>
+        <div class="d-inline-block position-relative m-1">
+            <img src="${imageSrc}" 
+                 onerror="this.src='/uploads/images/default-conversation.png';" 
+                 class="rounded shadow-sm" 
+                 style="width:90px;height:90px;object-fit:cover;">
+        </div>
         `;
             imagePreviewList.classList.remove('d-none');
         }

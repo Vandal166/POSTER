@@ -5,7 +5,7 @@ namespace Domain.Entities;
 public sealed class Conversation : AuditableEntity
 {
     public string Name { get; private set; } = null!;
-    public Guid ProfilePictureID { get; private set; } // the profile picture ID from Blob Storage
+    public Guid? ProfilePictureID { get; private set; } // the profile picture ID from Blob Storage
 
     public Guid CreatedByID { get; private set; } // the user who administers this conversation
     public User CreatedBy { get; private set; } = null!;
@@ -18,13 +18,10 @@ public sealed class Conversation : AuditableEntity
 
     private Conversation() {}
     
-    public static Result<Conversation> Create(string name, Guid profilePictureID, Guid createdByID)
+    public static Result<Conversation> Create(string name, Guid? profilePictureID, Guid createdByID)
     {
         if (string.IsNullOrWhiteSpace(name))
             return Result.Fail<Conversation>("Conversation name cannot be empty.");
-
-        if (profilePictureID == Guid.Empty)
-            return Result.Fail<Conversation>("Profile picture path cannot be empty.");
         
         if (createdByID == Guid.Empty)
             return Result.Fail<Conversation>("Created by user ID cannot be empty.");
@@ -40,13 +37,10 @@ public sealed class Conversation : AuditableEntity
         return Result.Ok(conversation);
     }
     
-    public static Result<Conversation> Update(Conversation conversation, string name, Guid profilePictureID)
+    public static Result<Conversation> Update(Conversation conversation, string name, Guid? profilePictureID)
     {
         if (string.IsNullOrWhiteSpace(name))
             return Result.Fail<Conversation>("Conversation name cannot be empty.");
-        
-        if (profilePictureID == Guid.Empty)
-            return Result.Fail<Conversation>("Profile picture path cannot be empty.");
         
         conversation.Name = name;
         conversation.ProfilePictureID = profilePictureID;

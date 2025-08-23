@@ -71,7 +71,10 @@
                     const container = document.getElementById("conversations-container");
                     // prepending the new message to the top of the container
                     container.insertAdjacentHTML('beforeend', html);
-    
+                    
+                    // initializing default image handling for the new image if not found
+                    setupImageFallbacks(container);
+                    
                     // scrolling to bottom only if the user is near the bottom of the scroll
                     if (container.scrollTop >= -160 && container.scrollTop <= 0) {
                         container.scrollTop = container.scrollHeight;
@@ -102,7 +105,7 @@
                     }
                     // prepending the new message to the top of the container
                     container.insertAdjacentHTML('afterbegin', html);
-    
+                    setupImageFallbacks(container);
                     // if the user is on the first page, scroll to the bottom
                     if (@Model.CurrentPage === 1) 
                     {
@@ -132,5 +135,14 @@
                     .catch(err => console.error("Error invoking JoinGroup:", err));
             })
             .catch(err => console.error("Error connecting to conversation hub:", err));
+
+        function setupImageFallbacks(container = document) {
+            container.querySelectorAll('img[data-default]:not([data-error-handled])').forEach(img => {
+                img.addEventListener('error', function() {
+                    this.src = this.getAttribute('data-default');
+                });
+                img.setAttribute('data-error-handled', 'true');
+            });
+        }
     </script>
 </auth-only>

@@ -243,8 +243,7 @@ public sealed class DataSeeder : IDataSeeder
         // for each user, create conversations with other users
         var conversationFaker = new Faker<CreateConversationDto>()
             .CustomInstantiator(f => new CreateConversationDto(
-                f.Lorem.Sentence(3),
-                new Guid("4fdd2f9f-bca8-4f90-8e27-ed432cbc39e0") // default conversation image
+                f.Lorem.Sentence(3)
             ));
 
         foreach (var initiatorAggregate in userAggregates)

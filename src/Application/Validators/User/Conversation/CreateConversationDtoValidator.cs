@@ -11,9 +11,5 @@ public class CreateConversationDtoValidator : AbstractValidator<CreateConversati
             .NotEmpty()
             .MinimumLength(1)
             .MaximumLength(40).WithMessage("Conversation name must be between 1 and 40 characters long.");
-
-        RuleFor(x => x.ProfilePictureFileID)
-            .NotEmpty()
-            .WithMessage("Upload an profile picture for the conversation.");
     }
 }

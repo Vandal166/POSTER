@@ -25,7 +25,7 @@ public class ConversationDeleteTests
         _fixture.UnitOfWorkMock.SaveChangesAsync(Arg.Any<CancellationToken>())
             .Returns(Task.CompletedTask);
         _fixture.BlobServiceMock
-            .DeleteFileAsync(conversation.ProfilePictureID, "images", Arg.Any<CancellationToken>())
+            .DeleteFileAsync(conversation.ProfilePictureID.GetValueOrDefault(), "images", Arg.Any<CancellationToken>())
             .Returns(Task.CompletedTask);
         
         // Act
@@ -37,7 +37,7 @@ public class ConversationDeleteTests
             c.ID == conversationID && 
             c.CreatedByID == currentUserID), Arg.Any<CancellationToken>());
         await _fixture.UnitOfWorkMock.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
-        await _fixture.BlobServiceMock.Received(1).DeleteFileAsync(conversation.ProfilePictureID, "images", Arg.Any<CancellationToken>());
+        await _fixture.BlobServiceMock.Received(1).DeleteFileAsync(conversation.ProfilePictureID.GetValueOrDefault(), "images", Arg.Any<CancellationToken>());
     }
 
     [Fact]
