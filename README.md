@@ -25,7 +25,7 @@ Docker Desktop installed:
 www...
 if auth fails for an container then try switching ports in docker compose and connection string
 
-For tests:
+For Web.FunctionalTests:
 Configrue Playwright:
 cd .\tests\Web.FunctionalTests\
 powershell bin/Debug/net9.0/playwright.ps1 install
