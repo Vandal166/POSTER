@@ -35,6 +35,8 @@ A .NET 9 web application inspired by Twitter, featuring posts with media, commen
   - Updates on a conversation you are part of
   - New post by a followed user
 
+  ![Showcase](Showcase.gif)
+
 ---
 
 ## Technical Overview
