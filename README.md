@@ -15,6 +15,14 @@ dotnet user-secrets set "JwtSettings:Audience" "your-audience"
 
 dotnet user-secrets set "ConnectionStrings:Poster_DB" "Host=localhost;Port=5432;Database=Poster_DB;Username=postgres;Password=postgres"
 
+Configure admin client secrets in Keycloak:
+From the PosterRealm -> Clients -> 'poster-admin':
+Into Credentials tab:
+Regenerate 'Client secret' -> copy to the application.Developement.json 'AdminClientSecret' section.
+For Client 'Poster-frontend':
+Into Credentials tab:
+Regenerate 'Client secret' -> copy to the application.Developement.json 'ClientSecret' section.
+
 
 <a href="https://www.flaticon.com/free-icons/profile-image" title="profile-image icons">Profile-image icons created by Md Tanvirul Haque - Flaticon</a>
 
