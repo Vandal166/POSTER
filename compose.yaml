@@ -26,7 +26,7 @@
     volumes:
       - ./.containers/poster_db:/var/lib/postgresql/data
     ports:
-        - "5432:5432"
+        - "5433:5432"
           
   web.keycloak:
     image: quay.io/keycloak/keycloak:latest
@@ -39,9 +39,7 @@
       KC_DB_URL: jdbc:postgresql://keycloak.db:5432/keycloak
       KC_DB_USERNAME: keycloak
       KC_DB_PASSWORD: keycloak
-    command: start --hostname-strict=false --http-enabled=true --import-realm
-    volumes:
-      - ./keycloak/:/opt/keycloak/data/import
+    command: start --hostname-strict=false --http-enabled=true
     depends_on:
       - keycloak.db
     ports:
@@ -57,7 +55,7 @@
     volumes:
       - ./.containers/keycloak_postgres:/var/lib/postgresql/data
     ports:
-      - "5433:5432"
+      - "5434:5432"
         
   azurite:
     image: mcr.microsoft.com/azure-storage/azurite
