@@ -1,6 +1,6 @@
 # POSTER
 
-A simple .NET 9 web application inspired by Twitter. Users can register, log in, and interact through posts, comments, conversations, and real-time notifications.
+A .NET 9 web application inspired by Twitter, featuring posts with media, comments, conversations, follows, and real-time notifications. Built with Razor Pages, Keycloak, PostgreSQL, Azurite, SignalR, and Clean Architecture.
 
 ---
 
