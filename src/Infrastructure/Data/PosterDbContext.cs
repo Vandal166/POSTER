@@ -46,9 +46,13 @@ public class PosterDbContext : DbContext
             b.Property(u => u.AvatarPath).HasMaxLength(256).IsRequired();
             b.Property(p => p.CreatedAt).HasDefaultValueSql("now()");
             
-            //b.HasQueryFilter(u => u.DeletedAt == null); // soft delete filter
         });
-
+        modelBuilder.Entity<User>().HasData(User.Create
+        (
+            Guid.Empty,
+            "System"
+        ).Value);
+        
         // ------ Post ------
         modelBuilder.Entity<Post>(b =>
         {
