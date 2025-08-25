@@ -89,7 +89,7 @@ A .NET 9 web application inspired by Twitter, featuring posts with media, commen
 5. Configure **Keycloak**:
 
    - Access the Keycloak admin panel.  
-     If the container fails with `connection refused`, re-run it (sometimes `web.keycloak` starts before `keycloak.db` initializes).
+     > Note If the container fails to start with `connection refused`, re-run it (sometimes `web.keycloak` starts before `keycloak.db` initializes).
    - Log in using:
      ```
      Username: admin
