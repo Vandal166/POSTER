@@ -44,6 +44,7 @@ public class UserFollowers : PageModel
             Followers = await _followService.GetFollowersAsync(user.Id, ct),
             Following = await _followService.GetFollowingAsync(user.Id, ct),
             IsFollowing = await _followService.IsFollowingAsync(_currentUser.ID, user.Id, ct),
+            CurrentUserFollowingIDs = await _followService.GetFollowingIDsAsync(_currentUser.ID, ct)
         };
         return Page();
     }

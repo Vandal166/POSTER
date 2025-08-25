@@ -13,6 +13,8 @@ public interface IFollowRepository
     
     Task<IReadOnlyCollection<UserDto>> GetFollowingAsync(Guid userID, CancellationToken ct = default);
     
+    Task<IReadOnlyCollection<Guid>> GetFollowingIDsAsync(Guid userID, CancellationToken ct = default);
+    
     Task AddAsync(UserFollow userFollow, CancellationToken ct = default);
     
     Task DeleteAsync(UserFollow userFollow, CancellationToken ct = default);

@@ -83,4 +83,9 @@ internal sealed class FollowService : IFollowService
     {
         return await _followRepository.GetFollowingAsync(userID, ct);
     }
+
+    public async Task<IReadOnlyCollection<Guid>> GetFollowingIDsAsync(Guid userID, CancellationToken ct = default)
+    {
+        return await _followRepository.GetFollowingIDsAsync(userID, ct);
+    }
 }

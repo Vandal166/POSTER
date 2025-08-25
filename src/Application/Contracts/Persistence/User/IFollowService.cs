@@ -13,4 +13,6 @@ public interface IFollowService
     Task<IReadOnlyCollection<UserDto>> GetFollowersAsync(Guid userID, CancellationToken ct = default);
     
     Task<IReadOnlyCollection<UserDto>> GetFollowingAsync(Guid userID, CancellationToken ct = default);
+    
+    Task<IReadOnlyCollection<Guid>> GetFollowingIDsAsync(Guid userID, CancellationToken ct = default);
 }

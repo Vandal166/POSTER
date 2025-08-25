@@ -10,5 +10,8 @@ public sealed class UserProfileLoaderViewModel
     
     public IReadOnlyCollection<UserDto> Followers { get; set; } // list of users who follow this user
     public IReadOnlyCollection<UserDto> Following { get; set; } // list of users this user is following
+    
+    public IReadOnlyCollection<Guid> CurrentUserFollowingIDs { get; set; } // IDs of users the current user is following
+    
     public PostLoaderViewModel UserPosts { get; set; }
 }

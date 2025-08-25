@@ -19,7 +19,7 @@
             <auth-only>
             @if (CurrentUser.ID != user.Id)
             {
-                if (Model.Following.Any(f => f.Id == user.Id))
+                if (Model.CurrentUserFollowingIDs.Contains(user.Id)) // if the current user is following this user
                 {
                     <form method="post" asp-page="/Account/RemoveFollow" class="d-inline">
                         <input type="hidden" name="userId" value="@user.Id" />

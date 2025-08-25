@@ -55,6 +55,15 @@ internal sealed class FollowRepository : IFollowRepository
             .ToListAsync(ct);
     }
 
+    public async Task<IReadOnlyCollection<Guid>> GetFollowingIDsAsync(Guid userID, CancellationToken ct = default)
+    {
+        return await _db.UserFollows
+            .AsNoTracking()
+            .Where(uf => uf.FollowerID == userID)
+            .Select(uf => uf.FollowedID)
+            .ToListAsync(ct);
+    }
+
     public Task AddAsync(UserFollow userFollow, CancellationToken ct = default)
     {
         _db.UserFollows.Add(userFollow);
